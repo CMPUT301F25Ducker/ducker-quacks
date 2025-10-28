@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">duckduckGoose</string>
+
+    <string name="empty"></string>
+
+    <string-array name="account_types">
+        <item>Entrant</item>
+        <item>Organizer</item>
+    </string-array>
+
 </resources>

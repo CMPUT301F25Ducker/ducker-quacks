@@ -1,5 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+<style name="Theme.FreshGreens" parent="Theme.Material3.Light.NoActionBar">
+    <!-- Brand -->
+    <item name="colorPrimary">@color/fg_green</item>
+    <item name="colorOnPrimary">@color/fg_white</item>
+    <item name="colorPrimaryContainer">@color/fg_lime</item>
+    <item name="colorSecondary">@color/fg_deep_green</item>
+    <item name="colorOnSecondary">@color/fg_white</item>
+    <item name="colorTertiary">@color/fg_brick</item>
+    <item name="colorSurface">@color/fg_cream</item>
+    <item name="colorOnSurface">@color/fg_deep_green</item>
 
-    <style name="Theme.DuckduckGoose" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Typography: default to Itim -->
+    <item name="textAppearanceBodyLarge">@style/Text.Fresh.BodyLarge</item>
+    <item name="textAppearanceBodyMedium">@style/Text.Fresh.Body</item>
+    <item name="android:fontFamily">@font/itim</item>
+    <item name="fontFamily">@font/itim</item>
+
+    <!-- Status/Navigation -->
+    <item name="android:statusBarColor">@color/fg_deep_green</item>
+    <item name="android:navigationBarColor">@color/fg_deep_green</item>
+</style>
 </resources>

@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Brand palette: Fresh Greens -->
+    <color name="fg_deep_green">#386641</color>
+    <color name="fg_green">#6A994E</color>
+    <color name="fg_lime">#A7C957</color>
+    <color name="fg_cream">#F2E8CF</color>
+    <color name="fg_brick">#BC4749</color>
+
+    <!-- Utility -->
+    <color name="fg_black">#000000</color>
+    <color name="fg_white">#FFFFFF</color>
+    <color name="fg_transparent">#00000000</color>
+
+    <color name="fg_charcoal">#333333</color>
+    <color name="fg_silver">#CFCFCF</color>
+
 </resources>
