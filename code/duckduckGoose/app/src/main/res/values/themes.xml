@@ -14,8 +14,8 @@
     <!-- Typography: default to Itim -->
     <item name="textAppearanceBodyLarge">@style/Text.Fresh.BodyLarge</item>
     <item name="textAppearanceBodyMedium">@style/Text.Fresh.Body</item>
-    <item name="android:fontFamily">@font/itim</item>
-    <item name="fontFamily">@font/itim</item>
+    <item name="android:fontFamily">@font/itimregular</item>
+    <item name="fontFamily">@font/itimregular</item>
 
     <!-- Status/Navigation -->
     <item name="android:statusBarColor">@color/fg_deep_green</item>
