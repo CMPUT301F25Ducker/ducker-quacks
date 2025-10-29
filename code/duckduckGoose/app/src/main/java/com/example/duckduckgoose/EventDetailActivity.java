@@ -23,6 +23,8 @@ public class EventDetailActivity extends AppCompatActivity {
         // MUST inflate layout first so views exist
         setContentView(R.layout.activity_event_detail);
 
+        TopBarWiring.attachProfileSheet(this);
+
         // --- Top bar nav (My Events / Events) ---
         View tbMy = findViewById(R.id.btnMyEvents);
         if (tbMy != null) {

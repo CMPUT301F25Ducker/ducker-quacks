@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         String start = getIntent().getStringExtra("startOn");
         if (start == null) return;
         switch (start) {
+            case "LOGIN":      showLogin();     break;
             case "EVENT_LIST": showEventList(); break;
             case "MY_EVENTS":  showMyEvents();  break;
         }
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
     private void showLogin() {
         setContentView(R.layout.activity_login);
         current = Screen.LOGIN;
+        TopBarWiring.attachProfileSheet(this);
 
         btnSignIn = findViewById(R.id.btnSignIn);
         btnCreateAccount = findViewById(R.id.btnCreateAccount);
@@ -164,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_list);
         current = Screen.EVENT_LIST;
         wireTopBarNav();
+        TopBarWiring.attachProfileSheet(this);
 
         // top bar nav example (optional):
         View btnMyEvents = findViewById(R.id.btnMyEvents);
@@ -192,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_events);
         current = Screen.MY_EVENTS;
         wireTopBarNav();
-
+        TopBarWiring.attachProfileSheet(this);
 
         // Sort dropdown
         MaterialAutoCompleteTextView drop = findViewById(R.id.dropSortMy);
