@@ -1,6 +1,7 @@
 package com.example.duckduckgoose;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
 
     public interface OnProfileInteractionListener {
         void onProfileDeleted(String userId);
+        void onEventsButtonClicked(String userId);
     }
 
     private OnProfileInteractionListener mListener;
@@ -25,15 +27,18 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     public static ProfileSheet newInstance(String name, String userId) {
-        return newInstance(name, userId, false);
+        return newInstance(name, userId, false, false, null, false);
     }
 
-    public static ProfileSheet newInstance(String name, String userId, boolean isViewingOther) {
+    public static ProfileSheet newInstance(String name, String userId, boolean isViewingOther, boolean showEventsButton, String eventCount, boolean showAttendeeInfo) {
         ProfileSheet fragment = new ProfileSheet();
         Bundle args = new Bundle();
         args.putString("name", name);
         args.putString("userId", userId);
         args.putBoolean("isViewingOther", isViewingOther);
+        args.putBoolean("showEventsButton", showEventsButton);
+        args.putString("eventCount", eventCount);
+        args.putBoolean("showAttendeeInfo", showAttendeeInfo);
         fragment.setArguments(args);
         return fragment;
     }
@@ -61,10 +66,14 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         TextView txtEmail = v.findViewById(R.id.txtEmail);
         TextView txtPhone = v.findViewById(R.id.txtPhone);
         TextView txtAccountType = v.findViewById(R.id.txtAccountType);
+        TextView txtEventCount = v.findViewById(R.id.txtEventCount);
+        TextView txtPastEvents = v.findViewById(R.id.txtPastEvents);
+        TextView txtPooledEvents = v.findViewById(R.id.txtPooledEvents);
 
         MaterialButton btnEdit = v.findViewById(R.id.btnEdit);
         MaterialButton btnLogout = v.findViewById(R.id.btnLogout);
         MaterialButton btnDelete = v.findViewById(R.id.btnDelete);
+        MaterialButton btnEvents = v.findViewById(R.id.btnEvents);
 
         Bundle arguments = getArguments();
         if (arguments != null) {
@@ -89,6 +98,34 @@ public class ProfileSheet extends BottomSheetDialogFragment {
             } else {
                 btnDelete.setVisibility(View.GONE);
             }
+
+            if (arguments.getBoolean("showEventsButton")) {
+                btnEvents.setVisibility(View.VISIBLE);
+                btnEvents.setOnClickListener(x -> {
+                    if (mListener != null) {
+                        mListener.onEventsButtonClicked(userId);
+                    }
+                    dismiss();
+                });
+                String eventCount = arguments.getString("eventCount");
+                if (eventCount != null) {
+                    txtEventCount.setText("Events: " + eventCount);
+                    txtEventCount.setVisibility(View.VISIBLE);
+                } else {
+                    txtEventCount.setVisibility(View.GONE);
+                }
+            } else {
+                btnEvents.setVisibility(View.GONE);
+                txtEventCount.setVisibility(View.GONE);
+            }
+
+            if (arguments.getBoolean("showAttendeeInfo")) {
+                txtPastEvents.setVisibility(View.VISIBLE);
+                txtPooledEvents.setVisibility(View.VISIBLE);
+            } else {
+                txtPastEvents.setVisibility(View.GONE);
+                txtPooledEvents.setVisibility(View.GONE);
+            }
         } else {
             if (txtUserId != null) txtUserId.setText("User ID: 123456");
             if (txtFullName != null) txtFullName.setText("Full Name: Jane Duckerson");
@@ -97,6 +134,10 @@ public class ProfileSheet extends BottomSheetDialogFragment {
             if (txtPhone != null) txtPhone.setText("Phone Number: (780) 555-0123");
             if (txtAccountType != null) txtAccountType.setText("Account Type: Entrant");
             btnDelete.setVisibility(View.GONE);
+            btnEvents.setVisibility(View.GONE);
+            txtEventCount.setVisibility(View.GONE);
+            txtPastEvents.setVisibility(View.GONE);
+            txtPooledEvents.setVisibility(View.GONE);
         }
 
         if (btnEdit != null) {
@@ -109,10 +150,10 @@ public class ProfileSheet extends BottomSheetDialogFragment {
             btnLogout.setOnClickListener(x -> {
                 dismiss();
                 if (getActivity() != null) {
-                    android.content.Intent intent = new android.content.Intent(getActivity(), MainActivity.class);
-                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK |
-                            android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                            Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     intent.putExtra("startOn", "LOGIN");
                     startActivity(intent);
                     getActivity().finish();

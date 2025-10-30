@@ -47,7 +47,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                     new UserItem("Full Name", "User ID", null)
             ));
             adapter = new UserManagerAdapter(attendees);
-            adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true).show(getSupportFragmentManager(), "ProfileSheet"));
+            adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true, false, null, true).show(getSupportFragmentManager(), "ProfileSheet"));
             rv.setAdapter(adapter);
         }
     }
@@ -61,6 +61,11 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 break;
             }
         }
+    }
+
+    @Override
+    public void onEventsButtonClicked(String userId) {
+        // Not used for attendees
     }
 
     static class UserItem implements UserManagerAdapter.BaseUserItem {

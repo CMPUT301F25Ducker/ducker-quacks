@@ -77,7 +77,7 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
                     new UserItem("Admin 3", "admin003", null)
             ));
             adapter = new UserManagerAdapter(admins);
-            adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true).show(getSupportFragmentManager(), "ProfileSheet"));
+            adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true, false, null, false).show(getSupportFragmentManager(), "ProfileSheet"));
             rv.setAdapter(adapter);
         }
     }
@@ -91,6 +91,11 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
                 break;
             }
         }
+    }
+
+    @Override
+    public void onEventsButtonClicked(String userId) {
+        // No action needed for admins
     }
 
     private void clearAdminInputs() {

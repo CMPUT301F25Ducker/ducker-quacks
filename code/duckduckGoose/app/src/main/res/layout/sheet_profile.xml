@@ -101,6 +101,36 @@
                 android:text="Account Type: Entrant"
                 android:textColor="@color/fg_charcoal"
                 android:paddingVertical="4dp"/>
+
+            <TextView
+                android:id="@+id/txtEventCount"
+                style="@style/Text.Fresh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Events: 0"
+                android:textColor="@color/fg_charcoal"
+                android:paddingVertical="4dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/txtPastEvents"
+                style="@style/Text.Fresh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Past Events: 0"
+                android:textColor="@color/fg_charcoal"
+                android:paddingVertical="4dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/txtPooledEvents"
+                style="@style/Text.Fresh"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pooled Events: 0"
+                android:textColor="@color/fg_charcoal"
+                android:paddingVertical="4dp"
+                android:visibility="gone"/>
         </LinearLayout>
 
         <!-- Action Buttons -->
@@ -119,6 +149,18 @@
                 android:textColor="@color/fg_white"
                 android:background="@drawable/btn_delete"
                 app:backgroundTint="@null"
+                android:layout_marginBottom="12dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEvents"
+                style="@style/Text.Fresh.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Events"
+                android:textColor="@color/fg_white"
+                android:background="@drawable/btn_primary_green"
+                app:backgroundTint="@null"
+                android:visibility="gone"
                 android:layout_marginBottom="12dp"/>
 
             <com.google.android.material.button.MaterialButton
