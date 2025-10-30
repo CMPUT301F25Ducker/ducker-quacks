@@ -8,12 +8,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageManagerActivity extends AppCompatActivity {
+public class ImageManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_manager);
+
+        TopBarWiring.attachProfileSheet(this);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -28,5 +30,15 @@ public class ImageManagerActivity extends AppCompatActivity {
 
         ImageManagerAdapter adapter = new ImageManagerAdapter(images);
         rvImages.setAdapter(adapter);
+    }
+
+    @Override
+    public void onProfileDeleted(String userId) {
+        // Not applicable to Image Manager
+    }
+
+    @Override
+    public void onEventsButtonClicked(String userId) {
+        // Not applicable to Image Manager
     }
 }
