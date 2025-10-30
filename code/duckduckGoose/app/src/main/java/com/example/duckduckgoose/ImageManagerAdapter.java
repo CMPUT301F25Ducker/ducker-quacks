@@ -27,8 +27,8 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.imageView.setImageResource(images.get(position));
-        holder.imageLabel.setText("Image " + (position + 1));
+        holder.imgPreview.setImageResource(images.get(position));
+        holder.txtImageLabel.setText("Image " + (position + 1));
         holder.btnDelete.setOnClickListener(v -> {
             int currentPosition = holder.getAdapterPosition();
             if (currentPosition != RecyclerView.NO_POSITION) {
@@ -44,14 +44,14 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
-        TextView imageLabel;
+        ImageView imgPreview;
+        TextView txtImageLabel;
         View btnDelete;
 
         ViewHolder(View itemView) {
             super(itemView);
-            imageView = itemView.findViewById(R.id.imageView);
-            imageLabel = itemView.findViewById(R.id.imageLabel);
+            imgPreview = itemView.findViewById(R.id.imgPreview);
+            txtImageLabel = itemView.findViewById(R.id.txtImageLabel);
             btnDelete = itemView.findViewById(R.id.btnDeleteImage);
         }
     }

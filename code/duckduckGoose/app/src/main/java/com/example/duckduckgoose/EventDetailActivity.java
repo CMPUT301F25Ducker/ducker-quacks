@@ -12,9 +12,13 @@ import androidx.core.content.ContextCompat;
 
 public class EventDetailActivity extends AppCompatActivity {
 
+    //  CHANGE THIS TO MATCH MainActivity.LOGIN_MODE
+    private static final String LOGIN_MODE = "ORGANIZER";
+
     enum State { UNDECIDED, NOT_IN_CIRCLE, LEAVE_CIRCLE, DUCK, GOOSE }
 
     private State currentState = State.UNDECIDED;
+    private boolean isOrganizerMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +26,9 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // MUST inflate layout first so views exist
         setContentView(R.layout.activity_event_detail);
+
+        // Check if organizer mode
+        isOrganizerMode = LOGIN_MODE.equals("ORGANIZER");
 
         TopBarWiring.attachProfileSheet(this);
 
@@ -86,7 +93,62 @@ public class EventDetailActivity extends AppCompatActivity {
         currentState = (stateInt >= 0 && stateInt < State.values().length)
                 ? State.values()[stateInt]
                 : pickStateFromTitle(title);
-        applyState(currentState);
+        
+        if (isOrganizerMode) {
+            setupOrganizerButtons(title, dateText, open, deadline, cost, spots);
+        } else {
+            applyState(currentState);
+            setupEntrantButtons();
+        }
+    }
+
+    private void setupOrganizerButtons(String title, String dateText, long open, long deadline, String cost, String spots) {
+        // Hide entrant buttons
+        View areaButtons = findViewById(R.id.areaButtons);
+        View singleArea = findViewById(R.id.singleCtaArea);
+        View organizerArea = findViewById(R.id.organizerButtonsArea);
+        
+        if (areaButtons != null) areaButtons.setVisibility(View.GONE);
+        if (singleArea != null) singleArea.setVisibility(View.GONE);
+        if (organizerArea != null) organizerArea.setVisibility(View.VISIBLE);
+
+        // Setup organizer buttons
+        com.google.android.material.button.MaterialButton btnEdit = findViewById(R.id.btnEditEventDetail);
+        com.google.android.material.button.MaterialButton btnAttendeeManager = findViewById(R.id.btnAttendeeManagerDetail);
+        com.google.android.material.button.MaterialButton btnDelete = findViewById(R.id.btnDeleteEventDetail);
+
+        if (btnEdit != null) {
+            btnEdit.setOnClickListener(v -> {
+                Intent intent = new Intent(this, EventEditActivity.class);
+                intent.putExtra("mode", "edit");
+                intent.putExtra("title", title);
+                intent.putExtra("date", dateText);
+                intent.putExtra("cost", cost);
+                intent.putExtra("spots", spots);
+                startActivity(intent);
+            });
+        }
+
+        if (btnAttendeeManager != null) {
+            btnAttendeeManager.setOnClickListener(v -> {
+                Intent intent = new Intent(this, AttendeeManagerActivity.class);
+                intent.putExtra("eventTitle", title);
+                startActivity(intent);
+            });
+        }
+
+        if (btnDelete != null) {
+            btnDelete.setOnClickListener(v -> {
+                // In production, show confirmation dialog
+                finish();
+            });
+        }
+    }
+
+    private void setupEntrantButtons() {
+        // Hide organizer buttons
+        View organizerArea = findViewById(R.id.organizerButtonsArea);
+        if (organizerArea != null) organizerArea.setVisibility(View.GONE);
 
         // ---- wire Accept/Decline with navigation for DUCK -> Events tab ----
         View areaButtons = findViewById(R.id.areaButtons);

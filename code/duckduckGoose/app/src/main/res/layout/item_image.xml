@@ -1,36 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="12dp">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:scaleType="centerCrop" />
-
-        <ImageButton
-            android:id="@+id/btnDeleteImage"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="top|end"
-            android:background="@drawable/btn_delete"
-            android:src="@android:drawable/ic_menu_close_clear_cancel" />
-
-    </FrameLayout>
-
+    <!-- Image Label -->
     <TextView
-        android:id="@+id/imageLabel"
+        android:id="@+id/txtImageLabel"
+        style="@style/Text.Fresh.Body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Image 1"
+        android:textColor="@color/fg_charcoal"
+        android:textSize="16sp" />
+
+    <!-- Image Icon Placeholder -->
+    <ImageView
+        android:id="@+id/imgPreview"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginHorizontal="12dp"
+        android:background="@color/fg_silver"
+        android:contentDescription="Image preview"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_launcher_foreground" />
+
+    <!-- Delete Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDeleteImage"
+        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="4dp"
-        android:text="Image" />
-
+        android:backgroundTint="@color/fg_brick"
+        android:text="Delete"
+        android:textColor="@color/fg_white"
+        android:textSize="12sp"
+        app:cornerRadius="8dp" />
 </LinearLayout>

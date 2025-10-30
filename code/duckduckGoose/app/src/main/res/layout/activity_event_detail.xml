@@ -199,5 +199,44 @@
                 app:backgroundTint="@null" />
         </LinearLayout>
 
+        <!-- Organizer buttons area (Edit + Attendee Manager + Delete) -->
+        <LinearLayout
+            android:id="@+id/organizerButtonsArea"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteEventDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Delete Event"
+                android:textColor="@color/fg_white"
+                android:background="@drawable/btn_filled_brick"
+                android:layout_marginBottom="8dp"
+                app:backgroundTint="@null" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAttendeeManagerDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Attendee Manager"
+                android:textColor="@color/fg_white"
+                android:background="@drawable/btn_primary_green"
+                android:layout_marginBottom="8dp"
+                app:backgroundTint="@null" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEditEventDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Edit Event"
+                android:textColor="@color/fg_white"
+                android:background="@drawable/btn_primary_charcoal"
+                app:backgroundTint="@null" />
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

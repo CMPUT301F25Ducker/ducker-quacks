@@ -31,8 +31,6 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Sort dropdown -->
-
-    <!-- ONE recycler that shows section headers + cards -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSortMy"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"

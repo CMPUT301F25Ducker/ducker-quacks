@@ -22,8 +22,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    //  CHANGE THIS TO SWITCH BETWEEN ADMIN AND ENTRANT MODE
-    private static final String LOGIN_MODE = "ADMIN"; // Change to "ENTRANT" for entrant flow
+    //  CHANGE THIS TO SWITCH BETWEEN "ADMIN" AND "ENTRANT" AND "ORGANIZER" MODE
+    private static final String LOGIN_MODE = "ENTRANT";
 
     enum Screen { LOGIN, EVENT_LIST, MY_EVENTS, EVENT_DETAIL, NOTIFICATIONS }
     private Screen current = Screen.LOGIN;
@@ -36,7 +36,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void wireTopBarNav() {
         View btnMyEvents = findViewById(R.id.btnMyEvents);
-        if (btnMyEvents != null) btnMyEvents.setOnClickListener(v -> showMyEvents());
+        View btnNewEvent = findViewById(R.id.btnNewEvent);
+        
+        // Show/hide buttons based on current screen
+        if (current == Screen.MY_EVENTS) {
+            // On My Events page: hide "My Events" button, show "New Event" for organizers
+            if (btnMyEvents != null) btnMyEvents.setVisibility(View.GONE);
+            if (btnNewEvent != null) {
+                if (LOGIN_MODE.equals("ORGANIZER")) {
+                    btnNewEvent.setVisibility(View.VISIBLE);
+                    btnNewEvent.setOnClickListener(v -> {
+                        Intent intent = new Intent(this, EventEditActivity.class);
+                        intent.putExtra("mode", "create");
+                        startActivity(intent);
+                    });
+                } else {
+                    btnNewEvent.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            // On other pages: show "My Events" button, hide "New Event"
+            if (btnMyEvents != null) {
+                btnMyEvents.setVisibility(View.VISIBLE);
+                btnMyEvents.setOnClickListener(v -> showMyEvents());
+            }
+            if (btnNewEvent != null) btnNewEvent.setVisibility(View.GONE);
+        }
     }
 
     private void handleStartOnIntent() {
@@ -91,7 +116,13 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case MY_EVENTS:
-                        showEventList();
+                        // For Organizer mode, go back to login (logout)
+                        if (LOGIN_MODE.equals("ORGANIZER")) {
+                            showLogin();
+                        } else {
+                            // For Entrant mode, go to Event List
+                            showEventList();
+                        }
                         break;
 
                     case EVENT_DETAIL:
@@ -173,6 +204,9 @@ public class MainActivity extends AppCompatActivity {
             // Admin mode - go to Admin Console
             Intent intent = new Intent(this, AdminConsoleActivity.class);
             startActivity(intent);
+        } else if (LOGIN_MODE.equals("ORGANIZER")) {
+            // Organizer mode - go to My Events (Organizer's event list)
+            showMyEvents();
         } else {
             // Entrant mode - go to Event List
             showEventList();
@@ -221,18 +255,30 @@ public class MainActivity extends AppCompatActivity {
             drop.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, sorts));
         }
 
-        // One list with headers + cards
+        // Configure list based on mode
         RecyclerView rv = findViewById(R.id.rvMyEvents);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            List<Object> rows = new ArrayList<>();
-            rows.add("Pre-Registration Deadline");
-            rows.add(new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"));
-            rows.add(new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"));
-            rows.add("Past Registration Deadline");
-            rows.add(new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled"));
-            rows.add(new Event("Campus Fun Run", "Sep 28", "Sep 1", "Sep 20 (Closed)", "$10", "Filled"));
-            rv.setAdapter(new SectionedEventAdapter(rows));
+            
+            if (LOGIN_MODE.equals("ORGANIZER")) {
+                // Organizer view: Show Past Events and Current Events sections
+                List<Object> rows = new ArrayList<>();
+                rows.add("Past Events:");
+                rows.add(new Event("Example Event 1", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"));
+                rows.add("Current Events:");
+                rows.add(new Event("Example Event", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"));
+                rv.setAdapter(new OrganizerEventAdapter(rows, this));
+            } else {
+                // Entrant view: Show Pre-Registration and Past Registration sections
+                List<Object> rows = new ArrayList<>();
+                rows.add("Pre-Registration Deadline");
+                rows.add(new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"));
+                rows.add(new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"));
+                rows.add("Past Registration Deadline");
+                rows.add(new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled"));
+                rows.add(new Event("Campus Fun Run", "Sep 28", "Sep 1", "Sep 20 (Closed)", "$10", "Filled"));
+                rv.setAdapter(new SectionedEventAdapter(rows));
+            }
         }
     }
 
@@ -391,6 +437,71 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("state", state);
 
                     c.startActivity(intent);
+                });
+            }
+        }
+
+        @Override public int getItemCount(){ return rows.size(); }
+    }
+
+    /** Organizer-specific event adapter with click to edit */
+    static class OrganizerEventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private static final int TYPE_HEADER = 0, TYPE_EVENT = 1;
+        private final List<Object> rows;
+        private final MainActivity context;
+        
+        OrganizerEventAdapter(List<Object> r, MainActivity ctx){ 
+            rows = r; 
+            context = ctx;
+        }
+
+        @Override
+        public int getItemViewType(int pos) {
+            return (rows.get(pos) instanceof String) ? TYPE_HEADER : TYPE_EVENT;
+        }
+
+        @NonNull @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull android.view.ViewGroup p, int vType) {
+            if (vType == TYPE_HEADER) {
+                TextView tv = (TextView) android.view.LayoutInflater.from(p.getContext())
+                        .inflate(android.R.layout.simple_list_item_1, p, false);
+                tv.setTextSize(18);
+                tv.setPadding(24, 24, 24, 8);
+                tv.setTypeface(tv.getTypeface(), android.graphics.Typeface.BOLD);
+                return new RecyclerView.ViewHolder(tv) {};
+            } else {
+                View v = android.view.LayoutInflater.from(p.getContext())
+                        .inflate(R.layout.item_event_card, p, false);
+                return new EventVH(v);
+            }
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder h, int i) {
+            if (getItemViewType(i) == TYPE_HEADER) {
+                ((TextView) h.itemView).setText((String) rows.get(i));
+                h.itemView.setOnClickListener(null);
+            } else {
+                Event e = (Event) rows.get(i);
+                EventVH vh = (EventVH) h;
+
+                vh.title.setText(e.title);
+                vh.date.setText("Date (Maybe Reoccurring): " + e.date);
+                vh.open.setText("Registration Opens: " + e.open);
+                vh.deadline.setText("Registration Deadline: " + e.deadline);
+                vh.cost.setText("Cost: " + e.cost);
+                vh.spots.setText("Spots: " + e.spots);
+
+                // Click opens EventDetailsOrganizerActivity
+                vh.itemView.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, EventDetailsOrganizerActivity.class);
+                    intent.putExtra("title", e.title);
+                    intent.putExtra("dateText", e.date);
+                    intent.putExtra("open", e.open);
+                    intent.putExtra("deadline", e.deadline);
+                    intent.putExtra("cost", e.cost);
+                    intent.putExtra("spots", e.spots);
+                    context.startActivity(intent);
                 });
             }
         }

@@ -89,6 +89,12 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 btnEdit.setVisibility(View.GONE);
                 btnLogout.setVisibility(View.GONE);
                 btnDelete.setVisibility(View.VISIBLE);
+                
+                // Change button text to "Kick" if viewing attendee info
+                if (arguments.getBoolean("showAttendeeInfo")) {
+                    btnDelete.setText("Kick");
+                }
+                
                 btnDelete.setOnClickListener(x -> {
                     if (mListener != null) {
                         mListener.onProfileDeleted(userId);
@@ -120,6 +126,12 @@ public class ProfileSheet extends BottomSheetDialogFragment {
             }
 
             if (arguments.getBoolean("showAttendeeInfo")) {
+                // Show status instead of "Events"
+                String status = arguments.getString("eventCount"); // Using eventCount param for status
+                if (status != null) {
+                    txtEventCount.setText("Status: " + status);
+                    txtEventCount.setVisibility(View.VISIBLE);
+                }
                 txtPastEvents.setVisibility(View.VISIBLE);
                 txtPooledEvents.setVisibility(View.VISIBLE);
             } else {

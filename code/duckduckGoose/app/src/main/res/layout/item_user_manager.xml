@@ -3,25 +3,50 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="8dp"
+    android:layout_marginVertical="4dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp"
     app:strokeColor="@color/fg_charcoal"
     app:strokeWidth="1dp"
     app:cardBackgroundColor="@color/fg_white">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="12dp">
 
+        <!-- Checkbox -->
+        <CheckBox
+            android:id="@+id/checkboxAttendee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- User Icon -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgUserIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/person"
+            app:shapeAppearanceOverlay="@style/RoundedCornerImage"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/checkboxAttendee"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Text Content -->
         <LinearLayout
+            android:id="@+id/layoutTextContent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_marginStart="12dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imgUserIcon"
+            app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/txtUserName"
@@ -31,7 +56,7 @@
                 android:text="Full Name"
                 android:textColor="@color/fg_charcoal"
                 android:textSize="16sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/txtUserId"
@@ -41,27 +66,27 @@
                 android:text="User ID"
                 android:textColor="@color/fg_charcoal"
                 android:textSize="12sp"
-                android:layout_marginTop="2dp"/>
+                android:layout_marginTop="2dp" />
 
             <TextView
                 android:id="@+id/txtUserExtra"
                 style="@style/Text.Fresh"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Event Count"
-                android:textColor="@color/fg_charcoal"
+                android:text="Status"
+                android:textColor="@color/fg_green"
                 android:textSize="12sp"
-                android:layout_marginTop="2dp"
-                android:visibility="gone"/>
+                android:textStyle="bold"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
+        <!-- Hidden delete button for compatibility -->
         <ImageButton
             android:id="@+id/btnDeleteUser"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/person"
-            android:contentDescription="Delete"
-            android:tint="@color/fg_charcoal"/>
-    </LinearLayout>
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

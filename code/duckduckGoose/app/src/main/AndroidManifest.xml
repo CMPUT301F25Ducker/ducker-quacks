@@ -26,6 +26,9 @@
             android:name=".EventDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".EventEditActivity"
+            android:exported="false" />
+        <activity
             android:name=".AdminConsoleActivity"
             android:exported="false" />
         <activity
@@ -45,6 +48,9 @@
             android:exported="false" />
         <activity
             android:name=".EventDetailsAdminActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EventDetailsOrganizerActivity"
             android:exported="false" />
     </application>
 
