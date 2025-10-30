@@ -10,5 +10,5 @@ public class AppConfig {
      * CHANGE THIS TO SWITCH BETWEEN "ADMIN", "ENTRANT", AND "ORGANIZER" MODE
      * This controls the behavior across all activities in the app.
      */
-    public static final String LOGIN_MODE = "ORGANIZER";
+    public static final String LOGIN_MODE = "ADMIN";
 }
