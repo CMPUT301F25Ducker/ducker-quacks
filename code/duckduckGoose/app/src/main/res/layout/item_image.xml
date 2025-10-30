@@ -1,21 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="8dp">
 
-    <ImageView
-        android:id="@+id/imageView"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:scaleType="centerCrop" />
+        android:layout_height="wrap_content">
 
-    <ImageButton
-        android:id="@+id/btnDeleteImage"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_gravity="top|end"
-        android:background="@drawable/btn_delete"
-        android:src="@android:drawable/ic_menu_close_clear_cancel" />
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop" />
 
-</FrameLayout>
+        <ImageButton
+            android:id="@+id/btnDeleteImage"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/btn_delete"
+            android:src="@android:drawable/ic_menu_close_clear_cancel" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/imageLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="4dp"
+        android:text="Image" />
+
+</LinearLayout>
