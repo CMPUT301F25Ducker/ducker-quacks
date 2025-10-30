@@ -23,25 +23,28 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.duckduckgoose.EventDetailActivity"
+            android:name=".EventDetailActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.duckduckgoose.AdminConsoleActivity"
+            android:name=".AdminConsoleActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.duckduckgoose.EventManagerActivity"
+            android:name=".EventManagerActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.duckduckgoose.AttendeeManagerActivity"
+            android:name=".AttendeeManagerActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.duckduckgoose.ImageManagerActivity"
+            android:name=".ImageManagerActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.duckduckgoose.OrganizerManagerActivity"
+            android:name=".OrganizerManagerActivity"
             android:exported="false" />
         <activity
-            android:name="com.example.duckduckgoose.AdminManagerActivity"
+            android:name=".AdminManagerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".EventDetailsAdminActivity"
             android:exported="false" />
     </application>
 

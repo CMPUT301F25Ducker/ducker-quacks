@@ -12,9 +12,14 @@ import java.util.List;
 public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapter.ViewHolder> {
 
     private final List<MainActivity.Event> events;
+    private OnItemClickListener onItemClickListener;
 
     public EventManagerAdapter(List<MainActivity.Event> events) {
         this.events = events;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
     }
 
     @NonNull
@@ -36,8 +41,13 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
                 "Spots: " + event.spots;
         holder.txtDetails.setText(details);
 
-        holder.btnDelete.setOnClickListener(v -> {
-            // TODO: Implement delete functionality
+        holder.itemView.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                int currentPosition = holder.getAdapterPosition();
+                if (currentPosition != RecyclerView.NO_POSITION) {
+                    onItemClickListener.onItemClick(events.get(currentPosition));
+                }
+            }
         });
     }
 
@@ -49,13 +59,15 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtTitle;
         TextView txtDetails;
-        ImageButton btnDelete;
 
         ViewHolder(View itemView) {
             super(itemView);
             txtTitle = itemView.findViewById(R.id.txtEventTitle);
             txtDetails = itemView.findViewById(R.id.txtEventDetails);
-            btnDelete = itemView.findViewById(R.id.btnDeleteEvent);
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(MainActivity.Event event);
     }
 }

@@ -12,9 +12,14 @@ import java.util.List;
 public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.ViewHolder> {
 
     private final List<? extends BaseUserItem> users;
+    private OnItemClickListener onItemClickListener;
 
     public UserManagerAdapter(List<? extends BaseUserItem> users) {
         this.users = users;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
     }
 
     @NonNull
@@ -38,8 +43,13 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
             holder.txtExtra.setVisibility(View.GONE);
         }
 
-        holder.btnDelete.setOnClickListener(v -> {
-            // TODO: Implement delete functionality
+        holder.itemView.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                int currentPosition = holder.getAdapterPosition();
+                if (currentPosition != RecyclerView.NO_POSITION) {
+                    onItemClickListener.onItemClick(users.get(currentPosition));
+                }
+            }
         });
     }
 
@@ -65,5 +75,9 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
         String getName();
         String getUserId();
         String getExtra();
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(BaseUserItem user);
     }
 }

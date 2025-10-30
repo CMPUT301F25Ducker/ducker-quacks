@@ -8,10 +8,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class AttendeeManagerActivity extends AppCompatActivity {
+public class AttendeeManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
+
+    private List<UserItem> attendees;
+    private UserManagerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,21 +32,34 @@ public class AttendeeManagerActivity extends AppCompatActivity {
         AutoCompleteTextView dropFilter = findViewById(R.id.dropFilterAttendees);
         if (dropFilter != null) {
             String[] events = {"All Events", "City Swim Classic", "Downtown 5K Run", "Autumn Cycling Tour"};
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, events);
-            dropFilter.setAdapter(adapter);
+            ArrayAdapter<String> stringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, events);
+            dropFilter.setAdapter(stringAdapter);
         }
 
         RecyclerView rv = findViewById(R.id.rvAttendees);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            List<UserItem> attendees = Arrays.asList(
+            attendees = new ArrayList<>(Arrays.asList(
                     new UserItem("Full Name", "User ID", null),
                     new UserItem("Full Name", "User ID", null),
                     new UserItem("Full Name", "User ID", null),
                     new UserItem("Full Name", "User ID", null),
                     new UserItem("Full Name", "User ID", null)
-            );
-            rv.setAdapter(new UserManagerAdapter(attendees));
+            ));
+            adapter = new UserManagerAdapter(attendees);
+            adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true).show(getSupportFragmentManager(), "ProfileSheet"));
+            rv.setAdapter(adapter);
+        }
+    }
+
+    @Override
+    public void onProfileDeleted(String userId) {
+        for (int i = 0; i < attendees.size(); i++) {
+            if (attendees.get(i).getUserId().equals(userId)) {
+                attendees.remove(i);
+                adapter.notifyItemRemoved(i);
+                break;
+            }
         }
     }
 
