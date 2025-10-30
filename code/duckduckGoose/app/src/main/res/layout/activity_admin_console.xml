@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/fg_white">
+
+    <include layout="@layout/include_top_bar_admin"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Admin Console"
+                android:paddingTop="100dp"
+                android:textSize="32sp"
+                android:textColor="@color/fg_charcoal"
+                android:fontFamily="@font/itimregular"
+                android:layout_marginBottom="16dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnManageEvents"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Manage Events"
+                android:textColor="@color/fg_charcoal"
+                android:background="@drawable/btn_secondary_silver"
+                android:fontFamily="@font/itimregular"
+                android:layout_marginBottom="16dp"
+                android:paddingVertical="16dp"
+                android:textSize="18sp"
+                app:backgroundTint="@null"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnManageAttendees"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Manage Attendees"
+                android:textColor="@color/fg_charcoal"
+                android:background="@drawable/btn_secondary_silver"
+                android:fontFamily="@font/itimregular"
+                android:layout_marginBottom="16dp"
+                android:paddingVertical="16dp"
+                android:textSize="18sp"
+                app:backgroundTint="@null"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnManageImages"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Manage Images"
+                android:textColor="@color/fg_charcoal"
+                android:background="@drawable/btn_secondary_silver"
+                android:fontFamily="@font/itimregular"
+                android:layout_marginBottom="16dp"
+                android:paddingVertical="16dp"
+                android:textSize="18sp"
+                app:backgroundTint="@null"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnManageOrganizers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Manage Organizers"
+                android:textColor="@color/fg_charcoal"
+                android:background="@drawable/btn_secondary_silver"
+                android:fontFamily="@font/itimregular"
+                android:layout_marginBottom="16dp"
+                android:paddingVertical="16dp"
+                android:textSize="18sp"
+                app:backgroundTint="@null"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnManageAdminAccounts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Manage Admin Accounts"
+                android:textColor="@color/fg_charcoal"
+                android:background="@drawable/btn_secondary_silver"
+                android:fontFamily="@font/itimregular"
+                android:paddingVertical="16dp"
+                android:textSize="18sp"
+                app:backgroundTint="@null"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

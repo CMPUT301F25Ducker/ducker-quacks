@@ -25,6 +25,24 @@
         <activity
             android:name="com.example.duckduckgoose.EventDetailActivity"
             android:exported="false" />
+        <activity
+            android:name="com.example.duckduckgoose.AdminConsoleActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.duckduckgoose.EventManagerActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.duckduckgoose.AttendeeManagerActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.duckduckgoose.ImageManagerActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.duckduckgoose.OrganizerManagerActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.duckduckgoose.AdminManagerActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

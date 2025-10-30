@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:strokeColor="@color/fg_charcoal"
+    app:strokeWidth="1dp"
+    app:cardBackgroundColor="@color/fg_white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/txtImageName"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Image 1"
+                android:textColor="@color/fg_charcoal"
+                android:fontFamily="@font/itimregular"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imgPreview"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginVertical="12dp"
+            android:src="@drawable/poolphoto"
+            android:scaleType="centerInside"
+            android:contentDescription="Image Preview"
+            android:background="@drawable/bg_card_cream"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete"
+            android:textColor="@color/fg_white"
+            android:fontFamily="@font/itimregular"
+            android:background="@drawable/btn_filled_brick"
+            app:backgroundTint="@null"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

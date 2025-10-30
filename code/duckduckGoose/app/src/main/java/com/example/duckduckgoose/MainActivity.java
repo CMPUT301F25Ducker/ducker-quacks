@@ -22,6 +22,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    //  CHANGE THIS TO SWITCH BETWEEN ADMIN AND ENTRANT MODE
+    private static final String LOGIN_MODE = "ADMIN"; // Change to "ENTRANT" for entrant flow
+
     enum Screen { LOGIN, EVENT_LIST, MY_EVENTS, EVENT_DETAIL, NOTIFICATIONS }
     private Screen current = Screen.LOGIN;
 
@@ -157,9 +160,23 @@ public class MainActivity extends AppCompatActivity {
             btnCreateAccount.setVisibility(View.VISIBLE);
         });
 
-        // continue to app
-        btnSheetSignIn.setOnClickListener(v -> showEventList());
-        btnCreateSubmit.setOnClickListener(v -> showEventList());
+        // 🔐 LOGIN ROUTING - Based on LOGIN_MODE
+        btnSheetSignIn.setOnClickListener(v -> handleLogin());
+        btnCreateSubmit.setOnClickListener(v -> handleLogin());
+    }
+
+    /**
+     * Route user to appropriate screen based on LOGIN_MODE
+     */
+    private void handleLogin() {
+        if (LOGIN_MODE.equals("ADMIN")) {
+            // Admin mode - go to Admin Console
+            Intent intent = new Intent(this, AdminConsoleActivity.class);
+            startActivity(intent);
+        } else {
+            // Entrant mode - go to Event List
+            showEventList();
+        }
     }
 
     private void showEventList() {
