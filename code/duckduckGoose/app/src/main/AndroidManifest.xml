@@ -38,6 +38,9 @@
             android:name=".AttendeeManagerActivity"
             android:exported="false" />
         <activity
+            android:name=".EntrantManagerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ImageManagerActivity"
             android:exported="false" />
         <activity

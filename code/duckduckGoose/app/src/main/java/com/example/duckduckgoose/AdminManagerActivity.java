@@ -19,7 +19,7 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
     private List<UserItem> admins;
     private UserManagerAdapter adapter;
 
-    private TextInputEditText edtUserId, edtFullName, edtAge, edtEmail, edtPhone;
+    private TextInputEditText edtUserId, edtFullName, edtAge, edtEmail, edtPhone, edtPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +39,7 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         edtAge = findViewById(R.id.edtAdminAge);
         edtEmail = findViewById(R.id.edtAdminEmail);
         edtPhone = findViewById(R.id.edtAdminPhone);
+        edtPassword = findViewById(R.id.edtAdminPassword);
 
         MaterialButton btnAddAdmin = findViewById(R.id.btnAddAdmin);
         if (btnAddAdmin != null) {
@@ -58,12 +59,25 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
             btnAdminAdd.setOnClickListener(v -> {
                 String userId = edtUserId.getText().toString();
                 String fullName = edtFullName.getText().toString();
+                String password = edtPassword.getText().toString();
 
-                if (!userId.isEmpty() && !fullName.isEmpty()) {
+                if (!userId.isEmpty() && !fullName.isEmpty() && !password.isEmpty()) {
+                    // In production, you would hash the password and store it securely
                     admins.add(new UserItem(fullName, userId, null));
                     adapter.notifyItemInserted(admins.size() - 1);
                     clearAdminInputs();
                     addAdminSheetContainer.setVisibility(View.GONE);
+                } else {
+                    // Show error message
+                    if (password.isEmpty()) {
+                        edtPassword.setError("Password is required");
+                    }
+                    if (fullName.isEmpty()) {
+                        edtFullName.setError("Full name is required");
+                    }
+                    if (userId.isEmpty()) {
+                        edtUserId.setError("User ID is required");
+                    }
                 }
             });
         }
@@ -76,7 +90,7 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
                     new UserItem("Admin 2", "admin002", null),
                     new UserItem("Admin 3", "admin003", null)
             ));
-            adapter = new UserManagerAdapter(admins);
+            adapter = new UserManagerAdapter(admins, false); // false = hide checkboxes
             adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true, false, null, false).show(getSupportFragmentManager(), "ProfileSheet"));
             rv.setAdapter(adapter);
         }
@@ -104,6 +118,7 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         edtAge.setText("");
         edtEmail.setText("");
         edtPhone.setText("");
+        edtPassword.setText("");
     }
 
     static class UserItem implements UserManagerAdapter.BaseUserItem {

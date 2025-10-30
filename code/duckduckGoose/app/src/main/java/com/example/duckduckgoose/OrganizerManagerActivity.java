@@ -47,7 +47,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
                     new UserItem("David", "user101", "1"),
                     new UserItem("Eve", "user112", "9")
             ));
-            adapter = new UserManagerAdapter(organizers);
+            adapter = new UserManagerAdapter(organizers, false); // false = hide checkboxes
             adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true, true, ((UserItem) user).extra, false).show(getSupportFragmentManager(), "ProfileSheet"));
             rv.setAdapter(adapter);
         }

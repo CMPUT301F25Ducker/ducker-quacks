@@ -22,9 +22,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    //  CHANGE THIS TO SWITCH BETWEEN "ADMIN" AND "ENTRANT" AND "ORGANIZER" MODE
-    private static final String LOGIN_MODE = "ENTRANT";
-
     enum Screen { LOGIN, EVENT_LIST, MY_EVENTS, EVENT_DETAIL, NOTIFICATIONS }
     private Screen current = Screen.LOGIN;
 
@@ -43,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             // On My Events page: hide "My Events" button, show "New Event" for organizers
             if (btnMyEvents != null) btnMyEvents.setVisibility(View.GONE);
             if (btnNewEvent != null) {
-                if (LOGIN_MODE.equals("ORGANIZER")) {
+                if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
                     btnNewEvent.setVisibility(View.VISIBLE);
                     btnNewEvent.setOnClickListener(v -> {
                         Intent intent = new Intent(this, EventEditActivity.class);
@@ -117,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case MY_EVENTS:
                         // For Organizer mode, go back to login (logout)
-                        if (LOGIN_MODE.equals("ORGANIZER")) {
+                        if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
                             showLogin();
                         } else {
                             // For Entrant mode, go to Event List
@@ -200,11 +197,11 @@ public class MainActivity extends AppCompatActivity {
      * Route user to appropriate screen based on LOGIN_MODE
      */
     private void handleLogin() {
-        if (LOGIN_MODE.equals("ADMIN")) {
+        if (AppConfig.LOGIN_MODE.equals("ADMIN")) {
             // Admin mode - go to Admin Console
             Intent intent = new Intent(this, AdminConsoleActivity.class);
             startActivity(intent);
-        } else if (LOGIN_MODE.equals("ORGANIZER")) {
+        } else if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
             // Organizer mode - go to My Events (Organizer's event list)
             showMyEvents();
         } else {
@@ -260,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
             
-            if (LOGIN_MODE.equals("ORGANIZER")) {
+            if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
                 // Organizer view: Show Past Events and Current Events sections
                 List<Object> rows = new ArrayList<>();
                 rows.add("Past Events:");

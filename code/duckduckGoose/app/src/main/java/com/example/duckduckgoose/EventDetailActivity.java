@@ -12,9 +12,6 @@ import androidx.core.content.ContextCompat;
 
 public class EventDetailActivity extends AppCompatActivity {
 
-    //  CHANGE THIS TO MATCH MainActivity.LOGIN_MODE
-    private static final String LOGIN_MODE = "ORGANIZER";
-
     enum State { UNDECIDED, NOT_IN_CIRCLE, LEAVE_CIRCLE, DUCK, GOOSE }
 
     private State currentState = State.UNDECIDED;
@@ -28,7 +25,7 @@ public class EventDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_event_detail);
 
         // Check if organizer mode
-        isOrganizerMode = LOGIN_MODE.equals("ORGANIZER");
+        isOrganizerMode = AppConfig.LOGIN_MODE.equals("ORGANIZER");
 
         TopBarWiring.attachProfileSheet(this);
 

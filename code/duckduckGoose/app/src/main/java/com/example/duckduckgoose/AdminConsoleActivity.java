@@ -33,7 +33,7 @@ public class AdminConsoleActivity extends AppCompatActivity {
                 startActivity(new Intent(this, EventManagerActivity.class)));
 
         btnManageAttendees.setOnClickListener(v ->
-                startActivity(new Intent(this, AttendeeManagerActivity.class)));
+                startActivity(new Intent(this, EntrantManagerActivity.class)));
 
         btnManageImages.setOnClickListener(v ->
                 startActivity(new Intent(this, ImageManagerActivity.class)));

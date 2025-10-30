@@ -13,9 +13,15 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
 
     private final List<? extends BaseUserItem> users;
     private OnItemClickListener onItemClickListener;
+    private final boolean showCheckboxes;
 
     public UserManagerAdapter(List<? extends BaseUserItem> users) {
+        this(users, true); // Default: show checkboxes
+    }
+
+    public UserManagerAdapter(List<? extends BaseUserItem> users, boolean showCheckboxes) {
         this.users = users;
+        this.showCheckboxes = showCheckboxes;
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -35,6 +41,11 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
         BaseUserItem user = users.get(position);
         holder.txtName.setText(user.getName());
         holder.txtUserId.setText(user.getUserId());
+
+        // Show/hide checkbox based on adapter configuration
+        if (holder.checkboxAttendee != null) {
+            holder.checkboxAttendee.setVisibility(showCheckboxes ? View.VISIBLE : View.GONE);
+        }
 
         if (user.getExtra() != null && !user.getExtra().isEmpty()) {
             holder.txtExtra.setVisibility(View.VISIBLE);
@@ -61,6 +72,7 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtName, txtUserId, txtExtra;
         ImageButton btnDelete;
+        android.widget.CheckBox checkboxAttendee;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -68,6 +80,7 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
             txtUserId = itemView.findViewById(R.id.txtUserId);
             txtExtra = itemView.findViewById(R.id.txtUserExtra);
             btnDelete = itemView.findViewById(R.id.btnDeleteUser);
+            checkboxAttendee = itemView.findViewById(R.id.checkboxAttendee);
         }
     }
 

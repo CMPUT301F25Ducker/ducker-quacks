@@ -20,7 +20,7 @@ public class ImageManagerActivity extends AppCompatActivity implements ProfileSh
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         RecyclerView rvImages = findViewById(R.id.rvImages);
-        rvImages.setLayoutManager(new GridLayoutManager(this, 2));
+        rvImages.setLayoutManager(new GridLayoutManager(this, 2)); // 2 columns grid
 
         List<Integer> images = new ArrayList<>();
         images.add(android.R.drawable.ic_menu_gallery);
