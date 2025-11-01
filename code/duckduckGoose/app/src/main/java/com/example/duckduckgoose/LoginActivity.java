@@ -334,7 +334,7 @@ public class LoginActivity extends AppCompatActivity {
         // save to firestore under users collection with uid as document ID
         db.collection("users").document(uid)
                 .set(userData)
-                .addOnSuccessListener(aVoid -> {
+                .addOnSuccessListener(() -> {
                     Toast.makeText(this, "Account created successfully!",
                             Toast.LENGTH_SHORT).show();
                     // set login mode based on account type and navigate
