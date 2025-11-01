@@ -136,8 +136,8 @@ public class LoginActivity extends AppCompatActivity {
         btnSheetCancel2.setOnClickListener(v -> closeSheets());
 
         // Login actions
-        btnSheetSignIn.setOnClickListener(v -> handleSignIn());
-        btnCreateSubmit.setOnClickListener(v -> handleCreateAccount());
+        btnSheetSignIn.setOnClickListener(this::handleSignIn);
+        btnCreateSubmit.setOnClickListener(this::handleCreateAccount);
     }
 
     private void setupBackPress() {
