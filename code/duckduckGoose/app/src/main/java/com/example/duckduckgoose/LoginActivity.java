@@ -302,6 +302,7 @@ public class LoginActivity extends AppCompatActivity {
                             saveUserToFirestore(user.getUid(), accountType, userId, fullName, age, email, phone);
                         } else {
                             btnCreateSubmit.setEnabled(true);
+                            btnCreateSubmit.setText("Create Account");
                             Toast.makeText(this, "Account created but user data missing",
                                     Toast.LENGTH_SHORT).show();
                         }
