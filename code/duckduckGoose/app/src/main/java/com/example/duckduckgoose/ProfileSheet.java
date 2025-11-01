@@ -10,8 +10,15 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
+
+import com.example.duckduckgoose.user.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileSheet extends BottomSheetDialogFragment {
 
@@ -21,6 +28,12 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     private OnProfileInteractionListener mListener;
+
+    private FirebaseFirestore db;
+    private FirebaseAuth auth;
+
+    private User u;
+
 
     public static ProfileSheet newInstance() {
         return new ProfileSheet();
@@ -74,6 +87,21 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         MaterialButton btnLogout = v.findViewById(R.id.btnLogout);
         MaterialButton btnDelete = v.findViewById(R.id.btnDelete);
         MaterialButton btnEvents = v.findViewById(R.id.btnEvents);
+
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        db.collection("users").document(auth.getCurrentUser().getUid()).get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    u = documentSnapshot.toObject(User.class);
+                }
+                else {
+                    android.util.Log.w("Firestore", "no user found");
+                }
+            })
+            .addOnFailureListener(e -> {
+                android.util.Log.e("Firestore", "error fetching user", e);
+        });
 
         Bundle arguments = getArguments();
         if (arguments != null) {
@@ -139,17 +167,29 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 txtPooledEvents.setVisibility(View.GONE);
             }
         } else {
-            if (txtUserId != null) txtUserId.setText("User ID: 123456");
-            if (txtFullName != null) txtFullName.setText("Full Name: Jane Duckerson");
-            if (txtAge != null) txtAge.setText("Age: 22");
-            if (txtEmail != null) txtEmail.setText("Email: jane@example.com");
-            if (txtPhone != null) txtPhone.setText("Phone Number: (780) 555-0123");
-            if (txtAccountType != null) txtAccountType.setText("Account Type: Entrant");
-            btnDelete.setVisibility(View.GONE);
-            btnEvents.setVisibility(View.GONE);
-            txtEventCount.setVisibility(View.GONE);
-            txtPastEvents.setVisibility(View.GONE);
-            txtPooledEvents.setVisibility(View.GONE);
+            db.collection("users").document(auth.getCurrentUser().getUid()).get()
+                .addOnSuccessListener(ds -> {
+                    User me = ds.toObject(User.class);
+                    if (me != null) {
+                        bindSelfProfile(v, me);
+                    } else {
+                        android.util.Log.w("Firestore", "User doc exists? " + ds.exists() + " but toObject() returned null");
+                    }
+                })
+                .addOnFailureListener(e ->
+                        android.util.Log.e("Firestore", "error fetching user", e)
+                );
+//            if (txtUserId != null) txtUserId.setText("User ID: " + u.userId);
+//            if (txtFullName != null) txtFullName.setText("Full Name: " + u.fullName);
+//            if (txtAge != null) txtAge.setText("Age: " + String.valueOf(u.age));
+//            if (txtEmail != null) txtEmail.setText("Email: " + u.email);
+//            if (txtPhone != null) txtPhone.setText("Phone Number: " + u.phone);
+//            if (txtAccountType != null) txtAccountType.setText("Account Type: " + u.accountType);
+//            btnDelete.setVisibility(View.GONE);
+//            btnEvents.setVisibility(View.GONE);
+//            txtEventCount.setVisibility(View.GONE);
+//            txtPastEvents.setVisibility(View.GONE);
+//            txtPooledEvents.setVisibility(View.GONE);
         }
 
         if (btnEdit != null) {
@@ -161,8 +201,9 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         if (btnLogout != null) {
             btnLogout.setOnClickListener(x -> {
                 dismiss();
+                auth.signOut();
                 if (getActivity() != null) {
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    Intent intent = new Intent(getActivity(), LoginActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                             Intent.FLAG_ACTIVITY_NEW_TASK |
                             Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -178,4 +219,35 @@ public class ProfileSheet extends BottomSheetDialogFragment {
             btnClose.setOnClickListener(x -> dismiss());
         }
     }
+
+    private void bindSelfProfile(@NonNull View v, @NonNull User u) {
+        TextView txtUserId      = v.findViewById(R.id.txtUserId);
+        TextView txtFullName    = v.findViewById(R.id.txtFullName);
+        TextView txtAge         = v.findViewById(R.id.txtAge);
+        TextView txtEmail       = v.findViewById(R.id.txtEmail);
+        TextView txtPhone       = v.findViewById(R.id.txtPhone);
+        TextView txtAccountType = v.findViewById(R.id.txtAccountType);
+        TextView txtEventCount  = v.findViewById(R.id.txtEventCount);
+        TextView txtPastEvents  = v.findViewById(R.id.txtPastEvents);
+        TextView txtPooledEvents= v.findViewById(R.id.txtPooledEvents);
+        MaterialButton btnDelete= v.findViewById(R.id.btnDelete);
+        MaterialButton btnEvents= v.findViewById(R.id.btnEvents);
+
+        if (txtUserId != null)      txtUserId.setText("User ID: " + safe(u.userId));
+        if (txtFullName != null)    txtFullName.setText("Full Name: " + safe(u.fullName));
+        if (txtAge != null)         txtAge.setText("Age: " + (u.age == null ? "—" : String.valueOf(u.age)));
+        if (txtEmail != null)       txtEmail.setText("Email: " + safe(u.email));
+        if (txtPhone != null)       txtPhone.setText("Phone Number: " + safe(u.phone));
+        if (txtAccountType != null) txtAccountType.setText("Account Type: " + safe(u.accountType));
+
+        // Self view: hide things that are only for "other user" or attendees
+        if (btnDelete != null) btnDelete.setVisibility(View.GONE);
+        if (btnEvents != null) btnEvents.setVisibility(View.GONE);
+        if (txtEventCount != null)  txtEventCount.setVisibility(View.GONE);
+        if (txtPastEvents != null)  txtPastEvents.setVisibility(View.GONE);
+        if (txtPooledEvents != null)txtPooledEvents.setVisibility(View.GONE);
+    }
+
+
+    private String safe(String s) { return s == null ? "—" : s; }
 }
