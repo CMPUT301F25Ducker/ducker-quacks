@@ -1,19 +1,20 @@
 package com.example.duckduckgoose;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowInsetsController;
 import android.widget.TextView;
 import android.widget.ArrayAdapter;
 
+import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
 import java.util.ArrayList;
@@ -22,19 +23,13 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    enum Screen { LOGIN, EVENT_LIST, MY_EVENTS, EVENT_DETAIL, NOTIFICATIONS }
-    private Screen current = Screen.LOGIN;
-
-    // Login-only views (valid only when LOGIN layout is set)
-    private View btnSignIn, btnCreateAccount;
-    private CardView sheetSignIn, sheetCreate;
-    private TextView btnSheetCancel1, btnSheetCancel2;
-    private MaterialButton btnSheetSignIn, btnCreateSubmit;
+    enum Screen { EVENT_LIST, MY_EVENTS, EVENT_DETAIL, NOTIFICATIONS }
+    private Screen current = Screen.EVENT_LIST;
 
     private void wireTopBarNav() {
         View btnMyEvents = findViewById(R.id.btnMyEvents);
         View btnNewEvent = findViewById(R.id.btnNewEvent);
-        
+
         // Show/hide buttons based on current screen
         if (current == Screen.MY_EVENTS) {
             // On My Events page: hide "My Events" button, show "New Event" for organizers
@@ -65,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
         String start = getIntent().getStringExtra("startOn");
         if (start == null) return;
         switch (start) {
-            case "LOGIN":      showLogin();     break;
             case "EVENT_LIST": showEventList(); break;
             case "MY_EVENTS":  showMyEvents();  break;
         }
@@ -81,41 +75,39 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
+        WindowInsetsController controller = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            controller = getWindow().getInsetsController();
+        }
+        if (controller != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                controller.setSystemBarsAppearance(
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                );
+            }
+        }
         super.onCreate(savedInstanceState);
-        showLogin();
+
+        // Default to event list, but check intent for specific start screen
+        showEventList();
         handleStartOnIntent();
 
         // Intercept system back
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override public void handleOnBackPressed() {
+            @Override
+            public void handleOnBackPressed() {
                 switch (current) {
-                    case LOGIN:
-                        // If a sheet is open, close it instead of exiting
-                        if (sheetSignIn != null && sheetSignIn.getVisibility() == View.VISIBLE) {
-                            sheetSignIn.setVisibility(View.GONE);
-                            if (btnSignIn != null) btnSignIn.setVisibility(View.VISIBLE);
-                            if (btnCreateAccount != null) btnCreateAccount.setVisibility(View.VISIBLE);
-                            return;
-                        }
-                        if (sheetCreate != null && sheetCreate.getVisibility() == View.VISIBLE) {
-                            sheetCreate.setVisibility(View.GONE);
-                            if (btnSignIn != null) btnSignIn.setVisibility(View.VISIBLE);
-                            if (btnCreateAccount != null) btnCreateAccount.setVisibility(View.VISIBLE);
-                            return;
-                        }
-                        // Nothing to collapse → allow default (exit)
-                        setEnabled(false);
-                        onBackPressed(); // let system finish activity
-                        break;
-
                     case EVENT_LIST:
-                        showLogin();
+                        // Go back to login (logout)
+                        goToLogin();
                         break;
 
                     case MY_EVENTS:
                         // For Organizer mode, go back to login (logout)
                         if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
-                            showLogin();
+                            goToLogin();
                         } else {
                             // For Entrant mode, go to Event List
                             showEventList();
@@ -124,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case EVENT_DETAIL:
                     case NOTIFICATIONS:
-                        // go back to event list by default
+                        // Go back to event list by default
                         showEventList();
                         break;
                 }
@@ -132,83 +124,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void goToLogin() {
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
     /* ----------------- Screens ----------------- */
-
-    private void showLogin() {
-        setContentView(R.layout.activity_login);
-        current = Screen.LOGIN;
-        TopBarWiring.attachProfileSheet(this);
-
-        btnSignIn = findViewById(R.id.btnSignIn);
-        btnCreateAccount = findViewById(R.id.btnCreateAccount);
-
-        sheetSignIn = findViewById(R.id.sheetSignIn);
-        sheetCreate = findViewById(R.id.sheetCreate);
-        btnSheetCancel1 = findViewById(R.id.btnSheetCancel1);
-        btnSheetCancel2 = findViewById(R.id.btnSheetCancel2);
-        btnSheetSignIn = findViewById(R.id.btnSheetSignIn);
-        btnCreateSubmit = findViewById(R.id.btnCreateSubmit);
-
-        // 🔽 Account Type dropdown for the Create Account sheet
-        MaterialAutoCompleteTextView acct = findViewById(R.id.edtAccountType);
-        if (acct != null) {
-            ArrayAdapter<String> acctAdapter = new ArrayAdapter<>(
-                    this,
-                    android.R.layout.simple_list_item_1,
-                    getResources().getStringArray(R.array.account_types)
-            );
-            acct.setAdapter(acctAdapter);
-            // Optional: preselect the first item
-            // acct.setText(acctAdapter.getItem(0), false);
-        }
-
-        // open sheets
-        btnSignIn.setOnClickListener(v -> {
-            sheetSignIn.setVisibility(View.VISIBLE);
-            sheetCreate.setVisibility(View.GONE);
-            btnSignIn.setVisibility(View.GONE);
-            btnCreateAccount.setVisibility(View.GONE);
-        });
-        btnCreateAccount.setOnClickListener(v -> {
-            sheetCreate.setVisibility(View.VISIBLE);
-            sheetSignIn.setVisibility(View.GONE);
-            btnSignIn.setVisibility(View.GONE);
-            btnCreateAccount.setVisibility(View.GONE);
-        });
-
-        // close sheets
-        btnSheetCancel1.setOnClickListener(v -> {
-            sheetSignIn.setVisibility(View.GONE);
-            btnSignIn.setVisibility(View.VISIBLE);
-            btnCreateAccount.setVisibility(View.VISIBLE);
-        });
-        btnSheetCancel2.setOnClickListener(v -> {
-            sheetCreate.setVisibility(View.GONE);
-            btnSignIn.setVisibility(View.VISIBLE);
-            btnCreateAccount.setVisibility(View.VISIBLE);
-        });
-
-        // 🔐 LOGIN ROUTING - Based on LOGIN_MODE
-        btnSheetSignIn.setOnClickListener(v -> handleLogin());
-        btnCreateSubmit.setOnClickListener(v -> handleLogin());
-    }
-
-    /**
-     * Route user to appropriate screen based on LOGIN_MODE
-     */
-    private void handleLogin() {
-        if (AppConfig.LOGIN_MODE.equals("ADMIN")) {
-            // Admin mode - go to Admin Console
-            Intent intent = new Intent(this, AdminConsoleActivity.class);
-            startActivity(intent);
-        } else if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
-            // Organizer mode - go to My Events (Organizer's event list)
-            showMyEvents();
-        } else {
-            // Entrant mode - go to Event List
-            showEventList();
-        }
-    }
 
     private void showEventList() {
         setContentView(R.layout.activity_event_list);
@@ -216,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
         wireTopBarNav();
         TopBarWiring.attachProfileSheet(this);
 
-        // top bar nav example (optional):
+        // Top bar nav
         View btnMyEvents = findViewById(R.id.btnMyEvents);
         if (btnMyEvents != null) btnMyEvents.setOnClickListener(v -> showMyEvents());
 
@@ -256,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView rv = findViewById(R.id.rvMyEvents);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            
+
             if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
                 // Organizer view: Show Past Events and Current Events sections
                 List<Object> rows = new ArrayList<>();
@@ -446,9 +369,9 @@ public class MainActivity extends AppCompatActivity {
         private static final int TYPE_HEADER = 0, TYPE_EVENT = 1;
         private final List<Object> rows;
         private final MainActivity context;
-        
-        OrganizerEventAdapter(List<Object> r, MainActivity ctx){ 
-            rows = r; 
+
+        OrganizerEventAdapter(List<Object> r, MainActivity ctx){
+            rows = r;
             context = ctx;
         }
 
