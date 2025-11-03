@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -18,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.CollectionReference;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,7 +38,9 @@ public class EventEditActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
     
     private String mode; // "create" or "edit"
-    
+    private FirebaseFirestore db;
+    private CollectionReference eventsRef;
+
     // Form fields
     private EditText edtEventName;
     private EditText edtSpots;
@@ -71,6 +76,9 @@ public class EventEditActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_edit);
+
+        db = FirebaseFirestore.getInstance();
+        eventsRef = db.collection("events");
 
         // Initialize image picker launcher
         imagePickerLauncher = registerForActivityResult(
@@ -256,9 +264,49 @@ public class EventEditActivity extends AppCompatActivity {
 
     private void createEvent() {
         if (validateForm()) {
+            storeInDB();
             Toast.makeText(this, "Event created successfully!", Toast.LENGTH_SHORT).show();
             finish();
         }
+    }
+
+    private void storeInDB() {
+        String name = edtEventName.getText().toString().trim();
+        String spots = edtSpots.getText().toString().trim();
+        String cost = edtCost.getText().toString().trim();
+        String eventDateStr = txtEventDate.getText().toString().trim();
+        String regOpensStr = txtRegOpens.getText().toString().trim();
+        String regClosesStr = txtRegCloses.getText().toString().trim();
+        boolean geolocation = chkGeolocation.isChecked();
+
+        String newEventId = eventsRef.document().getId();
+
+        Event newEvent = new Event(
+                newEventId,
+                name,
+                eventDateStr,
+                regOpensStr,
+                regClosesStr,
+                spots,
+                cost,
+                geolocation,
+                imagePaths
+        );
+
+        eventsRef.document(newEventId)
+        .set(newEvent)
+        .addOnSuccessListener(aVoid -> {
+            // 4. Handle Success
+            Toast.makeText(this, "Event \"" + name + "\" created successfully!", Toast.LENGTH_LONG).show();
+            // Go back to the previous screen (e.g., EventManagerActivity)
+            finish();
+        })
+        .addOnFailureListener(e -> {
+            // 4. Handle Failure
+            Toast.makeText(this, "Error: Failed to create event. " + e.getMessage(), Toast.LENGTH_LONG).show();
+            // Log the error for debugging
+            Log.e("EventEditActivity", "Error writing document", e);
+        });
     }
 
     private void saveEvent() {
