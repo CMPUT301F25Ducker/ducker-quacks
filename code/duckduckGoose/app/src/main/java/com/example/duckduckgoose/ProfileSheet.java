@@ -194,6 +194,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         if (btnEdit != null) {
             btnEdit.setOnClickListener(x -> {
                 EditProfileSheet.newInstance().show(getParentFragmentManager(), "EditProfileSheet");
+                dismiss();
             });
         }
 
@@ -245,15 +246,12 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         }
         String uid = auth.getCurrentUser().getUid();
 
-        // 1) Delete Firestore user doc
         db.collection("users").document(uid).delete()
                 .addOnSuccessListener(v -> {
-                    // 2) Delete Firebase Auth user
                     auth.getCurrentUser().delete()
                             .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(requireContext(), "Account deleted.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), "Account deleted :(", Toast.LENGTH_SHORT).show();
                                 dismiss();
-                                // 3) Sign out (defensive) and go to Login
                                 auth.signOut();
                                 if (getActivity() != null) {
                                     Intent intent = new Intent(getActivity(), LoginActivity.class);
