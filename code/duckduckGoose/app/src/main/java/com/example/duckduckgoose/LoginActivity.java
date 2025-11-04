@@ -136,8 +136,8 @@ public class LoginActivity extends AppCompatActivity {
         btnSheetCancel2.setOnClickListener(v -> closeSheets());
 
         // Login actions
-        btnSheetSignIn.setOnClickListener(this::handleSignIn);
-        btnCreateSubmit.setOnClickListener(this::handleCreateAccount);
+        btnSheetSignIn.setOnClickListener(v -> handleSignIn());
+        btnCreateSubmit.setOnClickListener(v -> handleCreateAccount());
     }
 
     private void setupBackPress() {
@@ -334,7 +334,7 @@ public class LoginActivity extends AppCompatActivity {
         // save to firestore under users collection with uid as document ID
         db.collection("users").document(uid)
                 .set(userData)
-                .addOnSuccessListener(() -> {
+                .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Account created successfully!",
                             Toast.LENGTH_SHORT).show();
                     // set login mode based on account type and navigate
