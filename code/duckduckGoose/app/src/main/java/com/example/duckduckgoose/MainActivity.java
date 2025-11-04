@@ -75,6 +75,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+
+        // Default to event list, but check intent for specific start screen
+
+
         EdgeToEdge.enable(this);
         WindowInsetsController controller = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -88,9 +94,6 @@ public class MainActivity extends AppCompatActivity {
                 );
             }
         }
-        super.onCreate(savedInstanceState);
-
-        // Default to event list, but check intent for specific start screen
         showEventList();
         handleStartOnIntent();
 
