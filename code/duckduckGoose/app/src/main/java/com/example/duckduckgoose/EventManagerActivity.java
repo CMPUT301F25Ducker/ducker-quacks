@@ -21,7 +21,7 @@ import java.util.List;
 public class EventManagerActivity extends AppCompatActivity {
 
     private static final int EVENT_DETAILS_REQUEST = 1;
-    private List<MainActivity.Event> events;
+    private List<Event> events;
     private EventManagerAdapter adapter;
 
     @Override
@@ -64,14 +64,14 @@ public class EventManagerActivity extends AppCompatActivity {
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
             events = new ArrayList<>(Arrays.asList(
-                    new MainActivity.Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"),
-                    new MainActivity.Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"),
-                    new MainActivity.Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled")
+//                    new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"),
+//                    new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"),
+//                    new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled")
             ));
             adapter = new EventManagerAdapter(events);
             adapter.setOnItemClickListener(event -> {
                 Intent intent = new Intent(EventManagerActivity.this, EventDetailsAdminActivity.class);
-                intent.putExtra("eventTitle", event.title);
+                intent.putExtra("eventTitle", event.getName());
                 startActivityForResult(intent, EVENT_DETAILS_REQUEST);
             });
             rv.setAdapter(adapter);
@@ -85,7 +85,7 @@ public class EventManagerActivity extends AppCompatActivity {
             String eventTitleToDelete = data.getStringExtra("eventTitleToDelete");
             if (eventTitleToDelete != null) {
                 for (int i = 0; i < events.size(); i++) {
-                    if (events.get(i).title.equals(eventTitleToDelete)) {
+                    if (events.get(i).getName().equals(eventTitleToDelete)) {
                         events.remove(i);
                         adapter.notifyItemRemoved(i);
                         break;

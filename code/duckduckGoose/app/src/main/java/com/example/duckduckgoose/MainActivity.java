@@ -3,6 +3,7 @@ package com.example.duckduckgoose;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.TextView;
@@ -16,10 +17,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -183,36 +190,75 @@ public class MainActivity extends AppCompatActivity {
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
 
+            List<Object> rows = new ArrayList<>();
             if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
-                // Organizer view: Show Past Events and Current Events sections
-                List<Object> rows = new ArrayList<>();
-                rows.add("Past Events:");
-                rows.add(new Event("Example Event 1", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"));
-                rows.add("Current Events:");
-                rows.add(new Event("Example Event", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"));
-                rv.setAdapter(new OrganizerEventAdapter(rows, this));
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                db.collection("events")
+                        .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                            if (e != null) {
+                                Log.e("Firestore", "Listen failed", e);
+                                return;
+                            }
+                            rows.clear();
+                            List<Event> pastEvents = new ArrayList<>();
+                            List<Event> currentEvents = new ArrayList<>();
+
+                            if (queryDocumentSnapshots != null) {
+                                for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                                    Event event = doc.toObject(Event.class);
+                                    if (event != null && event.getEventDate() != null) {
+                                        try {
+                                            // Parse your date format: "MM/dd/yy"
+                                            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.getDefault());
+                                            Date eventDate = sdf.parse(event.getEventDate());
+                                            Date today = new Date();
+
+                                            if (eventDate != null) {
+                                                // Compare the event date to today
+                                                if (eventDate.before(today)) {
+                                                    pastEvents.add(event);
+                                                } else {
+                                                    currentEvents.add(event);
+                                                }
+                                            }
+                                        } catch (ParseException ex) {
+                                            Log.e("Firestore", "Date parse error for event: " + event.getEventDate(), ex);
+                                            currentEvents.add(event); // Default to current if parsing fails
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Build rows for RecyclerView
+                            rows.add("Past Events:");
+                            rows.addAll(pastEvents);
+                            rows.add("Current Events:");
+                            rows.addAll(currentEvents);
+
+                            // Update RecyclerView
+                            rv.setAdapter(new OrganizerEventAdapter(rows, this));
+                        });
             } else {
                 // Entrant view: Show Pre-Registration and Past Registration sections
-                List<Object> rows = new ArrayList<>();
                 rows.add("Pre-Registration Deadline");
-                rows.add(new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"));
-                rows.add(new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"));
-                rows.add("Past Registration Deadline");
-                rows.add(new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled"));
-                rows.add(new Event("Campus Fun Run", "Sep 28", "Sep 1", "Sep 20 (Closed)", "$10", "Filled"));
+//                rows.add(new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"));
+//                rows.add(new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"));
+//                rows.add("Past Registration Deadline");
+//                rows.add(new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled"));
+//                rows.add(new Event("Campus Fun Run", "Sep 28", "Sep 1", "Sep 20 (Closed)", "$10", "Filled"));
                 rv.setAdapter(new SectionedEventAdapter(rows));
             }
         }
     }
 
     /* ----------------- Simple demo adapters ----------------- */
-
-    static class Event {
-        String title, date, open, deadline, cost, spots;
-        Event(String t, String d, String o, String dl, String c, String s){
-            title=t; date=d; open=o; deadline=dl; cost=c; spots=s;
-        }
-    }
+//
+//    static class Event {
+//        String title, date, open, deadline, cost, spots;
+//        Event(String t, String d, String o, String dl, String c, String s){
+//            title=t; date=d; open=o; deadline=dl; cost=c; spots=s;
+//        }
+//    }
 
     /** Event list on the main "Events" screen */
     static class SimpleEventAdapter extends RecyclerView.Adapter<EventVH> {
@@ -232,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Fill card UI
             h.title.setText(titleStr);
-            h.date.setText("Date: TBD");
+            h.date.setText("Date:");
             h.open.setText("Registration Opens: TBD");
             h.deadline.setText("Registration Deadline: TBD");
             h.cost.setText("Cost: —");
@@ -284,6 +330,15 @@ public class MainActivity extends AppCompatActivity {
             cost    = v.findViewById(R.id.txtCost);
             spots   = v.findViewById(R.id.txtSpots);
         }
+
+        void bind(Event e) {
+            title.setText(e.getName());
+            date.setText("Date: " + e.getEventDate());
+            open.setText("Registration Opens: " + e.getRegistrationOpens());
+            deadline.setText("Registration Deadline: " + e.getRegistrationCloses());
+            cost.setText("Cost: " + e.getCost());
+            spots.setText("Spots: " + e.getMaxSpots());
+        }
     }
 
     /** Sectioned list used on "My Events" (with headers) */
@@ -324,12 +379,12 @@ public class MainActivity extends AppCompatActivity {
                 Event e = (Event) rows.get(i);
                 EventVH vh = (EventVH) h;
 
-                vh.title.setText(e.title);
-                vh.date.setText("Date: " + e.date);
-                vh.open.setText("Registration Opens: " + e.open);
-                vh.deadline.setText("Registration Deadline: " + e.deadline);
-                vh.cost.setText("Cost: " + e.cost);
-                vh.spots.setText("Spots: " + e.spots);
+                vh.title.setText(e.getName());
+                vh.date.setText("Date: " + e.getEventDate());
+                vh.open.setText("Registration Opens: " + e.getRegistrationOpens());
+                vh.deadline.setText("Registration Deadline: " + e.getRegistrationCloses());
+                vh.cost.setText("Cost: " + e.getCost());
+                vh.spots.setText("Spots: " + e.getMaxSpots());
 
                 vh.itemView.setOnClickListener(v -> {
                     android.content.Context c = v.getContext();
@@ -337,12 +392,12 @@ public class MainActivity extends AppCompatActivity {
                             new android.content.Intent(c, EventDetailActivity.class);
 
                     // Common extras
-                    intent.putExtra("title",    e.title);
-                    intent.putExtra("dateText", e.date);
+                    intent.putExtra("title",    e.getName());
+                    intent.putExtra("dateText", e.getEventDate());
                     intent.putExtra("open",     0L);
                     intent.putExtra("deadline", 0L);
-                    intent.putExtra("cost",     e.cost);
-                    intent.putExtra("spots",    e.spots);
+                    intent.putExtra("cost",     e.getCost());
+                    intent.putExtra("spots",    e.getMaxSpots());
                     intent.putExtra("posterRes", R.drawable.poolphoto);
 
                     // Map each event in this sectioned list to a different state:
@@ -408,22 +463,22 @@ public class MainActivity extends AppCompatActivity {
                 Event e = (Event) rows.get(i);
                 EventVH vh = (EventVH) h;
 
-                vh.title.setText(e.title);
-                vh.date.setText("Date (Maybe Reoccurring): " + e.date);
-                vh.open.setText("Registration Opens: " + e.open);
-                vh.deadline.setText("Registration Deadline: " + e.deadline);
-                vh.cost.setText("Cost: " + e.cost);
-                vh.spots.setText("Spots: " + e.spots);
+                vh.title.setText(e.getName());
+                vh.date.setText("Date (Maybe Reoccurring): " + e.getEventDate());
+                vh.open.setText("Registration Opens: " + e.getRegistrationOpens());
+                vh.deadline.setText("Registration Deadline: " + e.getRegistrationCloses());
+                vh.cost.setText("Cost: " + e.getCost());
+                vh.spots.setText("Spots: " + e.getMaxSpots());
 
                 // Click opens EventDetailsOrganizerActivity
                 vh.itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(context, EventDetailsOrganizerActivity.class);
-                    intent.putExtra("title", e.title);
-                    intent.putExtra("dateText", e.date);
-                    intent.putExtra("open", e.open);
-                    intent.putExtra("deadline", e.deadline);
-                    intent.putExtra("cost", e.cost);
-                    intent.putExtra("spots", e.spots);
+                    intent.putExtra("title", e.getName());
+                    intent.putExtra("dateText", e.getEventDate());
+                    intent.putExtra("open", e.getRegistrationOpens());
+                    intent.putExtra("deadline", e.getRegistrationCloses());
+                    intent.putExtra("cost", e.getCost());
+                    intent.putExtra("spots", e.getMaxSpots());
                     context.startActivity(intent);
                 });
             }
