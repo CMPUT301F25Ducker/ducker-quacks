@@ -11,10 +11,10 @@ import java.util.List;
 
 public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapter.ViewHolder> {
 
-    private final List<MainActivity.Event> events;
+    private final List<Event> events;
     private OnItemClickListener onItemClickListener;
 
-    public EventManagerAdapter(List<MainActivity.Event> events) {
+    public EventManagerAdapter(List<Event> events) {
         this.events = events;
     }
 
@@ -32,13 +32,13 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        MainActivity.Event event = events.get(position);
-        holder.txtTitle.setText(event.title);
-        String details = "Date: " + event.date + "\n" +
-                "Registration Opens: " + event.open + "\n" +
-                "Registration Deadline: " + event.deadline + "\n" +
-                "Cost: " + event.cost + "\n" +
-                "Spots: " + event.spots;
+        Event event = events.get(position);
+        holder.txtTitle.setText(event.getName());
+        String details = "Date: " + event.getEventDate() + "\n" +
+                "Registration Opens: " + event.getRegistrationOpens() + "\n" +
+                "Registration Deadline: " + event.getRegistrationCloses() + "\n" +
+                "Cost: " + event.getCost() + "\n" +
+                "Spots: " + event.getMaxSpots();
         holder.txtDetails.setText(details);
 
         holder.itemView.setOnClickListener(v -> {
@@ -68,6 +68,6 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     }
 
     public interface OnItemClickListener {
-        void onItemClick(MainActivity.Event event);
+        void onItemClick(Event event);
     }
 }

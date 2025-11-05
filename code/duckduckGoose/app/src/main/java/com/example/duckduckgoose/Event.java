@@ -3,33 +3,65 @@ package com.example.duckduckgoose;
 import java.util.List;
 
 public class Event {
-    private String newEventId;
+    private String eventId;
     private String name;
-    String eventDateStr;
-    private String regOpensStr;
-    private String regClosesStr;
-    private String spots;
+    private String eventDate;
+    private String registrationOpens;
+    private String registrationCloses;
+    private String maxSpots;
     private String cost;
-    private boolean geolocation;
-    private List<String>  imagePaths;
+    private boolean geolocationEnabled;
+    private List<String> imagePaths;
 
-    Event(String newEventId,
-          String name,
-          String eventDateStr,
-          String regOpensStr,
-          String regClosesStr,
-          String spots,
-          String cost,
-          boolean geolocation,
-          List<String>  imagePaths) {
-        this.newEventId = newEventId;
+    public Event() {}
+
+    public Event(String eventId, String name, String eventDate, String registrationOpens,
+                 String registrationCloses, String maxSpots, String cost,
+                 boolean geolocationEnabled, List<String> imagePaths) {
+        this.eventId = eventId;
         this.name = name;
-        this.eventDateStr = eventDateStr;
-        this.regOpensStr = regOpensStr;
-        this.regClosesStr = regClosesStr;
-        this.spots = spots;
+        this.eventDate = eventDate;
+        this.registrationOpens = registrationOpens;
+        this.registrationCloses = registrationCloses;
+        this.maxSpots = maxSpots;
         this.cost = cost;
-        this.geolocation = geolocation;
+        this.geolocationEnabled = geolocationEnabled;
         this.imagePaths = imagePaths;
-    };
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEventDate() {
+        return eventDate;
+    }
+
+    public String getRegistrationOpens() {
+        return registrationOpens;
+    }
+
+    public String getRegistrationCloses() {
+        return registrationCloses;
+    }
+
+    public String getMaxSpots() {
+        return maxSpots;
+    }
+
+    public String getCost() {
+        return cost;
+    }
+
+    public boolean isGeolocationEnabled() {
+        return geolocationEnabled;
+    }
+
+    public List<String> getImagePaths() {
+        return imagePaths;
+    }
 }

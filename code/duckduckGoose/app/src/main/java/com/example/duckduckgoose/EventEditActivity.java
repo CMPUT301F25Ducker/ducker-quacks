@@ -262,11 +262,10 @@ public class EventEditActivity extends AppCompatActivity {
         updateImageDisplay();
     }
 
+
     private void createEvent() {
         if (validateForm()) {
             storeInDB();
-            Toast.makeText(this, "Event created successfully!", Toast.LENGTH_SHORT).show();
-            finish();
         }
     }
 
@@ -294,19 +293,15 @@ public class EventEditActivity extends AppCompatActivity {
         );
 
         eventsRef.document(newEventId)
-        .set(newEvent)
-        .addOnSuccessListener(aVoid -> {
-            // 4. Handle Success
-            Toast.makeText(this, "Event \"" + name + "\" created successfully!", Toast.LENGTH_LONG).show();
-            // Go back to the previous screen (e.g., EventManagerActivity)
-            finish();
-        })
-        .addOnFailureListener(e -> {
-            // 4. Handle Failure
-            Toast.makeText(this, "Error: Failed to create event. " + e.getMessage(), Toast.LENGTH_LONG).show();
-            // Log the error for debugging
-            Log.e("EventEditActivity", "Error writing document", e);
-        });
+                .set(newEvent)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Event \"" + name + "\" created successfully!", Toast.LENGTH_LONG).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error: Failed to create event. " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e("EventEditActivity", "Error writing document", e);
+                });
     }
 
     private void saveEvent() {
