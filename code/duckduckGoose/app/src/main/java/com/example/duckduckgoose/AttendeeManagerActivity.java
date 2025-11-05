@@ -1,11 +1,15 @@
 package com.example.duckduckgoose;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowInsetsController;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -38,6 +42,20 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
+        WindowInsetsController controller = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            controller = getWindow().getInsetsController();
+        }
+        if (controller != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                controller.setSystemBarsAppearance(
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                );
+            }
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee_manager);
 

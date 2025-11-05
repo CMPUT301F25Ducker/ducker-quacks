@@ -1,10 +1,14 @@
 package com.example.duckduckgoose;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowInsetsController;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,6 +24,20 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
+        WindowInsetsController controller = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            controller = getWindow().getInsetsController();
+        }
+        if (controller != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                controller.setSystemBarsAppearance(
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+                );
+            }
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_organizer_manager);
 

@@ -11,4 +11,8 @@ public class AppConfig {
      * This controls the behavior across all activities in the app.
      */
     public static final String LOGIN_MODE = "ORGANIZER";
+
+    public static void setLoginMode(String mode) {
+        LOGIN_MODE = mode.toUpperCase();
+    }
 }
