@@ -14,6 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
+
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +30,8 @@ public class EventManagerActivity extends AppCompatActivity {
     private static final int EVENT_DETAILS_REQUEST = 1;
     private List<Event> events;
     private EventManagerAdapter adapter;
+    private FirebaseFirestore db;
+    private CollectionReference eventsRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +84,32 @@ public class EventManagerActivity extends AppCompatActivity {
                 startActivityForResult(intent, EVENT_DETAILS_REQUEST);
             });
             rv.setAdapter(adapter);
+            // Initialize Firestore and load events from the database
+            db = FirebaseFirestore.getInstance();
+            eventsRef = db.collection("events");
+            loadEventsFromFirestore();
         }
+    }
+
+    private void loadEventsFromFirestore() {
+        eventsRef.get()
+                .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
+                    events.clear();
+                    for (DocumentSnapshot ds : querySnapshot.getDocuments()) {
+                        Event e = ds.toObject(Event.class);
+                        if (e != null) {
+                            // If the document id isn't stored in eventId, set it from the doc id
+                            // (Event has no setter, assume eventId stored in Firestore)
+                            events.add(e);
+                        } else {
+                            Log.w("EventManager", "Document returned null Event: " + ds.getId());
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EventManager", "Failed to load events", e);
+                });
     }
 
     @Override
