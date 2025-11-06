@@ -133,9 +133,32 @@ public class EventDetailActivity extends AppCompatActivity {
         // TODO -- also might wanna consider adding a check here for administrators with like "isAdministratorMode" to get this confirmed (as admins need not see terms and conditions type stuff yk)
         if (!isOrganizerMode) {
             try {
+                // compute odds from provided spots string if possible
+                String oddsText = "Odds: unknown";
+                if (spots != null) {
+                    // extract digits from spots (e.g. "10" or "10 spots")
+                    String digits = spots.replaceAll("[^0-9]", "");
+                    if (!digits.isEmpty()) {
+                        try {
+                            int spotsCount = Integer.parseInt(digits);
+                            if (spotsCount > 0) {
+                                double pct = 100.0 / (double) spotsCount; // 1 / spots -> percent
+                                String pctStr = String.format(java.util.Locale.getDefault(), "%.1f%%", pct);
+                                oddsText = "Odds of winning: " + pctStr + " (1 in " + spotsCount + ")";
+                            }
+                        } catch (NumberFormatException nfe) {
+                            // leave oddsText as unknown
+                        }
+                    }
+                }
+
+                // this is the old standard message that Dhruv was hating on smh.
+                String message = "Events use a lottery system. The odds of winning depend on the number of applicants. By registering you acknowledge you have been informed of the lottery process and odds.\n\n" + oddsText;
+
+                // who thought StringBuilder was the wise choice for this?
                 new AlertDialog.Builder(this)
                         .setTitle("Guidelines for Lottery")
-                        .setMessage("Events use a lottery system. This is just a small blurb at this current moment, but what you, the entrant, need to know is that the odds of winning depend on the number of applicants. By registering, you understand and have been informed of your rights (the odds).")
+                        .setMessage(message) // this is the pop up bluf from string builder
                         .setPositiveButton("OK, I understand", (dialog, which) -> dialog.dismiss())
                         .setCancelable(true)
                         .show();
