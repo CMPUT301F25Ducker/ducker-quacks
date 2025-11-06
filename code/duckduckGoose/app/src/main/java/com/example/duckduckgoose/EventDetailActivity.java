@@ -110,6 +110,7 @@ public class EventDetailActivity extends AppCompatActivity {
                 : pickStateFromTitle(title);
         
         // if this user is an entrant (not an organizer), show lottery-info popup before they register
+        // TODO -- also might wanna consider adding a check here for administrators with like "isAdministratorMode" to get this confirmed (as admins need not see terms and conditions type stuff yk)
         if (!isOrganizerMode) {
             try {
                 new AlertDialog.Builder(this)
