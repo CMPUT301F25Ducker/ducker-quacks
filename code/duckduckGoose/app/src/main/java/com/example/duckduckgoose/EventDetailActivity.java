@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -127,6 +128,21 @@ public class EventDetailActivity extends AppCompatActivity {
         currentState = (stateInt >= 0 && stateInt < State.values().length)
                 ? State.values()[stateInt]
                 : pickStateFromTitle(title);
+        
+        // if this user is an entrant (not an organizer), show lottery-info popup before they register
+        // TODO -- also might wanna consider adding a check here for administrators with like "isAdministratorMode" to get this confirmed (as admins need not see terms and conditions type stuff yk)
+        if (!isOrganizerMode) {
+            try {
+                new AlertDialog.Builder(this)
+                        .setTitle("Guidelines for Lottery")
+                        .setMessage("Events use a lottery system. This is just a small blurb at this current moment, but what you, the entrant, need to know is that the odds of winning depend on the number of applicants. By registering, you understand and have been informed of your rights (the odds).")
+                        .setPositiveButton("OK, I understand", (dialog, which) -> dialog.dismiss())
+                        .setCancelable(true)
+                        .show();
+            } catch (Exception ex) {
+                // defensive: if dialog cannot be shown, ignore
+            }
+        }
 
         if (isOrganizerMode) {
             setupOrganizerButtons(title, dateText, open, deadline, cost, spots);
