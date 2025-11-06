@@ -98,8 +98,8 @@ public class EventManagerActivity extends AppCompatActivity {
                     for (DocumentSnapshot ds : querySnapshot.getDocuments()) {
                         Event e = ds.toObject(Event.class);
                         if (e != null) {
-                            // If the document id isn't stored in eventId, set it from the doc id
-                            // (Event has no setter, assume eventId stored in Firestore)
+                            // Ensure eventId is populated from the document id
+                            if (e.getEventId() == null) e.setEventId(ds.getId());
                             events.add(e);
                         } else {
                             Log.w("EventManager", "Document returned null Event: " + ds.getId());

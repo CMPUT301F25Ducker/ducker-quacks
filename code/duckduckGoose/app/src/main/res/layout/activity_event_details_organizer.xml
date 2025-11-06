@@ -180,20 +180,28 @@
                         android:layout_weight="1"
                         android:text="Cost: —" />
 
-                    <TextView
-                        android:id="@+id/txtSpots"
-                        style="@style/Text.Fresh"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="end"
-                        android:text="Spots: —" />
+                <TextView
+                    android:id="@+id/txtSpots"
+                    style="@style/Text.Fresh"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:text="Spots: —" />
                 </LinearLayout>
+
+                <!-- Waiting List Section -->
+                <TextView
+                    android:id="@+id/txtWaitingList"
+                    style="@style/Text.Fresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    android:text="Waiting List: 0 people" />
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
-
-    <!-- Action Buttons -->
+    </ScrollView>    <!-- Action Buttons -->
     <LinearLayout
         android:id="@+id/organizer_button_layout"
         android:layout_width="match_parent"
