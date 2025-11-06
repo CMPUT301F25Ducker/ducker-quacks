@@ -115,7 +115,7 @@ public class EventDetailActivity extends AppCompatActivity {
             try {
                 new AlertDialog.Builder(this)
                         .setTitle("Guidelines for Lottery")
-                        .setMessage("Some events use a lottery to allocate spots. Odds of winning depend on the number of applicants. By registering you acknowledge you have been informed of the lottery process and odds.")
+                        .setMessage("Events use a lottery system. This is just a small blurb at this current moment, but what you, the entrant, need to know is that the odds of winning depend on the number of applicants. By registering, you understand and have been informed of your rights (the odds).")
                         .setPositiveButton("OK, I understand", (dialog, which) -> dialog.dismiss())
                         .setCancelable(true)
                         .show();
