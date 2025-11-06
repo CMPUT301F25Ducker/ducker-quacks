@@ -54,6 +54,29 @@
                 android:inputType="none"
                 android:paddingBottom="10dp"/>
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Interest filter -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:endIconMode="dropdown_menu"
+            android:hint="Interest"
+            android:paddingBottom="10dp"
+            android:layout_marginTop="6dp">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/dropInterest"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:paddingLeft="12dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:inputType="none"
+                android:paddingBottom="10dp"
+                android:entries="@array/interest_values"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Availability filter removed; sorting now supports registration/date/cost -->
     </LinearLayout>
 
     <!-- Events list -->

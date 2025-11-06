@@ -144,6 +144,22 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+    // Parse cost strings like "$25", "Free", "0" into numeric value for sorting (Free -> 0, unknown -> large)
+    private static double parseCost(String costStr) {
+        if (costStr == null) return Double.MAX_VALUE;
+        String s = costStr.trim().toLowerCase(Locale.ROOT);
+        if (s.isEmpty()) return Double.MAX_VALUE;
+        if (s.contains("free")) return 0.0;
+        // remove currency symbols and non-numeric except dot
+        String num = s.replaceAll("[^0-9.]", "");
+        if (num.isEmpty()) return Double.MAX_VALUE;
+        try {
+            return Double.parseDouble(num);
+        } catch (NumberFormatException ex) {
+            return Double.MAX_VALUE;
+        }
+    }
+
     /* ----------------- Screens ----------------- */
 
     private void showEventList() {
@@ -169,19 +185,107 @@ public class MainActivity extends AppCompatActivity {
             rv.setLayoutManager(new LinearLayoutManager(this));
 
             FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+            // Dropdowns for filtering
+            MaterialAutoCompleteTextView dropInterest = findViewById(R.id.dropInterest);
+            MaterialAutoCompleteTextView dropSort = findViewById(R.id.dropSort);
+
+            final List<Event> fullEvents = new ArrayList<>();
+
+            // Helper: apply filters from UI to fullEvents and update adapter
+            Runnable applyFilters = () -> {
+                String interest = "All";
+                String sortBy = "Date (Soonest)";
+                if (dropInterest != null) interest = dropInterest.getText().toString();
+                if (dropSort != null) sortBy = dropSort.getText().toString();
+
+                final String finalInterest = interest;
+                final String finalSortBy = sortBy;
+
+                List<Event> filtered = new ArrayList<>();
+                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.getDefault());
+                Date today = new Date();
+
+                for (Event e : fullEvents) {
+                    if (e == null) continue;
+
+                    // Interest filter
+                    if (finalInterest != null && !finalInterest.isEmpty() && !finalInterest.equals("All")) {
+                        String name = e.getName() == null ? "" : e.getName().toLowerCase(Locale.ROOT);
+                        if (!name.contains(finalInterest.toLowerCase(Locale.ROOT))) continue;
+                    }
+
+                    filtered.add(e);
+                }
+
+                filtered.sort((a, b) -> {
+                    if (a == null || b == null) return 0;
+                    try {
+                        switch (finalSortBy) {
+                            case "Date (Soonest)": {
+                                Date da = sdf.parse(a.getEventDate());
+                                Date dbt = sdf.parse(b.getEventDate());
+                                if (da == null || dbt == null) return 0;
+                                return da.compareTo(dbt);
+                            }
+                            case "Date (Latest)": {
+                                Date da = sdf.parse(a.getEventDate());
+                                Date dbt = sdf.parse(b.getEventDate());
+                                if (da == null || dbt == null) return 0;
+                                return dbt.compareTo(da);
+                            }
+                            case "Registration Opens": {
+                                Date ra = sdf.parse(a.getRegistrationOpens());
+                                Date rb = sdf.parse(b.getRegistrationOpens());
+                                if (ra == null || rb == null) return 0;
+                                return ra.compareTo(rb);
+                            }
+                            case "Registration Deadline": {
+                                Date ca = sdf.parse(a.getRegistrationCloses());
+                                Date cb = sdf.parse(b.getRegistrationCloses());
+                                if (ca == null || cb == null) return 0;
+                                return ca.compareTo(cb);
+                            }
+                            case "Cost": {
+                                double va = parseCost(a.getCost());
+                                double vb = parseCost(b.getCost());
+                                return Double.compare(va, vb);
+                            }
+                            default:
+                                return 0;
+                        }
+                    } catch (Exception ex) {
+                        return 0;
+                    }
+                });
+
+                runOnUiThread(() -> rv.setAdapter(new EventObjectAdapter(filtered)));
+            };
+
+
+            // Wire dropdown changes to reapply filter
+            if (dropInterest != null) {
+                dropInterest.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.interest_values)));
+                dropInterest.setOnItemClickListener((parent, view, position, id) -> applyFilters.run());
+            }
+            if (dropSort != null) {
+                dropSort.setOnItemClickListener((parent, view, position, id) -> applyFilters.run());
+            }
+
+            // Listen for events and keep a full copy to filter client-side
             db.collection("events").addSnapshotListener((QuerySnapshot snapshots, FirebaseFirestoreException e) -> {
                 if (e != null) {
                     Log.e("Firestore", "Listen failed", e);
                     return;
                 }
-                List<Event> events = new ArrayList<>();
+                fullEvents.clear();
                 if (snapshots != null) {
                     for (DocumentSnapshot doc : snapshots.getDocuments()) {
                         Event event = doc.toObject(Event.class);
-                        if (event != null) events.add(event);
+                        if (event != null) fullEvents.add(event);
                     }
                 }
-                rv.setAdapter(new EventObjectAdapter(events));
+                applyFilters.run();
             });
         }
     }

@@ -10,10 +10,20 @@
 
 
     <string-array name="sort_values">
-        <item>Value</item>
-        <item>Date</item>
+        <item>Date (Soonest)</item>
+        <item>Date (Latest)</item>
+        <item>Registration Opens</item>
+        <item>Registration Deadline</item>
         <item>Cost</item>
-        <item>Spots</item>
+    </string-array>
+
+    <string-array name="interest_values">
+        <item>All</item>
+        <item>Sports</item>
+        <item>Social Events</item>
+        <item>Community</item>
+        <item>Fitness</item>
+        <item>Arts</item>
     </string-array>
 
 </resources>
