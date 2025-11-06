@@ -43,6 +43,7 @@ public class EventEditActivity extends AppCompatActivity {
     private String mode; // "create" or "edit"
     private FirebaseFirestore db;
     private CollectionReference eventsRef;
+    private String eventId; // when editing, this identifies the Firestore document
 
     // Form fields
     private EditText edtEventName;
@@ -122,6 +123,9 @@ public class EventEditActivity extends AppCompatActivity {
         
         if (mode.equals("edit")) {
             if (txtTopBarTitle != null) txtTopBarTitle.setText("Edit Event");
+            // allow caller to pass the Firestore document id to edit
+            String incomingId = getIntent().getStringExtra("eventId");
+            if (incomingId != null) eventId = incomingId;
             loadEventData();
             btnCreateEvent.setVisibility(View.GONE);
             btnSaveChanges.setVisibility(View.VISIBLE);
@@ -250,11 +254,45 @@ public class EventEditActivity extends AppCompatActivity {
 
     private void loadEventData() {
         Intent intent = getIntent();
-        
+
+        // If an eventId was provided (preferred), load the document from Firestore
+        if (eventId != null) {
+            eventsRef.document(eventId).get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc != null && doc.exists()) {
+                            Event event = doc.toObject(Event.class);
+                            if (event != null) {
+                                if (event.getName() != null) edtEventName.setText(event.getName());
+                                if (event.getMaxSpots() != null) edtSpots.setText(event.getMaxSpots());
+                                if (event.getCost() != null) {
+                                    String cost = event.getCost().replace("$", "").trim();
+                                    if (!cost.equals("Free") && !cost.equals("—")) edtCost.setText(cost);
+                                }
+                                if (event.getEventDate() != null) txtEventDate.setText(event.getEventDate());
+                                if (event.getRegistrationOpens() != null) txtRegOpens.setText(event.getRegistrationOpens());
+                                if (event.getRegistrationCloses() != null) txtRegCloses.setText(event.getRegistrationCloses());
+                                chkGeolocation.setChecked(event.isGeolocationEnabled());
+
+                                // load image paths if present
+                                if (event.getImagePaths() != null) {
+                                    imagePaths.clear();
+                                    imagePaths.addAll(event.getImagePaths());
+                                }
+                                updateImageDisplay();
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to load event: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+            return;
+        }
+
+        // Legacy fallback: populate from extras if no eventId provided
         String title = intent.getStringExtra("title");
         String spots = intent.getStringExtra("spots");
         String cost = intent.getStringExtra("cost");
-        
+
         if (title != null) edtEventName.setText(title);
         if (spots != null) {
             // Extract number from "12/40" format
@@ -270,7 +308,7 @@ public class EventEditActivity extends AppCompatActivity {
                 edtCost.setText(cost);
             }
         }
-        
+
         // Load sample images
         imagePaths.add("Sample Image 1");
         imagePaths.add("Sample Image 2");
@@ -308,9 +346,21 @@ public class EventEditActivity extends AppCompatActivity {
                 imagePaths
         );
 
+        // Attach organizer id if available so we can filter organizer-specific events
+        try {
+            com.google.firebase.auth.FirebaseUser fu = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+            if (fu != null) newEvent.setOrganizerId(fu.getUid());
+        } catch (Exception ex) {
+            // If auth not available, leave organizerId null
+        }
+
         eventsRef.document(newEventId)
                 .set(newEvent)
                 .addOnSuccessListener(aVoid -> {
+                    // Notify caller (if any) and finish
+                    Intent result = new Intent();
+                    result.putExtra("eventId", newEventId);
+                    setResult(RESULT_OK, result);
                     Toast.makeText(this, "Event \"" + name + "\" created successfully!", Toast.LENGTH_LONG).show();
                     finish();
                 })
@@ -322,20 +372,74 @@ public class EventEditActivity extends AppCompatActivity {
 
     private void saveEvent() {
         if (validateForm()) {
-            Toast.makeText(this, "Changes saved!", Toast.LENGTH_SHORT).show();
-            finish();
+            // If we have an eventId, update the existing Firestore document
+            if (eventId != null) {
+                String name = edtEventName.getText().toString().trim();
+                String spots = edtSpots.getText().toString().trim();
+                String cost = edtCost.getText().toString().trim();
+                String eventDateStr = txtEventDate.getText().toString().trim();
+                String regOpensStr = txtRegOpens.getText().toString().trim();
+                String regClosesStr = txtRegCloses.getText().toString().trim();
+                boolean geolocation = chkGeolocation.isChecked();
+
+                Event updated = new Event(
+                        eventId,
+                        name,
+                        eventDateStr,
+                        regOpensStr,
+                        regClosesStr,
+                        spots,
+                        cost,
+                        geolocation,
+                        imagePaths
+                );
+                // Ensure organizerId stays consistent by re-attaching current user if available
+                try {
+                    com.google.firebase.auth.FirebaseUser fu = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
+                    if (fu != null) updated.setOrganizerId(fu.getUid());
+                } catch (Exception ex) { }
+
+                eventsRef.document(eventId)
+                        .set(updated)
+                        .addOnSuccessListener(aVoid -> {
+                            // Notify caller and finish so UI can refresh if caller used startActivityForResult
+                            Intent result = new Intent();
+                            result.putExtra("eventId", eventId);
+                            setResult(RESULT_OK, result);
+                            Toast.makeText(this, "Changes saved!", Toast.LENGTH_SHORT).show();
+                            finish();
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(this, "Failed to save: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            } else {
+                // No eventId — behave like create
+                Toast.makeText(this, "No event id provided; cannot save edits.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
     private void deleteEvent() {
         // Show confirmation dialog in production
-        Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show();
-        finish();
+        if (eventId != null) {
+            eventsRef.document(eventId).delete()
+                    .addOnSuccessListener(aVoid -> {
+                        Intent result = new Intent();
+                        result.putExtra("eventId", eventId);
+                        result.putExtra("deleted", true);
+                        setResult(RESULT_OK, result);
+                        Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        } else {
+            Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     private void openAttendeeManager() {
         Intent intent = new Intent(this, AttendeeManagerActivity.class);
-        intent.putExtra("eventTitle", edtEventName.getText().toString());
+        if (eventId != null) intent.putExtra("eventId", eventId);
+        else intent.putExtra("eventTitle", edtEventName.getText().toString());
         startActivity(intent);
     }
 

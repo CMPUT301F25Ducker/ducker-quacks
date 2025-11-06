@@ -34,7 +34,7 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Event event = events.get(position);
         holder.txtTitle.setText(event.getName());
-        String details = "Date: " + event.getEventDate() + "\n" +
+        String details = event.getEventDate() + "\n" +
                 "Registration Opens: " + event.getRegistrationOpens() + "\n" +
                 "Registration Deadline: " + event.getRegistrationCloses() + "\n" +
                 "Cost: " + event.getCost() + "\n" +
