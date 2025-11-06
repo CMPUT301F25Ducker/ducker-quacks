@@ -526,6 +526,8 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("cost", e.getCost());
                     intent.putExtra("spots", e.getMaxSpots());
                     intent.putExtra("posterRes", R.drawable.poolphoto);
+                    // ensure eventId is passed so detail screen can load full data
+                    intent.putExtra("eventId", e.getEventId());
                     intent.putExtra("state", 0);
                     c.startActivity(intent);
                 });
@@ -607,7 +609,7 @@ public class MainActivity extends AppCompatActivity {
                     android.content.Intent intent =
                             new android.content.Intent(c, EventDetailActivity.class);
 
-                    // Common extras
+                    // Common extras that aren't actual extras but actually matter...
                     intent.putExtra("title",    e.getName());
                     intent.putExtra("dateText", e.getEventDate());
                     intent.putExtra("open",     0L);
@@ -615,6 +617,8 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra("cost",     e.getCost());
                     intent.putExtra("spots",    e.getMaxSpots());
                     intent.putExtra("posterRes", R.drawable.poolphoto);
+                    // include event document id for fetching full details (adding this now to avoid headaches later)
+                    intent.putExtra("eventId", e.getEventId());
 
                     // Map each event in this sectioned list to a different state:
                     // positions: 0(H),1(E),2(E),3(H),4(E),5(E)
