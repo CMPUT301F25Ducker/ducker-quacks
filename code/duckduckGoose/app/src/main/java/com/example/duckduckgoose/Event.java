@@ -12,6 +12,7 @@ public class Event {
     private String cost;
     private boolean geolocationEnabled;
     private List<String> imagePaths;
+    private String organizerId;
 
     public Event() {}
 
@@ -31,6 +32,19 @@ public class Event {
 
     public String getEventId() {
         return eventId;
+    }
+
+    // Firestore documents provide an id separate from the mapped fields; allow setting it after deserialization
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
+
+    public String getOrganizerId() {
+        return organizerId;
+    }
+
+    public void setOrganizerId(String organizerId) {
+        this.organizerId = organizerId;
     }
 
     public String getName() {
