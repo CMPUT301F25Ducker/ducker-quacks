@@ -27,9 +27,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -380,9 +383,9 @@ public class MainActivity extends AppCompatActivity {
 
                 if (uid != null) {
                     // Query events where this user is an attendee (requires 'attendees' array field in documents)
-                    db.collection("events")
-                            .whereArrayContains("attendees", uid)
-                            .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                    db.collection("waitlist")
+                            .whereEqualTo("userId", uid)
+                            .addSnapshotListener((waitlistSnapshots, e) -> {
                                 if (e != null) {
                                     Log.e("Firestore", "Listen failed", e);
                                     return;
@@ -391,36 +394,55 @@ public class MainActivity extends AppCompatActivity {
                                 List<Event> pastEvents = new ArrayList<>();
                                 List<Event> preregEvents = new ArrayList<>();
 
-                                if (queryDocumentSnapshots != null) {
-                                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                                        Event event = doc.toObject(Event.class);
-                                        if (event != null && event.getEventDate() != null) {
-                                            try {
-                                                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.getDefault());
-                                                Date eventDate = sdf.parse(event.getEventDate());
-                                                Date today = new Date();
-
-                                                if (eventDate != null) {
-                                                    if (eventDate.before(today)) {
-                                                        pastEvents.add(event);
-                                                    } else {
-                                                        preregEvents.add(event);
-                                                    }
-                                                }
-                                            } catch (ParseException ex) {
-                                                Log.e("Firestore", "Date parse error for event: " + event.getEventDate(), ex);
-                                                preregEvents.add(event);
-                                            }
+                                Map<String, Date> signupDates = new HashMap<>();
+                                if (waitlistSnapshots != null) {
+                                    for (DocumentSnapshot doc : waitlistSnapshots) {
+                                        String eventId = doc.getString("eventId");
+                                        Date signupDate = doc.getDate("joinedAt");
+                                        if (eventId != null && signupDate != null) {
+                                            signupDates.put(eventId, signupDate);
                                         }
                                     }
                                 }
 
-                                rows.add("Pre-Registration Deadline");
-                                rows.addAll(preregEvents);
-                                rows.add("Past Registration Deadline");
-                                rows.addAll(pastEvents);
+                                db.collection("events")
+                                        .whereIn("eventId", new ArrayList<>(signupDates.keySet()))
+                                        .get()
+                                        .addOnSuccessListener(eventSnapshots -> {
+                                            for (DocumentSnapshot doc : eventSnapshots) {
+                                                Event event = doc.toObject(Event.class);
+                                                if (event != null && event.getEventDate() != null) {
+                                                    try {
+                                                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.getDefault());
+                                                        Date eventDate = sdf.parse(event.getEventDate());
+                                                        Date today = new Date();
+                                                        Date signupDate = signupDates.get(event.getEventId());
 
-                                rv.setAdapter(new SectionedEventAdapter(rows));
+                                                        if (eventDate != null && signupDate != null) {
+                                                            if (eventDate.before(today)) {
+                                                                pastEvents.add(event);
+                                                            } else {
+                                                                preregEvents.add(event);
+                                                            }
+                                                        }
+                                                    } catch (ParseException ex) {
+                                                        Log.e("Firestore", "Date parse error for event: " + event.getEventDate(), ex);
+                                                        preregEvents.add(event);
+                                                    }
+                                                }
+                                            }
+
+                                            // Sort by signup date
+                                            preregEvents.sort(Comparator.comparing(ev -> signupDates.get(ev.getEventId())));
+                                            pastEvents.sort(Comparator.comparing(ev -> signupDates.get(ev.getEventId())));
+
+                                            rows.add("Pre-Registration Deadline");
+                                            rows.addAll(preregEvents);
+                                            rows.add("Past Registration Deadline");
+                                            rows.addAll(pastEvents);
+
+                                            rv.setAdapter(new SectionedEventAdapter(rows));
+                                        });
                             });
                 } else {
                     // Not signed in: show empty sections
@@ -467,18 +489,20 @@ public class MainActivity extends AppCompatActivity {
 
             // Click -> open detail with distinct state per item
             h.itemView.setOnClickListener(v -> {
-                android.content.Context c = v.getContext();
-                android.content.Intent intent =
-                        new android.content.Intent(c, EventDetailActivity.class);
+                    android.content.Context c = v.getContext();
+                    android.content.Intent intent =
+                            new android.content.Intent(c, EventDetailActivity.class);
 
-                // Common extras
-                intent.putExtra("title",    titleStr);
-                intent.putExtra("dateText", "TBD");
-                intent.putExtra("open",     0L);
-                intent.putExtra("deadline", 0L);
-                intent.putExtra("cost",     "—");
-                intent.putExtra("spots",    "—");
-                intent.putExtra("posterRes", R.drawable.poolphoto);
+                    // Pass a placeholder eventId for these template items
+                    intent.putExtra("eventId", "template_" + h.getAdapterPosition());
+                    // Common extras for display
+                    intent.putExtra("title",    titleStr);
+                    intent.putExtra("dateText", "TBD");
+                    intent.putExtra("open",     0L);
+                    intent.putExtra("deadline", 0L);
+                    intent.putExtra("cost",     "—");
+                    intent.putExtra("spots",    "—");
+                    intent.putExtra("posterRes", R.drawable.poolphoto);
 
                 // 0: UNDECIDED, 1: NOT_IN_CIRCLE, 2: LEAVE_CIRCLE, 3: DUCK, 4: GOOSE
                 int pos = h.getAdapterPosition();
@@ -519,6 +543,9 @@ public class MainActivity extends AppCompatActivity {
                 h.itemView.setOnClickListener(v -> {
                     android.content.Context c = v.getContext();
                     android.content.Intent intent = new android.content.Intent(c, EventDetailActivity.class);
+                    // Pass the event ID first - this is most important
+                    intent.putExtra("eventId", e.getEventId());
+                    // Then pass other details for immediate display
                     intent.putExtra("title", e.getName());
                     intent.putExtra("dateText", e.getEventDate());
                     intent.putExtra("open", 0L);
@@ -607,7 +634,9 @@ public class MainActivity extends AppCompatActivity {
                     android.content.Intent intent =
                             new android.content.Intent(c, EventDetailActivity.class);
 
-                    // Common extras
+                    // Pass the event ID first - this is most important
+                    intent.putExtra("eventId", e.getEventId());
+                    // Then pass other details for immediate display
                     intent.putExtra("title",    e.getName());
                     intent.putExtra("dateText", e.getEventDate());
                     intent.putExtra("open",     0L);
