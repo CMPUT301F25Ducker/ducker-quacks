@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
 
 public class EventDetailActivity extends AppCompatActivity {
 
@@ -108,6 +109,20 @@ public class EventDetailActivity extends AppCompatActivity {
                 ? State.values()[stateInt]
                 : pickStateFromTitle(title);
         
+        // if this user is an entrant (not an organizer), show lottery-info popup before they register
+        if (!isOrganizerMode) {
+            try {
+                new AlertDialog.Builder(this)
+                        .setTitle("Guidelines for Lottery")
+                        .setMessage("Some events use a lottery to allocate spots. Odds of winning depend on the number of applicants. By registering you acknowledge you have been informed of the lottery process and odds.")
+                        .setPositiveButton("OK, I understand", (dialog, which) -> dialog.dismiss())
+                        .setCancelable(true)
+                        .show();
+            } catch (Exception ex) {
+                // defensive: if dialog cannot be shown, ignore
+            }
+        }
+
         if (isOrganizerMode) {
             setupOrganizerButtons(title, dateText, open, deadline, cost, spots);
         } else {
