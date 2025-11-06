@@ -19,6 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -160,15 +163,26 @@ public class MainActivity extends AppCompatActivity {
             drop.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, sorts));
         }
 
-        // Fake list using your card layout
+        // Load events from Firestore and display
         RecyclerView rv = findViewById(R.id.recyclerEvents);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            List<String> fake = Arrays.asList(
-                    "City Swim Classic", "Downtown 5K Run", "Autumn Cycling Tour",
-                    "Campus Fun Run", "Community Tri"
-            );
-            rv.setAdapter(new SimpleEventAdapter(fake));
+
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("events").addSnapshotListener((QuerySnapshot snapshots, FirebaseFirestoreException e) -> {
+                if (e != null) {
+                    Log.e("Firestore", "Listen failed", e);
+                    return;
+                }
+                List<Event> events = new ArrayList<>();
+                if (snapshots != null) {
+                    for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                        Event event = doc.toObject(Event.class);
+                        if (event != null) events.add(event);
+                    }
+                }
+                rv.setAdapter(new EventObjectAdapter(events));
+            });
         }
     }
 
@@ -254,13 +268,62 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 // Entrant view: Show Pre-Registration and Past Registration sections
-                rows.add("Pre-Registration Deadline");
-//                rows.add(new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"));
-//                rows.add(new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"));
-//                rows.add("Past Registration Deadline");
-//                rows.add(new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled"));
-//                rows.add(new Event("Campus Fun Run", "Sep 28", "Sep 1", "Sep 20 (Closed)", "$10", "Filled"));
-                rv.setAdapter(new SectionedEventAdapter(rows));
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                String uid = null;
+                if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                    uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                }
+
+                if (uid != null) {
+                    // Query events where this user is an attendee (requires 'attendees' array field in documents)
+                    db.collection("events")
+                            .whereArrayContains("attendees", uid)
+                            .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                                if (e != null) {
+                                    Log.e("Firestore", "Listen failed", e);
+                                    return;
+                                }
+                                rows.clear();
+                                List<Event> pastEvents = new ArrayList<>();
+                                List<Event> preregEvents = new ArrayList<>();
+
+                                if (queryDocumentSnapshots != null) {
+                                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                                        Event event = doc.toObject(Event.class);
+                                        if (event != null && event.getEventDate() != null) {
+                                            try {
+                                                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.getDefault());
+                                                Date eventDate = sdf.parse(event.getEventDate());
+                                                Date today = new Date();
+
+                                                if (eventDate != null) {
+                                                    if (eventDate.before(today)) {
+                                                        pastEvents.add(event);
+                                                    } else {
+                                                        preregEvents.add(event);
+                                                    }
+                                                }
+                                            } catch (ParseException ex) {
+                                                Log.e("Firestore", "Date parse error for event: " + event.getEventDate(), ex);
+                                                preregEvents.add(event);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                rows.add("Pre-Registration Deadline");
+                                rows.addAll(preregEvents);
+                                rows.add("Past Registration Deadline");
+                                rows.addAll(pastEvents);
+
+                                rv.setAdapter(new SectionedEventAdapter(rows));
+                            });
+                } else {
+                    // Not signed in: show empty sections
+                    rows.add("Pre-Registration Deadline");
+                    rows.add("Past Registration Deadline");
+                    rv.setAdapter(new SectionedEventAdapter(rows));
+                }
             }
         }
     }
@@ -331,6 +394,41 @@ public class MainActivity extends AppCompatActivity {
 
         @Override public int getItemCount(){ return data.size(); }
     }
+
+        /** Adapter that binds Event objects into event cards */
+        static class EventObjectAdapter extends RecyclerView.Adapter<EventVH> {
+            private final List<Event> data;
+            EventObjectAdapter(List<Event> d){ data = d; }
+
+            @NonNull @Override
+            public EventVH onCreateViewHolder(@NonNull android.view.ViewGroup p, int vType) {
+                View v = android.view.LayoutInflater.from(p.getContext())
+                        .inflate(R.layout.item_event_card, p, false);
+                return new EventVH(v);
+            }
+
+            @Override
+            public void onBindViewHolder(@NonNull EventVH h, int i) {
+                Event e = data.get(i);
+                h.bind(e);
+
+                h.itemView.setOnClickListener(v -> {
+                    android.content.Context c = v.getContext();
+                    android.content.Intent intent = new android.content.Intent(c, EventDetailActivity.class);
+                    intent.putExtra("title", e.getName());
+                    intent.putExtra("dateText", e.getEventDate());
+                    intent.putExtra("open", 0L);
+                    intent.putExtra("deadline", 0L);
+                    intent.putExtra("cost", e.getCost());
+                    intent.putExtra("spots", e.getMaxSpots());
+                    intent.putExtra("posterRes", R.drawable.poolphoto);
+                    intent.putExtra("state", 0);
+                    c.startActivity(intent);
+                });
+            }
+
+            @Override public int getItemCount(){ return data.size(); }
+        }
 
     /** Shared ViewHolder for an event card */
     static class EventVH extends RecyclerView.ViewHolder {

@@ -18,6 +18,6 @@ This application is pre. cool. [INSERT MORE]
 - Test cases were progressively developed, paralleling as functions and behaviour were defined.
 
 # References
-- CMPUT 379 Class Notes
+- CMPUT 301 Class Notes
 - [Stack Overflow](https://stackoverflow.com/questions)
 - AI tools (such as ChatGPT), used to correct Java syntax and sometimes to debug code
