@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Random;
 
 public class AttendeeManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
+    private String eventId;
 
     private List<User> attendees;
     private List<User> allAttendees; // Full list for filtering
@@ -42,6 +43,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+    // Get eventId from intent
+    eventId = getIntent().getStringExtra("eventId");
         EdgeToEdge.enable(this);
         WindowInsetsController controller = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -136,21 +139,44 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     }
 
     private void setupRecyclerView() {
-        if (rvAttendees != null) {
+        if (rvAttendees != null && eventId != null) {
             rvAttendees.setLayoutManager(new LinearLayoutManager(this));
 
             allAttendees = new ArrayList<>();
             attendees = new ArrayList<>(allAttendees);
             adapter = new UserManagerAdapter(attendees);
             adapter.setOnItemClickListener(user -> {
-                // Show profile sheet with "Kick" instead of "Delete"
-                String status = user.getAccountType(); // getExtra() returns status for UserItem
+                String status = user.getAccountType();
                 ProfileSheet.newInstance(user, true, false, status, true)
                     .show(getSupportFragmentManager(), "ProfileSheet");
             });
             rvAttendees.setAdapter(adapter);
 
-            updateCountDisplay();
+            // Load waitlisted users for this event from Firestore
+            com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
+            db.collection("waitlist")
+                .whereEqualTo("eventId", eventId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    allAttendees.clear();
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        String userId = doc.getString("userId");
+                        if (userId != null) {
+                            // Optionally fetch user details from 'users' collection
+                            db.collection("users").document(userId).get()
+                                .addOnSuccessListener(userDoc -> {
+                                    User user = userDoc.toObject(User.class);
+                                    if (user != null) {
+                                        allAttendees.add(user);
+                                        attendees.clear();
+                                        attendees.addAll(allAttendees);
+                                        if (adapter != null) adapter.notifyDataSetChanged();
+                                        updateCountDisplay();
+                                    }
+                                });
+                        }
+                    }
+                });
         }
     }
 
