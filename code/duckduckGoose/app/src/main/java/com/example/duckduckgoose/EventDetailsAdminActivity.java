@@ -1,3 +1,14 @@
+/**
+ * @file EventDetailsAdminActivity.java
+ * @brief Admin-only event details screen for managing destructive actions.
+ *
+ * Provides UI for administrators to delete an event (with entrant notifications),
+ * view event logs (placeholder), and manage the event poster images.
+ *
+ * @author
+ *      DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -23,8 +34,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+/**
+ * @class EventDetailsAdminActivity
+ * @brief Activity for administrative actions on a specific event.
+ *
+ * Handles UI wiring for admin-only controls such as deleting an event
+ * (with notifications to affected users) and linking to the image manager.
+ */
 public class EventDetailsAdminActivity extends AppCompatActivity {
 
+    /**
+     * @brief Initializes the activity and wires up admin controls.
+     *
+     * Sets up edge-to-edge UI, adjusts system bar appearance when available,
+     * binds view references, and attaches click handlers for delete, logs,
+     * and image poster actions.
+     *
+     * @param savedInstanceState Previously saved instance state bundle (may be null).
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -92,9 +119,20 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * @brief Navigates back to the previous screen.
+     *
+     * Finishes the activity in response to a back/up button tap.
+     *
+     * @param view The view that triggered the action.
+     */
     public void goBack(View view) {
         finish();
     }
+
+    // --- Private helpers (grouped) ---
+    // performAdminDelete: orchestrates notification fan-out then deletes event doc.
+    // deleteEventDoc: removes the event document and returns a result to the caller.
 
     private void performAdminDelete(String eventId, String title, String adminUid) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
