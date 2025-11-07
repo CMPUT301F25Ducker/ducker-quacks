@@ -22,7 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Basic instrumented tests for LoginActivity
+ * Basic instrumented tests for LoginActivity. The starter code for this was from ChatGPT when asked
+ * to "generate me some Instrumented test cases for Android Studio". From there, the rest were pieced
+ * together and debugged with AI help.
  */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
