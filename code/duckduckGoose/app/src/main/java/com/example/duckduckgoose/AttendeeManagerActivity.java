@@ -16,7 +16,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.duckduckgoose.user.User;
+import android.content.Intent;
 import com.google.android.material.button.MaterialButton;
+
+import androidx.appcompat.app.AlertDialog;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +52,11 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private MaterialButton btnWorldMap;
     private MaterialButton btnSelectRandom;
     private AutoCompleteTextView dropFilterAttendees;
+    
+    // Firestore and event context
+    private FirebaseFirestore db;
+
+    private boolean isOrganizer = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,9 +86,19 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         // Initialize views
         initializeViews();
+        // Setup Firestore and load waitlist for provided event id (if any)
+        db = FirebaseFirestore.getInstance();
+        Intent intent = getIntent();
+        if (intent != null) {
+            eventId = intent.getStringExtra("eventId");
+        }
+
         setupDropdownFilter();
         setupButtonListeners();
         setupRecyclerView();
+
+        // Load waitlist entrants for the event (if eventId provided)
+        loadWaitlistEntrants();
     }
 
     private void initializeViews() {
@@ -114,11 +141,74 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             );
         }
 
-        // Send Message button
+        // Send Message button - will prompt for message and write notifications for waiting-list users
         if (btnSendMessage != null) {
-            btnSendMessage.setOnClickListener(v ->
-                Toast.makeText(this, "Send Message - Feature coming soon", Toast.LENGTH_SHORT).show()
-            );
+            btnSendMessage.setOnClickListener(v -> {
+                FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+                if (currentUser == null) {
+                    Toast.makeText(this, "Please sign in as organizer to send messages", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (eventId == null) {
+                    Toast.makeText(this, "No event selected", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (!isOrganizer) {
+                    Toast.makeText(this, "Only the organizer can send notifications to entrants", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                final android.widget.EditText input = new android.widget.EditText(this);
+                input.setHint("Enter message to send to waiting list");
+
+                new AlertDialog.Builder(this)
+                    .setTitle("Notify Waiting List")
+                    .setView(input)
+                    .setPositiveButton("Send", (dialog, which) -> {
+                        String message = input.getText().toString().trim();
+                        if (message.isEmpty()) {
+                            Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // Send a notification document for each user in the list
+                        int total = attendees.size();
+                        if (total == 0) {
+                            Toast.makeText(this, "No waiting-list entrants to notify", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        int[] sentCount = {0};
+                        int[] failedCount = {0};
+
+                        for (User u : attendees) {
+                            if (u == null || u.getUserId() == null) continue;
+                            Map<String, Object> notif = new HashMap<>();
+                            notif.put("userId", u.getUserId());
+                            notif.put("message", message);
+                            notif.put("eventId", eventId);
+                            notif.put("sentBy", currentUser.getUid());
+                            notif.put("timestamp", com.google.firebase.Timestamp.now());
+
+                            db.collection("notifications")
+                                .add(notif)
+                                .addOnSuccessListener(docRef -> {
+                                    sentCount[0]++;
+                                    if (sentCount[0] + failedCount[0] >= total) {
+                                        Toast.makeText(this, "Sent to " + sentCount[0] + " / " + total, Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    failedCount[0]++;
+                                    if (sentCount[0] + failedCount[0] >= total) {
+                                        Toast.makeText(this, "Sent to " + sentCount[0] + " / " + total + " (" + failedCount[0] + " failed)", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+            });
         }
 
         // World Map button
@@ -178,6 +268,82 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                     }
                 });
         }
+    }
+
+    /**
+     * Load waitlist entries for the provided eventId and populate attendee lists.
+     * Also checks whether current user is the organizer for the event so we can enable
+     * the send-notification action only for organizers.
+     */
+    private void loadWaitlistEntrants() {
+        if (db == null) db = FirebaseFirestore.getInstance();
+        if (eventId == null || eventId.isEmpty()) {
+            // Nothing to load
+            return;
+        }
+
+        // Verify organizer by loading event document
+        db.collection("events").document(eventId).get()
+            .addOnSuccessListener(doc -> {
+                if (doc != null && doc.exists()) {
+                    String organizerId = doc.getString("organizerId");
+                    FirebaseUser cur = FirebaseAuth.getInstance().getCurrentUser();
+                    isOrganizer = (cur != null && organizerId != null && organizerId.equals(cur.getUid()));
+                    if (!isOrganizer) {
+                        // disable send message button for non-organizers
+                        if (btnSendMessage != null) btnSendMessage.setEnabled(false);
+                    }
+                }
+            });
+
+        // Query waitlist entries for this event with status "waiting"
+        db.collection("waitlist")
+            .whereEqualTo("eventId", eventId)
+            .whereEqualTo("status", "waiting")
+            .get()
+            .addOnSuccessListener((QuerySnapshot snapshot) -> {
+                if (snapshot == null || snapshot.isEmpty()) {
+                    // No waiting-list entries
+                    return;
+                }
+
+                for (DocumentSnapshot entryDoc : snapshot.getDocuments()) {
+                    String uid = entryDoc.getString("userId");
+                    if (uid == null) continue;
+
+                    // Fetch user document for display
+                    db.collection("users").document(uid).get()
+                        .addOnSuccessListener(userDoc -> {
+                            if (userDoc != null && userDoc.exists()) {
+                                User u = userDoc.toObject(User.class);
+                                if (u != null) {
+                                    // ensure userId is set (model may not map id field)
+                                    try {
+                                        java.lang.reflect.Field f = User.class.getDeclaredField("userId");
+                                        f.setAccessible(true);
+                                        if (f.get(u) == null) f.set(u, uid);
+                                    } catch (Exception ex) {
+                                        // ignore reflection failures
+                                    }
+                                    allAttendees.add(u);
+                                    attendees.add(u);
+                                    if (adapter != null) adapter.notifyDataSetChanged();
+                                    updateCountDisplay();
+                                } else {
+                                    // fallback: create minimal User
+                                    User fallback = new User();
+                                    try { java.lang.reflect.Field f = User.class.getDeclaredField("userId"); f.setAccessible(true); f.set(fallback, uid); } catch (Exception ignored) {}
+                                    try { java.lang.reflect.Field f2 = User.class.getDeclaredField("fullName"); f2.setAccessible(true); f2.set(fallback, entryDoc.getString("userName")); } catch (Exception ignored) {}
+                                    allAttendees.add(fallback);
+                                    attendees.add(fallback);
+                                    if (adapter != null) adapter.notifyDataSetChanged();
+                                    updateCountDisplay();
+                                }
+                            }
+                        });
+                }
+            })
+            .addOnFailureListener(e -> Toast.makeText(this, "Failed to load waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void applyFilter(String filter) {
