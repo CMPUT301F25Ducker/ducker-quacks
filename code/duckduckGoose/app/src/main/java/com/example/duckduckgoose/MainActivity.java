@@ -634,11 +634,11 @@ public class MainActivity extends AppCompatActivity {
                     android.content.Intent intent =
                             new android.content.Intent(c, EventDetailActivity.class);
 
-                    // Pass the event ID first - this is most important
+                    // include event document id for fetching full details (adding this now to avoid headaches later) PASS THIS FIRST, IF YOU DON'T I WILL
                     intent.putExtra("eventId", e.getEventId());
-                    // Then pass other details for immediate display
+                    // Common extras that aren't actual extras but actually matter...
                     intent.putExtra("title",    e.getName());
-                    intent.putExtra("dateText", e.getEventDate());
+                    intent.putExtra("dateText", e.getEventDate()); // I'm surprised this getEventDate() hasn't yet blown up
                     intent.putExtra("open",     0L);
                     intent.putExtra("deadline", 0L);
                     intent.putExtra("cost",     e.getCost());

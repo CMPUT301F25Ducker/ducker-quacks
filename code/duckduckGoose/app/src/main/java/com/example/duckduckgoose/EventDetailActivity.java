@@ -143,7 +143,7 @@ public class EventDetailActivity extends AppCompatActivity {
                             int spotsCount = Integer.parseInt(digits);
                             if (spotsCount > 0) {
                                 double pct = 100.0 / (double) spotsCount; // 1 / spots -> percent
-                                String pctStr = String.format(java.util.Locale.getDefault(), "%.1f%%", pct);
+                                String pctStr = String.format(java.util.Locale.getDefault(), "%.2f%%", pct);
                                 oddsText = "Odds of winning: " + pctStr + " (1 in " + spotsCount + ")";
                             }
                         } catch (NumberFormatException nfe) {
