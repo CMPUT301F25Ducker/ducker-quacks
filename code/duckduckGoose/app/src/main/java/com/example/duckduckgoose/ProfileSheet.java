@@ -217,7 +217,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
 
                 btnDelete.setOnClickListener(x -> {
                     if (mListener != null) {
-                        mListener.onProfileDeleted(userId);
+                        mListener.onProfileDeleted(email);
                     }
                     dismiss();
                 });
