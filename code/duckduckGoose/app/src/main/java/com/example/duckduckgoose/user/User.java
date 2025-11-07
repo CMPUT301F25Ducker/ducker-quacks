@@ -15,31 +15,26 @@ import com.google.firebase.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @class User
- * @brief Model class for representing a user profile and event associations.
- *
- * Encapsulates basic profile information and tracks events that a user has been
- * waitlisted for or accepted into. Provides safe getters and utility methods
- * for list management.
- */
 public class User {
-
-    // --- Private fields (grouped) ---
     private String userId;
     private String fullName;
     private Long   age;
     private String email;
     private String phone;
     private String accountType;
-    private List<String> waitlistedEventIds; /**< IDs of events the user is waitlisted for. */
-    private List<String> acceptedEventIds;   /**< IDs of events the user has been accepted into. */
+    private List<String> waitlistedEventIds; // List of event IDs the user is waitlisted for
+    private List<String> acceptedEventIds; // List of event IDs the user has been accepted into (from waitlist)
 
     /**
-     * @brief Default constructor initializing empty event lists.
+     * @class User
+     * @brief Model class for representing a user profile and event associations.
+     *
+     * Encapsulates basic profile information and tracks events that a user has been
+     * waitlisted for or accepted into. Provides safe getters and utility methods
+     * for list management.
      */
     public User() {
-        waitlistedEventIds = new ArrayList<>();
+        waitlistedEventIds = new ArrayList<>(); // Initialize empty list in no-arg constructor
         acceptedEventIds = new ArrayList<>();
     }
 
@@ -94,6 +89,7 @@ public class User {
         }
         if (!acceptedEventIds.contains(eventId)) {
             acceptedEventIds.add(eventId);
+            // Remove from waitlist since now accepted
             removeFromWaitlist(eventId);
         }
     }
