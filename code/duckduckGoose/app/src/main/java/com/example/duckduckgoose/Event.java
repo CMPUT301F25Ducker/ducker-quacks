@@ -1,3 +1,14 @@
+/**
+ * @file Event.java
+ * @brief Model for an event with waitlist and registration helpers.
+ *
+ * Stores event metadata and provides methods to manage waitlist, accepted,
+ * and registered user lists, syncing with Firestore as needed.
+ *
+ * @author
+ *      DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.util.Log;
@@ -10,7 +21,15 @@ import com.google.firebase.firestore.WriteBatch;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @class Event
+ * @brief Event model with Firestore-backed waitlist/registration operations.
+ *
+ * Exposes getters for event fields and utility methods to add/remove users
+ * from waitlist, accepted, and registered lists.
+ */
 public class Event {
+    /** Event identity and basic info. */
     private String eventId;
     private String name;
     private String eventDate;
@@ -21,12 +40,16 @@ public class Event {
     private boolean geolocationEnabled;
     private List<String> imagePaths;
     private String organizerId;
+
+    /** Enrollment lists maintained for the event. */
     private List<String> waitingList;             // user IDs waiting
     private List<String> acceptedFromWaitlist;    // user IDs accepted
     private List<String> registeredUsers;         // user IDs registered
     private int signupCount;                      // number of signed-up users
 
-    // 🔹 Default no-arg constructor required for Firestore deserialization
+    /**
+     * @brief No-arg constructor for Firestore deserialization.
+     */
     public Event() {
         this.waitingList = new ArrayList<>();
         this.acceptedFromWaitlist = new ArrayList<>();
@@ -35,7 +58,18 @@ public class Event {
         this.signupCount = 0;
     }
 
-    // 🔹 Full constructor for creating an event in code
+    /**
+     * @brief Creates a new Event with supplied metadata.
+     * @param eventId Event identifier.
+     * @param name Display name.
+     * @param eventDate Human-readable date/period string.
+     * @param registrationOpens When registration opens (string form).
+     * @param registrationCloses When registration closes (string form).
+     * @param maxSpots Maximum number of spots (string form).
+     * @param cost Cost string (e.g., "$10" or "Free").
+     * @param geolocationEnabled Whether location features are enabled.
+     * @param imagePaths Optional image path list.
+     */
     public Event(String eventId,
                  String name,
                  String eventDate,
@@ -55,7 +89,6 @@ public class Event {
         this.cost = cost;
         this.geolocationEnabled = geolocationEnabled;
         this.imagePaths = imagePaths != null ? imagePaths : new ArrayList<>();
-        this.organizerId = organizerId;
         this.waitingList = new ArrayList<>();
         this.acceptedFromWaitlist = new ArrayList<>();
         this.registeredUsers = new ArrayList<>();
@@ -65,6 +98,10 @@ public class Event {
     // ================================
     // Getters and setters
     // ================================
+    /**
+     * @brief Accessors for event fields.
+     * @return Field values or empty lists where applicable.
+     */
     public String getEventId() {
         return eventId;
     }
@@ -124,6 +161,10 @@ public class Event {
     // ================================
     // Waitlist and registration logic
     // ================================
+    /**
+     * @brief Adds a user to the waitlist and syncs Firestore.
+     * @param userId The user to add.
+     */
     public void addToWaitingList(String userId) {
         if (waitingList == null) waitingList = new ArrayList<>();
         if (waitingList.contains(userId)) return;
@@ -147,6 +188,10 @@ public class Event {
         );
     }
 
+    /**
+     * @brief Removes a user from the waitlist and syncs Firestore.
+     * @param userId The user to remove.
+     */
     public void removeFromWaitingList(String userId) {
         if (waitingList == null || !waitingList.contains(userId)) return;
         waitingList.remove(userId);
@@ -165,14 +210,28 @@ public class Event {
         );
     }
 
+    /**
+     * @brief Checks if a user is on the waitlist.
+     * @param userId Target user id.
+     * @return true if the user is currently waitlisted.
+     */
     public boolean isOnWaitingList(String userId) {
         return waitingList != null && waitingList.contains(userId);
     }
 
+    /**
+     * @brief Returns the list of users accepted from the waitlist.
+     * @return Non-null list of accepted user IDs.
+     */
     public List<String> getAcceptedFromWaitlist() {
         return acceptedFromWaitlist != null ? acceptedFromWaitlist : new ArrayList<>();
     }
 
+    /**
+     * @brief Accepts a user from the waitlist and updates Firestore.
+     * Moves the user from waitlist to accepted state.
+     * @param userId The user to accept.
+     */
     public void acceptFromWaitlist(String userId) {
         if (waitingList == null || !waitingList.contains(userId)) return;
         if (acceptedFromWaitlist == null) acceptedFromWaitlist = new ArrayList<>();
@@ -201,6 +260,10 @@ public class Event {
                 .addOnFailureListener(e -> Log.e("Event", "Failed to accept user", e));
     }
 
+    /**
+     * @brief Removes a user from the accepted list and updates Firestore.
+     * @param userId The user to remove from accepted.
+     */
     public void removeFromAcceptedList(String userId) {
         if (acceptedFromWaitlist == null || !acceptedFromWaitlist.contains(userId)) return;
         acceptedFromWaitlist.remove(userId);
@@ -219,14 +282,27 @@ public class Event {
         );
     }
 
+    /**
+     * @brief Checks if a user is in the accepted-from-waitlist list.
+     * @param userId Target user id.
+     * @return true if accepted.
+     */
     public boolean hasAcceptedFromWaitlist(String userId) {
         return acceptedFromWaitlist != null && acceptedFromWaitlist.contains(userId);
     }
 
+    /**
+     * @brief Returns the number of registered users.
+     * @return Current signup count.
+     */
     public int getSignupCount() {
         return signupCount;
     }
 
+    /**
+     * @brief Adds a user to the registered list and increments count.
+     * @param userId The user to add.
+     */
     public void addRegisteredUser(String userId) {
         if (registeredUsers == null) registeredUsers = new ArrayList<>();
         if (!registeredUsers.contains(userId)) {
@@ -235,6 +311,10 @@ public class Event {
         }
     }
 
+    /**
+     * @brief Removes a user from the registered list and decrements count.
+     * @param userId The user to remove.
+     */
     public void removeRegisteredUser(String userId) {
         if (registeredUsers != null && registeredUsers.contains(userId)) {
             registeredUsers.remove(userId);
@@ -242,6 +322,11 @@ public class Event {
         }
     }
 
+    /**
+     * @brief Checks if a user is registered for this event.
+     * @param userId Target user id.
+     * @return true if registered.
+     */
     public boolean isRegistered(String userId) {
         return registeredUsers != null && registeredUsers.contains(userId);
     }
