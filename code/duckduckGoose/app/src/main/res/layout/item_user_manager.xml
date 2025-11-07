@@ -69,11 +69,11 @@
                 android:layout_marginTop="2dp" />
 
             <TextView
-                android:id="@+id/txtUserExtra"
+                android:id="@+id/txtAccountType"
                 style="@style/Text.Fresh"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Status"
+                android:text="Account Type"
                 android:textColor="@color/fg_green"
                 android:textSize="12sp"
                 android:textStyle="bold"
