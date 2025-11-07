@@ -20,6 +20,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -247,6 +256,23 @@ public class EventDetailActivity extends AppCompatActivity {
                     if (doc != null && doc.exists()) {
                         Event event = doc.toObject(Event.class);
                         if (event != null) {
+                            // Fill all event info fields from db
+                            TextView tvTitle     = findViewById(R.id.txtEventTitle);
+                            TextView tvDesc      = findViewById(R.id.txtDescription);
+                            TextView tvDates     = findViewById(R.id.txtDates);
+                            TextView tvOpen      = findViewById(R.id.txtOpen);
+                            TextView tvDeadline  = findViewById(R.id.txtDeadline);
+                            TextView tvCost      = findViewById(R.id.txtCost);
+                            TextView tvSpots     = findViewById(R.id.txtSpots);
+
+                            if (tvTitle != null)    tvTitle.setText(event.getName() != null ? event.getName() : "Event");
+                            if (tvDesc != null)     tvDesc.setText("Event details loaded from backend.");
+                            if (tvDates != null)    tvDates.setText(event.getEventDate() != null ? event.getEventDate() : "TBD");
+                            if (tvOpen != null)     tvOpen.setText("Registration Opens: " + (event.getRegistrationOpens() != null ? event.getRegistrationOpens() : "TBD"));
+                            if (tvDeadline != null) tvDeadline.setText("Registration Deadline: " + (event.getRegistrationCloses() != null ? event.getRegistrationCloses() : "TBD"));
+                            if (tvCost != null)     tvCost.setText("Cost: " + (event.getCost() != null ? event.getCost() : "—"));
+                            if (tvSpots != null)    tvSpots.setText("Spots: " + (event.getMaxSpots() != null ? event.getMaxSpots() : "—"));
+
                             // Check if current user is on waiting list
                             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                             if (currentUser != null && event.isOnWaitingList(currentUser.getUid())) {
@@ -332,27 +358,34 @@ public class EventDetailActivity extends AppCompatActivity {
         if (db == null || eventId == null) return;
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) return;
+        if (currentUser == null) {
+            Toast.makeText(this, "Please sign in first", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        db.collection("events").document(eventId).get()
-                .addOnSuccessListener(doc -> {
-                    if (doc != null && doc.exists()) {
-                        Event event = doc.toObject(Event.class);
-                        if (event != null) {
-                            event.removeFromWaitingList(currentUser.getUid());
-                            db.collection("events").document(eventId)
-                                    .set(event)
-                                    .addOnSuccessListener(aVoid -> {
-                                        Toast.makeText(this, "Successfully left waiting list", Toast.LENGTH_SHORT).show();
-                                        currentState = State.WAITING_LIST;
-                                        applyState(currentState);
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Toast.makeText(this, "Failed to leave waiting list", Toast.LENGTH_SHORT).show();
-                                    });
-                        }
-                    }
-                });
+        String uid = currentUser.getUid();
+        WriteBatch batch = db.batch();
+
+        // Remove user from event's waitingList
+        DocumentReference eventRef = db.collection("events").document(eventId);
+        batch.update(eventRef, "waitingList", FieldValue.arrayRemove(uid));
+
+        // Remove event from user's waitlistedEventIds
+        DocumentReference userRef = db.collection("users").document(uid);
+        batch.update(userRef, "waitlistedEventIds", FieldValue.arrayRemove(eventId));
+
+        // Delete waitlist entry
+        DocumentReference waitlistRef = db.collection("waitlist").document(uid + "_" + eventId);
+        batch.delete(waitlistRef);
+
+        batch.commit()
+            .addOnSuccessListener(aVoid -> {
+                Toast.makeText(this, "Successfully left waiting list", Toast.LENGTH_SHORT).show();
+                finish(); // Return to My Events page
+            })
+            .addOnFailureListener(e -> {
+                Toast.makeText(this, "Failed to leave waiting list: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
     }
 
     private void setupEntrantButtons() {
