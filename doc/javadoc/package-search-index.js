@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.example.duckduckgoose"},{"l":"com.example.duckduckgoose.user"},{"l":"com.example.duckduckgoose.waitlist"}];updateSearchResults();

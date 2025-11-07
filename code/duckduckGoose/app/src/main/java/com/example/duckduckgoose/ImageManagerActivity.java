@@ -1,12 +1,10 @@
 /**
- * @file ImageManagerActivity.java
- * @brief Activity for displaying and managing a grid of stored images.
+ * Activity for displaying and managing a grid of stored images.
  *
  * Provides a simple interface to preview and remove image items in a grid layout.
- * Integrates with the app’s top bar and profile sheet for consistent navigation.
+ * Integrates with the app's top bar and profile sheet for consistent navigation.
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -24,14 +22,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @class ImageManagerActivity
- * @brief Displays an editable image grid and attaches top bar profile actions.
+ * Displays an editable image grid and attaches top bar profile actions.
  */
 public class ImageManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
     /**
-     * @brief Initializes the grid of images and top bar wiring.
-     * @param savedInstanceState State bundle for recreation.
+     * Initializes the grid of images and top bar wiring.
+     *
+     * @param savedInstanceState - State bundle for recreation
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +53,7 @@ public class ImageManagerActivity extends AppCompatActivity implements ProfileSh
         // Attach top bar profile sheet
         TopBarWiring.attachProfileSheet(this);
 
-        /** @brief Back button: return to previous screen. */
+        // Back button handler: returns to the previous screen
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         // RecyclerView setup
@@ -75,7 +73,9 @@ public class ImageManagerActivity extends AppCompatActivity implements ProfileSh
     }
 
     /**
-     * @brief Unused — profile deletion not applicable in this screen.
+     * Unused — profile deletion not applicable in this screen.
+     *
+     * @param userId - ID of the user profile to delete
      */
     @Override
     public void onProfileDeleted(String userId) {
@@ -83,7 +83,9 @@ public class ImageManagerActivity extends AppCompatActivity implements ProfileSh
     }
 
     /**
-     * @brief Unused — event navigation not applicable in this screen.
+     * Unused — event navigation not applicable in this screen.
+     *
+     * @param userId - ID of the user whose events to view
      */
     @Override
     public void onEventsButtonClicked(String userId) {

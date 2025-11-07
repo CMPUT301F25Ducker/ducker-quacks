@@ -1,6 +1,5 @@
 /**
- * @file ProfileSheet.java
- * @brief Bottom sheet for viewing and managing a user's profile in DuckDuckGoose.
+ * Bottom sheet for viewing and managing a user's profile in DuckDuckGoose.
  *
  * This fragment renders profile details (name, age, contact info, account type),
  * supports viewing another user's profile (with admin actions like kick/delete),
@@ -37,8 +36,7 @@ import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
- * @class ProfileSheet
- * @brief A Material BottomSheet that shows a user's profile and actions.
+ * A Material BottomSheet that shows a user's profile and actions.
  *
  * Usage modes:
  *  - **Self profile**: shows edit, logout, and delete account actions.
@@ -75,7 +73,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     private FirebaseAuth auth;
 
     /**
-     * @brief Factory method for an empty sheet that loads the current user.
+     * Factory method for an empty sheet that loads the current user.
+     *
      * @return New instance of ProfileSheet.
      */
     public static ProfileSheet newInstance() {
@@ -83,7 +82,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Factory for a sheet bound to a specific user (simple mode).
+     * Factory for a sheet bound to a specific user (simple mode).
+     *
      * @param user The user whose profile should be displayed.
      * @return New instance of ProfileSheet preloaded with user arguments.
      */
@@ -92,7 +92,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Full-featured factory with display and control flags.
+     * Full-featured factory with display and control flags.
      *
      * @param user The user to display.
      * @param isViewingOther True if another user's profile is being viewed.
@@ -119,7 +119,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Captures the host callback if it implements the listener.
+     * Captures the host callback if it implements the listener.
+     *
      * @param context Hosting context.
      */
     @Override
@@ -131,7 +132,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Inflates the sheet layout.
+     * Inflates the sheet layout.
+     *
      * @param inflater Layout inflater.
      * @param container Optional parent view.
      * @param savedInstanceState Previous state or null.
@@ -145,7 +147,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Binds UI and wires actions after the view is created.
+     * Binds UI and wires actions after the view is created.
      * Handles both argument-driven profiles and the current user's profile.
      *
      * @param v Root view.
@@ -315,7 +317,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Binds current user's profile fields to the UI.
+     * Binds current user's profile fields to the UI.
+     *
      * @param v Root view for lookups.
      * @param me The current signed-in user object.
      */
@@ -356,7 +359,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Shows a confirmation dialog before deleting the current account.
+     * Shows a confirmation dialog before deleting the current account.
      * Presents a destructive action with clear, irreversible consequence.
      */
     private void confirmDeleteSelf() {
@@ -369,7 +372,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Deletes the current user's Firestore document and Auth account.
+     *  Deletes the current user's Firestore document and Auth account.
      *
      * Order of operations:
      * 1) Delete Firestore /users/{uid} document.

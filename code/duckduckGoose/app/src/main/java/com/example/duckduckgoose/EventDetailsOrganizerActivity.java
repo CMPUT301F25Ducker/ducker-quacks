@@ -1,12 +1,10 @@
 /**
- * @file EventDetailsOrganizerActivity.java
- * @brief Organizer-facing event details screen with edit/delete and attendee management.
+ * Organizer-facing event details screen with edit/delete and attendee management.
  *
  * Loads an event from Firestore, renders key details, and provides actions to
  * launch the attendee manager, edit the event, or delete it (with confirmation).
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -32,8 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 
 /**
- * @class EventDetailsOrganizerActivity
- * @brief Activity for organizers to view and manage a single event.
+ * Activity for organizers to view and manage a single event.
  *
  * Fetches event data, displays key fields (dates, cost, capacity, description),
  * and wires actions for attendee management, editing, and deletion.
@@ -56,13 +53,13 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
     private MaterialButton deleteButton;
 
     /**
-     * @brief Initializes UI, registers activity result launcher, and loads event details.
+     * Initializes UI, registers activity result launcher, and loads event details.
      *
      * Sets up edge-to-edge content, adjusts system bar appearance on Android R+,
      * binds view references, configures delete/edit/attendee manager actions, and
      * triggers an initial event load if an event ID is available.
      *
-     * @param savedInstanceState Previously saved instance state; may be null.
+     * @param savedInstanceState - Previously saved instance state; may be null
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,7 +166,7 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Refreshes the event details whenever the activity regains focus.
+     * Refreshes the event details whenever the activity regains focus.
      *
      * If an event ID is present, re-queries Firestore and updates the UI with
      * the latest information.
@@ -245,11 +242,11 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Handles the optional XML onClick to navigate back.
+     * Handles the optional XML onClick to navigate back.
      *
      * Finishes the current activity, returning to the previous screen.
      *
-     * @param view The source view that triggered the callback.
+     * @param view - The source view that triggered the callback
      */
     // Optional onClick in XML
     public void goBack(View view) {

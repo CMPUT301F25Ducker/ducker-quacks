@@ -1,13 +1,11 @@
 /**
- * @file MainActivity.java
- * @brief App home controller for Events and My Events screens.
+ * App home controller for Events and My Events screens.
  *
  * Renders the main event list with filtering/sorting and the "My Events" view
  * (organizer vs entrant modes). Handles top-bar navigation, intent-driven
  * start screens, and back navigation behavior.
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -47,8 +45,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * @class MainActivity
- * @brief Hosts the event list and "My Events" screens; routes to detail/edit.
+ * Hosts the event list and "My Events" screens; routes to detail/edit.
  *
  * Uses Firestore listeners to keep listings live. Supports organizer-only
  * creation/edit flows and entrant views of pre/past registrations.
@@ -62,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private Screen current = Screen.EVENT_LIST;
 
     /**
-     * @brief Wires top-bar buttons based on the active screen and login mode.
+     * Wires top-bar buttons based on the active screen and login mode.
      *
      * Shows/hides "My Events" and "New Event" appropriately and connects them
      * to navigation or creation flows.
@@ -78,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             if (btnNewEvent != null) {
                 if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
                     btnNewEvent.setVisibility(View.VISIBLE);
-                    /** @brief Opens the create-event flow for organizers. */
+                    /** Opens the create-event flow for organizers. */
                     btnNewEvent.setOnClickListener(v -> {
                         Intent intent = new Intent(this, EventEditActivity.class);
                         intent.putExtra("mode", "create");
@@ -92,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             // On other pages: show "My Events" button, hide "New Event"
             if (btnMyEvents != null) {
                 btnMyEvents.setVisibility(View.VISIBLE);
-                /** @brief Navigates to "My Events". */
+                /** Navigates to "My Events". */
                 btnMyEvents.setOnClickListener(v -> showMyEvents());
             }
             if (btnNewEvent != null) btnNewEvent.setVisibility(View.GONE);
@@ -100,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Handles a requested start screen from Intent extras.
+     * Handles a requested start screen from Intent extras.
      *
      * Supports "EVENT_LIST" or "MY_EVENTS" via the "startOn" extra.
      * Removes the extra after handling to avoid re-trigger on rotation.
@@ -116,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Ensures new Intents (singleTop) still trigger startOn handling.
+     * Ensures new Intents (singleTop) still trigger startOn handling.
      * @param intent The new intent delivered to the activity.
      */
     @Override
@@ -127,8 +124,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Entry point: sets up system UI, shows default screen, wires back behavior.
-     * @param savedInstanceState Saved state bundle.
+     * Entry point: sets up system UI, shows default screen, wires back behavior.
+     * 
+     * @param savedInstanceState - Saved state bundle
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,8 +153,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Intercept system back
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            /**
-             * @brief Custom back behavior based on active screen and login mode.
+             /**
+             * Custom back behavior based on active screen and login mode.
              */
             @Override
             public void handleOnBackPressed() {
@@ -187,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Navigates to the login screen and finishes the current task.
+     * Navigates to the login screen and finishes the current task.
      */
     private void goToLogin() {
         Intent intent = new Intent(this, LoginActivity.class);
@@ -197,9 +195,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Parses a cost label (e.g., "$25", "Free") into a numeric value for sorting.
-     * @param costStr Cost label.
-     * @return Numeric cost (Free->0); unknown/invalid -> {@link Double#MAX_VALUE}.
+     * Parses a cost label (e.g., "$25", "Free") into a numeric value for sorting.
+     * 
+     * @param costStr - Cost label
+     * @return Numeric cost (Free->0); unknown/invalid -> {@link Double#MAX_VALUE}
      */
     private static double parseCost(String costStr) {
         if (costStr == null) return Double.MAX_VALUE;
@@ -219,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
     /* ----------------- Screens ----------------- */
 
     /**
-     * @brief Renders the main "Events" list with filter/sort and live updates.
+     * Renders the main "Events" list with filter/sort and live updates.
      *
      * Subscribes to Firestore "events" and applies client-side filtering and sorting;
      * clicking an item opens {@link EventDetailActivity}.
@@ -327,11 +326,11 @@ public class MainActivity extends AppCompatActivity {
             // Wire dropdown changes to reapply filter
             if (dropInterest != null) {
                 dropInterest.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.interest_values)));
-                /** @brief Re-applies filters when interest changes. */
+                /** Re-applies filters when interest changes. */
                 dropInterest.setOnItemClickListener((parent, view, position, id) -> applyFilters.run());
             }
             if (dropSort != null) {
-                /** @brief Re-applies filters when sort changes. */
+                /** Re-applies filters when sort changes. */
                 dropSort.setOnItemClickListener((parent, view, position, id) -> applyFilters.run());
             }
 
@@ -354,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Renders the "My Events" view for organizer or entrant modes.
+     * Renders the "My Events" view for organizer or entrant modes.
      *
      * Organizer: sectioned list of past/current events; click -> details organizer view.
      * Entrant: sectioned list of pre-registration/past registrations from waitlist.
@@ -529,8 +528,8 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     /** 
-     * @class SimpleEventAdapter
-     * @brief Minimal adapter for placeholder string items on the Events screen.
+     *  SimpleEventAdapter
+     * Minimal adapter for placeholder string items on the Events screen.
      */
     static class SimpleEventAdapter extends RecyclerView.Adapter<EventVH> {
         private final List<String> data;
@@ -555,7 +554,7 @@ public class MainActivity extends AppCompatActivity {
             h.cost.setText("Cost: —");
             h.spots.setText("Spots: —");
 
-            /** @brief Opens detail screen with a sample state mapping. */
+            /** Opens detail screen with a sample state mapping. */
             h.itemView.setOnClickListener(v -> {
                     android.content.Context c = v.getContext();
                     android.content.Intent intent =
@@ -592,8 +591,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** 
-     * @class EventObjectAdapter
-     * @brief Adapter that binds Event objects into event cards.
+     *  EventObjectAdapter
+     *  Adapter that binds Event objects into event cards.
      */
     static class EventObjectAdapter extends RecyclerView.Adapter<EventVH> {
         private final List<Event> data;
@@ -611,7 +610,7 @@ public class MainActivity extends AppCompatActivity {
             Event e = data.get(i);
             h.bind(e);
 
-            /** @brief Opens event details, passing event id first for fetching. */
+            /**  Opens event details, passing event id first for fetching. */
             h.itemView.setOnClickListener(v -> {
                 android.content.Context c = v.getContext();
                 android.content.Intent intent = new android.content.Intent(c, EventDetailActivity.class);
@@ -634,8 +633,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @class EventVH
-     * @brief Shared ViewHolder for an event card item.
+     *  EventVH
+     *  Shared ViewHolder for an event card item.
      */
     static class EventVH extends RecyclerView.ViewHolder {
         /** UI labels on the card. */
@@ -650,7 +649,7 @@ public class MainActivity extends AppCompatActivity {
             spots   = v.findViewById(R.id.txtSpots);
         }
 
-        /** @brief Binds an Event object to the card views. */
+        /**  Binds an Event object to the card views. */
         void bind(Event e) {
             title.setText(e.getName());
             date.setText(e.getEventDate());
@@ -662,8 +661,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @class SectionedEventAdapter
-     * @brief Sectioned list for "My Events" (headers + items).
+     *  SectionedEventAdapter
+     *  Sectioned list for "My Events" (headers + items).
      */
     static class SectionedEventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private static final int TYPE_HEADER = 0, TYPE_EVENT = 1;
@@ -709,7 +708,7 @@ public class MainActivity extends AppCompatActivity {
                 vh.cost.setText("Cost: " + e.getCost());
                 vh.spots.setText("Spots: " + e.getMaxSpots());
 
-                /** @brief Opens event details with a deterministic state mapping by position. */
+                /**  Opens event details with a deterministic state mapping by position. */
                 vh.itemView.setOnClickListener(v -> {
                     android.content.Context c = v.getContext();
                     android.content.Intent intent =
@@ -749,8 +748,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * @class OrganizerEventAdapter
-     * @brief Organizer-focused adapter (headers + events) with click-to-edit.
+     *  OrganizerEventAdapter
+     *  Organizer-focused adapter (headers + events) with click-to-edit.
      */
     static class OrganizerEventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private static final int TYPE_HEADER = 0, TYPE_EVENT = 1;
@@ -799,7 +798,7 @@ public class MainActivity extends AppCompatActivity {
                 vh.cost.setText("Cost: " + e.getCost());
                 vh.spots.setText("Spots: " + e.getMaxSpots());
 
-                /** @brief Opens organizer details/edit screen for the selected event. */
+                /**  Opens organizer details/edit screen for the selected event. */
                 vh.itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(context, EventDetailsOrganizerActivity.class);
                     // Pass the document id — details activity will fetch the rest from Firestore

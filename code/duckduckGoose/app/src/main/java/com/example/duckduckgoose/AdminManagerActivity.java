@@ -1,14 +1,11 @@
 /**
- * @file AdminManagerActivity.java
- * @brief Activity for viewing and managing admin accounts.
+ * Activity for viewing and managing admin accounts.
  *
- * Displays a list of admin users fetched from Firestore. Allows navigation
- * to add or view individual admin profiles.
+ * <p>Displays a list of admin users fetched from Firestore. Allows navigation
+ * to add or view individual admin profiles.</p>
  *
- * @author
- *      DuckDuckGoose Development Team
+ * <p><b>Author:</b> DuckDuckGoose Development Team</p>
  */
-
 package com.example.duckduckgoose;
 
 import android.os.Build;
@@ -30,10 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @class AdminManagerActivity
- * @brief Activity to display and manage the list of admin users.
+ * Activity to display and manage the list of admin users.
  *
- * Handles Firestore retrieval and RecyclerView display of all registered admins.
+ * <p>Handles Firestore retrieval and RecyclerView display of all registered admins.</p>
  */
 public class AdminManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
@@ -49,8 +45,9 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
     private TextInputEditText edtFullName, edtAge, edtEmail, edtPhone, edtPassword;
 
     /**
-     * @brief Initializes the admin manager screen and sets up the RecyclerView.
-     * @param savedInstanceState Saved activity state.
+     * Initializes the admin manager screen and sets up the RecyclerView.
+     *
+     * @param savedInstanceState saved activity state
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,11 +120,8 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
             });
         }
 
-        /**
-         * @brief Sets up the admin list and item click behavior.
-         *
-         * Hides checkboxes and opens a profile sheet on row click.
-         */
+        // Sets up the admin list and item click behavior.
+        // Hides checkboxes and opens a profile sheet on row click.
         RecyclerView rv = findViewById(R.id.rvAdmins);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
@@ -135,15 +129,17 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
             adapter = new UserManagerAdapter(admins, false); // false = hide checkboxes
             adapter.setOnItemClickListener(user -> {
                 String extra = (user.getEmail() != null) ? user.getEmail() : "";
-                ProfileSheet.newInstance(user, true, false, extra, false).show(getSupportFragmentManager(), "ProfileSheet");
+                ProfileSheet.newInstance(user, true, false, extra, false)
+                        .show(getSupportFragmentManager(), "ProfileSheet");
             });
             rv.setAdapter(adapter);
         }
     }
 
     /**
-     * @brief Removes the deleted admin from the list and updates the UI.
-     * @param userId ID of the admin that was deleted.
+     * Removes the deleted admin from the list and updates the UI.
+     *
+     * @param userId ID of the admin that was deleted
      */
     @Override
     public void onProfileDeleted(String userId) {
@@ -157,15 +153,16 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
     }
 
     /**
-     * @brief No-op for admins; events button is not used here.
-     * @param userId Target user id.
+     * No-op for admins; events button is not used here.
+     *
+     * @param userId target user ID
      */
     @Override
     public void onEventsButtonClicked(String userId) {
         // No action needed for admins
     }
 
-    /** @brief Clears all add-admin input fields. */
+    /** Clears all add-admin input fields. */
     private void clearAdminInputs() {
         edtFullName.setText("");
         edtAge.setText("");

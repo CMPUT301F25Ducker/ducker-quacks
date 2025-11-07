@@ -1,19 +1,17 @@
 /**
- * @file EventEditActivity.java
- * @brief Handles creation and editing of events by organizers.
+ * Handles creation and editing of events by organizers.
  *
- * This activity allows organizers to create new events or edit existing ones.
- * It provides form fields for event details such as name, cost, registration
- * dates, geolocation, and associated images. It also handles Firestore CRUD
- * operations for storing and updating event data.
+ * <p>This activity lets organizers create new events or edit existing ones. It
+ * provides form fields for event details such as name, cost, registration
+ * dates, geolocation, and associated images. It also performs Firestore CRUD
+ * operations for storing and updating event data.</p>
  *
- * UI includes: Event name, spots, cost, event date, registration open/close dates,
- * image management, geolocation toggle, and action buttons (save, cancel, delete).
+ * <p><b>UI includes:</b> Event name, spots, cost, event date, registration
+ * open/close dates, image management, geolocation toggle, and action buttons
+ * (save, cancel, delete).</p>
  *
- * @author
- *     DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.app.DatePickerDialog;
@@ -48,15 +46,16 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * @class EventEditActivity
- * @brief Activity for organizers to create or edit events stored in Firestore.
+ * Activity for organizers to create or edit events stored in Firestore.
  *
- * Provides functionality to:
- * - Create new events and save them to Firestore.
- * - Edit existing events, updating Firestore records.
- * - Attach event images using a gallery picker.
- * - Manage registration and geolocation details.
- * - Launch related screens such as attendee manager.
+ * Features include:
+ * <ul>
+ *   <li>Create new events and save them to Firestore</li>
+ *   <li>Edit existing events and update Firestore records</li>
+ *   <li>Attach event images using a gallery picker</li>
+ *   <li>Manage registration and geolocation settings</li>
+ *   <li>Launch related screens such as the attendee manager</li>
+ * </ul>
  */
 public class EventEditActivity extends AppCompatActivity {
 
@@ -105,8 +104,9 @@ public class EventEditActivity extends AppCompatActivity {
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy", Locale.US);
 
     /**
-     * @brief Initializes the activity and sets up UI components.
-     * @param savedInstanceState saved activity state, if any.
+     * Initializes the activity and sets up UI components.
+     *
+     * @param savedInstanceState saved activity state, if any
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,9 +176,7 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * @brief Initializes all form fields and button references.
-     */
+    /** Initializes all form fields and button references. */
     private void initializeViews() {
         edtEventName = findViewById(R.id.edtEventName);
         edtSpots = findViewById(R.id.edtSpots);
@@ -199,9 +197,7 @@ public class EventEditActivity extends AppCompatActivity {
         btnAddImage = findViewById(R.id.btnAddImage);
     }
 
-    /**
-     * @brief Wires up button and field click listeners for UI actions.
-     */
+    /** Wires up button and field click listeners for UI actions. */
     private void setupClickListeners() {
         txtEventDate.setOnClickListener(v -> showDatePicker(eventDate, txtEventDate, "Event Date"));
         txtRegOpens.setOnClickListener(v -> showDatePicker(regOpensDate, txtRegOpens, "Registration Opens"));
@@ -215,9 +211,7 @@ public class EventEditActivity extends AppCompatActivity {
         btnAttendeeManager.setOnClickListener(v -> openAttendeeManager());
     }
 
-    /**
-     * @brief Opens an image picker for selecting images from the gallery.
-     */
+    /** Opens an image picker for selecting images from the gallery. */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
@@ -225,10 +219,11 @@ public class EventEditActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Displays a DatePicker dialog for selecting event or registration dates.
-     * @param calendar The calendar instance to update.
-     * @param targetView The target text field to display the selected date.
-     * @param title Dialog title indicating which date is being selected.
+     * Displays a {@link DatePickerDialog} for selecting event or registration dates.
+     *
+     * @param calendar   the calendar instance to update
+     * @param targetView the target text field to display the selected date
+     * @param title      dialog title indicating which date is being selected
      */
     private void showDatePicker(Calendar calendar, EditText targetView, String title) {
         DatePickerDialog picker = new DatePickerDialog(
@@ -245,9 +240,7 @@ public class EventEditActivity extends AppCompatActivity {
         picker.show();
     }
 
-    /**
-     * @brief Displays the bottom sheet for selecting images (demo mode).
-     */
+    /** Displays the bottom sheet for selecting images (demo mode). */
     private void showImageSelectSheet() {
         if (sheetImageSelect != null) {
             sheetImageSelect.setVisibility(View.VISIBLE);
@@ -269,17 +262,16 @@ public class EventEditActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Adds an image path to the event's image container and updates the display.
-     * @param imagePath The URI or file path of the image to add.
+     * Adds an image path to the event's image container and updates the display.
+     *
+     * @param imagePath the URI or file path of the image to add
      */
     private void addImageToContainer(String imagePath) {
         imagePaths.add(imagePath);
         updateImageDisplay();
     }
 
-    /**
-     * @brief Updates the visible list of selected images in the layout.
-     */
+    /** Updates the visible list of selected images in the layout. */
     private void updateImageDisplay() {
         imageContainer.removeAllViews();
         for (int i = 0; i < imagePaths.size() && i < 3; i++) {
@@ -299,9 +291,7 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * @brief Loads existing event data from Firestore or Intent extras for editing.
-     */
+    /** Loads existing event data from Firestore or intent extras for editing. */
     private void loadEventData() {
         Intent intent = getIntent();
 
@@ -356,18 +346,14 @@ public class EventEditActivity extends AppCompatActivity {
         updateImageDisplay();
     }
 
-    /**
-     * @brief Creates a new event after validating the form.
-     */
+    /** Creates a new event after validating the form. */
     private void createEvent() {
         if (validateForm()) {
             storeInDB();
         }
     }
 
-    /**
-     * @brief Saves a new event to Firestore and notifies the caller.
-     */
+    /** Saves a new event to Firestore and notifies the caller. */
     private void storeInDB() {
         String name = edtEventName.getText().toString().trim();
         String spots = edtSpots.getText().toString().trim();
@@ -404,9 +390,7 @@ public class EventEditActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * @brief Updates an existing Firestore event if the eventId is available.
-     */
+    /** Updates an existing Firestore event, if {@code eventId} is available. */
     private void saveEvent() {
         if (validateForm()) {
             if (eventId != null) {
@@ -445,9 +429,7 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * @brief Deletes the current event document from Firestore.
-     */
+    /** Deletes the current event document from Firestore. */
     private void deleteEvent() {
         if (eventId != null) {
             eventsRef.document(eventId).delete()
@@ -467,9 +449,7 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * @brief Opens the attendee management screen for this event.
-     */
+    /** Opens the attendee management screen for this event. */
     private void openAttendeeManager() {
         Intent intent = new Intent(this, AttendeeManagerActivity.class);
         if (eventId != null) intent.putExtra("eventId", eventId);
@@ -478,8 +458,9 @@ public class EventEditActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Validates user input to ensure required fields are filled.
-     * @return true if valid, false otherwise.
+     * Validates user input to ensure required fields are filled.
+     *
+     * @return {@code true} if valid; {@code false} otherwise
      */
     private boolean validateForm() {
         String eventName = edtEventName.getText().toString().trim();
@@ -490,9 +471,7 @@ public class EventEditActivity extends AppCompatActivity {
         return true;
     }
 
-    /**
-     * @brief Handles back navigation and hides the image sheet if open.
-     */
+    /** Handles back navigation and hides the image sheet if it is open. */
     @Override
     public void onBackPressed() {
         if (sheetImageSelect != null && sheetImageSelect.getVisibility() == View.VISIBLE) {

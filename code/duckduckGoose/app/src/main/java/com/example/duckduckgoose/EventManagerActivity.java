@@ -1,14 +1,12 @@
 /**
- * @file EventManagerActivity.java
- * @brief Admin screen to browse, sort, search, and open details for events stored in Firestore.
+ * Admin screen to browse, sort, search, and open details for events stored in Firestore.
  *
  * Loads all events, supports multiple sort orders, provides live search suggestions, and
  * opens {@link EventDetailsAdminActivity}. Only accessible to users with accountType "admin".
  *
  * Expected layout ids: btnBack, dropSortEvents, dropSearchEvents, rvEvents.
  *
- * @author
- *     DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -53,15 +51,16 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @class EventManagerActivity
- * @brief Activity for administrators to manage and inspect events.
+ * Activity for administrators to manage and inspect events.
  *
  * Responsibilities:
- * - Verify the signed-in user is an admin.
- * - Fetch events from Firestore and display them in a RecyclerView.
- * - Provide sorting by event date, registration windows, and cost.
- * - Provide live, type-ahead search by event name.
- * - Launch {@link EventDetailsAdminActivity} for selected events and reflect deletions on return.
+ * <ul>
+ * <li>Verify the signed-in user is an admin</li>
+ * <li>Fetch events from Firestore and display them in a RecyclerView</li>
+ * <li>Provide sorting by event date, registration windows, and cost</li>
+ * <li>Provide live, type-ahead search by event name</li>
+ * <li>Launch {@link EventDetailsAdminActivity} for selected events and reflect deletions on return</li>
+ * </ul>
  */
 public class EventManagerActivity extends AppCompatActivity {
 
@@ -87,8 +86,9 @@ public class EventManagerActivity extends AppCompatActivity {
     private AutoCompleteTextView dropSearch;
 
     /**
-     * @brief Initializes the activity and sets up UI components.
-     * @param savedInstanceState saved activity state, if any.
+     * Initializes the activity and sets up UI components.
+     * 
+     * @param savedInstanceState - saved activity state, if any
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -250,7 +250,11 @@ public class EventManagerActivity extends AppCompatActivity {
         }
     }
 
-    /** @brief Fetches all events from Firestore and refreshes lists and search suggestions. */
+    /**
+     * Loads all events from Firestore and updates the UI.
+     * Refreshes both the working list and backup list of events,
+     * updates the RecyclerView, and populates search suggestions.
+     */
     private void loadEventsFromFirestore() {
         eventsRef.get()
                 .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
@@ -288,7 +292,14 @@ public class EventManagerActivity extends AppCompatActivity {
     // Sorting helpers
     // ----------------------
 
-    /** @brief Attempts to parse a date string using several common formats. */
+    /**
+     * Attempts to parse a date string using several common formats.
+     * Supported formats include "MM/dd/yy", "MM/dd/yyyy", "MMM d, yyyy",
+     * "MMM d", "MMM dd", and "yyyy-MM-dd".
+     *
+     * @param s The date string to parse
+     * @return A Date object if parsing succeeds, null otherwise
+     */
     private Date parseDate(String s) {
         if (s == null) return null;
         String trimmed = s.trim();
@@ -302,8 +313,12 @@ public class EventManagerActivity extends AppCompatActivity {
         return null;
     }
 
-    /** @brief Normalizes a cost string to a numeric value for sorting.
-     * @param s Cost string (e.g., "$15", "Free", "CAD 12.50").
+    /**
+     * Normalizes a cost string to a numeric value for sorting purposes.
+     * Handles currency symbols, "Free", and invalid formats.
+     *
+     * @param s Cost string (e.g., "$15", "Free", "CAD 12.50")
+     * @return Numeric value of the cost, 0.0 for "Free", MAX_VALUE for invalid/null
      */
     private double parseCost(String s) {
         if (s == null) return Double.MAX_VALUE;
@@ -319,9 +334,13 @@ public class EventManagerActivity extends AppCompatActivity {
         }
     }
 
-    /** @brief Sorts events by event date; earliest-to-latest if {@code ascending} is true. 
-     * @param ascending true for ascending (soonest first), false for descending.
-     * */
+    /**
+     * Sorts the events list by event date.
+     * Null dates are sorted to the end of the list.
+     *
+     * @param ascending true for chronological order (soonest first),
+     *                  false for reverse chronological order
+     */
     private void sortByEventDate(boolean ascending) {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getEventDate());
@@ -335,7 +354,11 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
-    /** @brief Sorts events by registration open date (earliest first). */
+    /**
+     * Sorts the events list by registration opening date.
+     * Events are sorted in chronological order with earliest opening dates first.
+     * Events with null registration dates are sorted to the end of the list.
+     */
     private void sortByRegistrationOpens() {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getRegistrationOpens());
@@ -348,7 +371,11 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
-    /** @brief Sorts events by registration close date (earliest first). */
+    /**
+     * Sorts the events list by registration closing date.
+     * Events are sorted in chronological order with earliest closing dates first.
+     * Events with null registration dates are sorted to the end of the list.
+     */
     private void sortByRegistrationCloses() {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getRegistrationCloses());
@@ -361,7 +388,11 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
-    /** @brief Sorts events by numeric cost (lowest first). Unknown costs sort last. */
+    /**
+     * Sorts the events list by cost in ascending order.
+     * Free events are sorted first, followed by events with numeric costs.
+     * Events with unparseable or missing costs are sorted to the end.
+     */
     private void sortByCost() {
         Comparator<Event> cmp = (a, b) -> {
             double ca = parseCost(a.getCost());
@@ -372,11 +403,12 @@ public class EventManagerActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Applies updates from {@link EventDetailsAdminActivity} results.
+     * Processes results returned from {@link EventDetailsAdminActivity}.
+     * Handles event deletions by removing the deleted event from the list.
      *
-     * @param requestCode Identifier for the child request.
-     * @param resultCode Result status returned by the child activity.
-     * @param data Optional return data (may contain {@code "eventTitleToDelete"}).
+     * @param requestCode Identifier for the child request (should match EVENT_DETAILS_REQUEST)
+     * @param resultCode Result status returned by the child activity
+     * @param data Optional intent data which may contain "eventTitleToDelete" for deletions
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {

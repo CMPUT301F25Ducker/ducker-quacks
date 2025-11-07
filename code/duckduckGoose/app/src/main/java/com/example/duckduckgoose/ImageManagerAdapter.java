@@ -1,12 +1,10 @@
 /**
- * @file ImageManagerAdapter.java
- * @brief RecyclerView adapter for previewing and removing image resources.
+ * RecyclerView adapter for previewing and removing image resources.
  *
  * Binds a list of drawable resource IDs into simple preview rows with a
  * delete action for each item.
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -22,8 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 /**
- * @class ImageManagerAdapter
- * @brief Adapter that shows image previews and supports per-item deletion.
+ * Adapter that shows image previews and supports per-item deletion.
  */
 public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapter.ViewHolder> {
 
@@ -31,15 +28,20 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
     private final List<Integer> images;
 
     /**
-     * @brief Constructs an adapter with the given image list.
-     * @param images List of drawable resource IDs to display.
+     * Constructs an adapter with the given image list.
+     * 
+     * @param images - List of drawable resource IDs to display
      */
     public ImageManagerAdapter(List<Integer> images) {
         this.images = images;
     }
 
     /**
-     * @brief Inflates an image row view holder.
+     * Inflates an image row view holder.
+     *
+     * @param parent - The parent ViewGroup
+     * @param viewType - The view type to create
+     * @return A new ViewHolder for the image row
      */
     @NonNull
     @Override
@@ -50,16 +52,17 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
     }
 
     /**
-     * @brief Binds the image preview and wires the delete click handler.
-     * @param holder Row view holder.
-     * @param position Adapter position.
+     * Binds the image preview and wires the delete click handler.
+     * 
+     * @param holder - Row view holder
+     * @param position - Adapter position
      */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.imgPreview.setImageResource(images.get(position));
         holder.txtImageLabel.setText("Image " + (position + 1));
 
-        /** @brief Delete current image and notify item removal. */
+        // Delete handler: Removes image and updates the adapter
         holder.btnDelete.setOnClickListener(v -> {
             int currentPosition = holder.getAdapterPosition();
             if (currentPosition != RecyclerView.NO_POSITION) {
@@ -70,7 +73,9 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
     }
 
     /**
-     * @brief Returns the number of images in the list.
+     * Returns the number of images in the list.
+     * 
+     * @return The total number of images
      */
     @Override
     public int getItemCount() {
@@ -78,8 +83,7 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
     }
 
     /**
-     * @class ViewHolder
-     * @brief Holds references to views for an image row.
+     * Holds references to views for an image row.
      */
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imgPreview;
@@ -87,8 +91,9 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
         View btnDelete;
 
         /**
-         * @brief Binds view references for the row.
-         * @param itemView Root row view.
+         * Binds view references for the row.
+         * 
+         * @param itemView - Root row view
          */
         ViewHolder(View itemView) {
             super(itemView);

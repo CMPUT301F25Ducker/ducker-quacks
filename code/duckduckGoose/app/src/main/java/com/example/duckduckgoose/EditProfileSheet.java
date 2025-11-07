@@ -1,12 +1,10 @@
 /**
- * @file EditProfileSheet.java
- * @brief Bottom sheet for editing the current user's profile.
+ * Bottom sheet for editing the current user's profile.
  *
  * Loads existing fields from Firestore and allows updates to name, age,
  * email, and phone. Sends a fragment result on successful save.
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -32,8 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @class EditProfileSheet
- * @brief BottomSheetDialogFragment to edit user profile fields.
+ * BottomSheetDialogFragment to edit user profile fields.
  *
  * Reads/writes the current user's document in the "users" collection.
  * Emits a fragment result when changes are saved.
@@ -55,13 +52,15 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
     private TextInputEditText inpPhone;
 
     /**
-     * @brief Creates a new instance of the profile edit sheet.
+     * Creates a new instance of the profile edit sheet.
+     *
      * @return A new EditProfileSheet instance.
      */
     public static EditProfileSheet newInstance() { return new EditProfileSheet(); }
 
     /**
-     * @brief Inflates the profile edit sheet layout.
+     * Inflates the profile edit sheet layout.
+     *
      * @return Inflated view for this bottom sheet.
      */
     @Nullable @Override
@@ -72,14 +71,15 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Binds views, loads current profile values, and wires button actions.
+     * Binds views, loads current profile values, and wires button actions.
+     *
      * @param v Root view for the sheet.
      * @param s Saved state bundle.
      */
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
         super.onViewCreated(v, s);
 
-        /** @brief Loads the current user's profile fields from Firestore into inputs. */
+        /** Loads the current user's profile fields from Firestore into inputs. */
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
@@ -111,19 +111,19 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
                     );
         }
 
-        /** @brief Validates inputs and saves changes to Firestore. */
+        /** Validates inputs and saves changes to Firestore. */
         View btnUpdate = v.findViewById(R.id.btnUpdate);
         if (btnUpdate != null) {
             btnUpdate.setOnClickListener(x -> saveChanges());
         }
 
-        /** @brief Dismisses the sheet without saving. */
+        /** Dismisses the sheet without saving. */
         View btnCancel = v.findViewById(R.id.btnCancel);
         if (btnCancel != null) {
             btnCancel.setOnClickListener(x -> dismiss());
         }
 
-        /** @brief Closes the sheet. */
+        /** Closes the sheet. */
         View btnClose = v.findViewById(R.id.btnClose);
         if (btnClose != null) {
             btnClose.setOnClickListener(x -> dismiss());
@@ -131,7 +131,7 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Validates input and updates the user's profile in Firestore.
+     * Validates input and updates the user's profile in Firestore.
      *
      * On success, shows a toast, posts a fragment result ({@link #RESULT_KEY}),
      * and dismisses the sheet.
@@ -197,10 +197,10 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * @brief Safely reads trimmed text from an input field.
+     * Safely reads trimmed text from an input field.
+     *
      * @param et The input field.
      * @return The trimmed text or an empty string if null.
-     * I'm Kirking It
      */
     private String textOf(@Nullable TextInputEditText et) {
         return et == null || et.getText() == null ? "" : et.getText().toString().trim();

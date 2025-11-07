@@ -1,14 +1,11 @@
 /**
- * @file AdminConsoleActivity.java
- * @brief Activity providing admin access to management features.
+ * Activity providing admin access to management features.
  *
- * Displays buttons to navigate to event, attendee, organizer, image, and admin
- * management screens. Allows admins to sign out and return to the login screen.
+ * <p>Displays buttons to navigate to event, attendee, organizer, image, and admin
+ * management screens. Allows admins to sign out and return to the login screen.</p>
  *
- * @author
- *      DuckDuckGoose Development Team
+ * <p><b>Author:</b> DuckDuckGoose Development Team</p>
  */
-
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -22,10 +19,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
- * @class AdminConsoleActivity
- * @brief Main control panel for admin users.
+ * Main control panel for admin users.
  *
- * Handles navigation to different manager activities and provides a logout option.
+ * <p>Handles navigation to different manager activities and provides a logout option.</p>
  */
 public class AdminConsoleActivity extends AppCompatActivity {
 
@@ -33,8 +29,9 @@ public class AdminConsoleActivity extends AppCompatActivity {
     private FirebaseAuth auth;
 
     /**
-     * @brief Initializes the admin console and sets up button listeners.
-     * @param savedInstanceState Saved activity state for recreation.
+     * Initializes the admin console and sets up button listeners.
+     *
+     * @param savedInstanceState saved activity state for recreation
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +52,11 @@ public class AdminConsoleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_console);
 
-
         auth = FirebaseAuth.getInstance();
 
         TopBarWiring.attachProfileSheet(this);
 
-        /** @brief Signs out the admin and returns to the login screen. */
+        // Sign out and return to the login screen
         MaterialButton btnLogout = findViewById(R.id.btnBack);
         btnLogout.setOnClickListener(v -> {
             auth.signOut();
@@ -77,23 +73,23 @@ public class AdminConsoleActivity extends AppCompatActivity {
         MaterialButton btnManageOrganizers = findViewById(R.id.btnManageOrganizers);
         MaterialButton btnManageAdminAccounts = findViewById(R.id.btnManageAdminAccounts);
 
-        /** @brief Opens the event management activity. */
+        // Opens the event management activity
         btnManageEvents.setOnClickListener(v ->
                 startActivity(new Intent(this, EventManagerActivity.class)));
 
-        /** @brief Opens the attendee (the entrant in other words) management activity. */
+        // Opens the attendee (entrant) management activity
         btnManageAttendees.setOnClickListener(v ->
                 startActivity(new Intent(this, EntrantManagerActivity.class)));
 
-        /** @brief Opens the image management activity. */
+        // Opens the image management activity
         btnManageImages.setOnClickListener(v ->
                 startActivity(new Intent(this, ImageManagerActivity.class)));
 
-        /** @brief Opens the organizer management activity. */
+        // Opens the organizer management activity
         btnManageOrganizers.setOnClickListener(v ->
                 startActivity(new Intent(this, OrganizerManagerActivity.class)));
 
-        /** @brief Opens the admin account management activity. */
+        // Opens the admin account management activity
         btnManageAdminAccounts.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminManagerActivity.class)));
     }

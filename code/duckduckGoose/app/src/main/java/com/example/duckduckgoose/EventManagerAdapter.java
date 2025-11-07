@@ -1,12 +1,10 @@
 /**
- * @file EventManagerAdapter.java
- * @brief RecyclerView adapter for displaying and managing event details.
+ * RecyclerView adapter for displaying and managing event details.
  *
  * Used in the admin interface to list, preview, and interact with event entries.
  * Supports click handling via a listener for viewing or editing event details.
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -22,8 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 /**
- * @class EventManagerAdapter
- * @brief Adapter class that binds Event objects into a scrollable list for management.
+ * Adapter class that binds Event objects into a scrollable list for management.
  */
 public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapter.ViewHolder> {
 
@@ -34,23 +31,25 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     private OnItemClickListener onItemClickListener;
 
     /**
-     * @brief Constructs the adapter with a provided list of events.
-     * @param events List of Event objects to display.
+     * Constructs the adapter with a provided list of events.
+     * 
+     * @param events - List of Event objects to display
      */
     public EventManagerAdapter(List<Event> events) {
         this.events = events;
     }
 
     /**
-     * @brief Sets a listener for event item click actions.
-     * @param listener Implementation of OnItemClickListener to handle clicks.
+     * Sets a listener for event item click actions.
+     * 
+     * @param listener - Implementation of OnItemClickListener to handle clicks
      */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
 
     /**
-     * @brief Inflates the view holder for a single event row.
+     * Inflates the view holder for a single event row.
      */
     @NonNull
     @Override
@@ -61,9 +60,10 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     }
 
     /**
-     * @brief Binds event data (title and details) to a row view.
-     * @param holder The row’s view holder.
-     * @param position The adapter position.
+     * Binds event data (title and details) to a row view.
+     * 
+     * @param holder - The row's view holder
+     * @param position - The adapter position
      */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -77,7 +77,7 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
                 "Spots: " + event.getMaxSpots();
         holder.txtDetails.setText(details);
 
-        /** @brief Handles item click and forwards the selected event. */
+        // Handle click events by forwarding the selected event to the listener
         holder.itemView.setOnClickListener(v -> {
             if (onItemClickListener != null) {
                 int currentPosition = holder.getAdapterPosition();
@@ -89,7 +89,9 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     }
 
     /**
-     * @brief Returns total number of event items.
+     * Returns total number of event items.
+     * 
+     * @return the total number of events in the list
      */
     @Override
     public int getItemCount() {
@@ -97,16 +99,16 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     }
 
     /**
-     * @class ViewHolder
-     * @brief Holds references to the TextViews for each event item.
+     * Holds references to the TextViews for each event item.
      */
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtTitle;
         TextView txtDetails;
 
         /**
-         * @brief Binds UI references for an event row.
-         * @param itemView The inflated event item layout.
+         * Binds UI references for an event row.
+         * 
+         * @param itemView - The inflated event item layout
          */
         ViewHolder(View itemView) {
             super(itemView);
@@ -116,13 +118,13 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     }
 
     /**
-     * @interface OnItemClickListener
-     * @brief Callback interface for event item click handling.
+     * Callback interface for event item click handling.
      */
     public interface OnItemClickListener {
         /**
-         * @brief Called when an event item is clicked.
-         * @param event The Event object corresponding to the clicked row.
+         * Called when an event item is clicked.
+         * 
+         * @param event - The Event object corresponding to the clicked row
          */
         void onItemClick(Event event);
     }

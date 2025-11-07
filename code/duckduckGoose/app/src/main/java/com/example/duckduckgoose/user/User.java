@@ -1,12 +1,10 @@
 /**
- * @file User.java
- * @brief Data model representing an application user and their event participation status.
+ * Data model representing an application user and their event participation status.
  *
  * Stores user identity, contact information, account type, and event-related lists
  * (waitlisted and accepted events). Provides helper methods to manage those lists.
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose.user;
@@ -26,8 +24,7 @@ public class User {
     private List<String> acceptedEventIds; // List of event IDs the user has been accepted into (from waitlist)
 
     /**
-     * @class User
-     * @brief Model class for representing a user profile and event associations.
+     * Model class for representing a user profile and event associations.
      *
      * Encapsulates basic profile information and tracks events that a user has been
      * waitlisted for or accepted into. Provides safe getters and utility methods
@@ -41,24 +38,30 @@ public class User {
     // --- Waitlist management ---
 
     /**
-     * @brief Returns the list of event IDs where the user is waitlisted.
-     * @return Non-null list of waitlisted event IDs.
+     * Returns the list of event IDs where the user is currently waitlisted.
+     * If the internal list is null, returns an empty list.
+     *
+     * @return A non-null list of event IDs where the user is waitlisted
      */
     public List<String> getWaitlistedEventIds() {
         return waitlistedEventIds != null ? waitlistedEventIds : new ArrayList<>();
     }
 
     /**
-     * @brief Returns the list of event IDs the user has been accepted into.
-     * @return Non-null list of accepted event IDs.
+     * Returns the list of event IDs where the user has been accepted.
+     * If the internal list is null, returns an empty list.
+     *
+     * @return A non-null list of event IDs where the user has been accepted
      */
     public List<String> getAcceptedEventIds() {
         return acceptedEventIds != null ? acceptedEventIds : new ArrayList<>();
     }
 
     /**
-     * @brief Adds an event to the user's waitlist if not already present.
-     * @param eventId Unique identifier of the event to add.
+     * Adds an event to the user's waitlist if it's not already present.
+     * Initializes the waitlist if it doesn't exist.
+     *
+     * @param eventId The unique identifier of the event to add to waitlist
      */
     public void addToWaitlist(String eventId) {
         if (waitlistedEventIds == null) {
@@ -70,8 +73,10 @@ public class User {
     }
 
     /**
-     * @brief Removes an event from the user's waitlist.
-     * @param eventId Unique identifier of the event to remove.
+     * Removes an event from the user's waitlist.
+     * Does nothing if the waitlist is null or the event is not in the list.
+     *
+     * @param eventId The unique identifier of the event to remove from waitlist
      */
     public void removeFromWaitlist(String eventId) {
         if (waitlistedEventIds != null) {
@@ -80,8 +85,11 @@ public class User {
     }
 
     /**
-     * @brief Adds an event to the user's accepted list and removes it from the waitlist.
-     * @param eventId Unique identifier of the event accepted.
+     * Adds an event to the user's accepted list and removes it from the waitlist.
+     * Initializes the accepted list if it doesn't exist.
+     * Only adds the event if it's not already in the accepted list.
+     *
+     * @param eventId The unique identifier of the event to mark as accepted
      */
     public void addToAcceptedEvents(String eventId) {
         if (acceptedEventIds == null) {
@@ -95,8 +103,10 @@ public class User {
     }
 
     /**
-     * @brief Removes an event from the user's accepted list.
-     * @param eventId Unique identifier of the event to remove.
+     * Removes an event from the user's accepted list.
+     * Does nothing if the accepted list is null or the event is not in the list.
+     *
+     * @param eventId The unique identifier of the event to remove from accepted list
      */
     public void removeFromAcceptedEvents(String eventId) {
         if (acceptedEventIds != null) {
@@ -107,48 +117,54 @@ public class User {
     // --- Getters ---
 
     /**
-     * @brief Returns the user ID.
-     * @return User's unique identifier.
+     * Returns the user's unique identifier.
+     *
+     * @return The user's ID in the system
      */
     public String getUserId() {
         return userId;
     }
 
     /**
-     * @brief Returns the user's full name.
-     * @return Full name string.
+     * Returns the user's full name.
+     *
+     * @return The user's complete name
      */
     public String getFullName() {
         return fullName;
     }
 
     /**
-     * @brief Returns the user's age.
-     * @return Age as a Long, may be null.
+     * Returns the user's age.
+     *
+     * @return The user's age as a Long value, may be null if not set
      */
     public Long getAge() {
         return age;
     }
 
     /**
-     * @brief Returns the user's email address.
-     * @return Email address string.
+     * Returns the user's email address.
+     *
+     * @return The user's email address as a string
      */
     public String getEmail() {
         return email;
     }
 
     /**
-     * @brief Returns the user's phone number.
-     * @return Phone number string.
+     * Returns the user's phone number.
+     *
+     * @return The user's phone number as a string
      */
     public String getPhone() {
         return phone;
     }
 
     /**
-     * @brief Returns the user's account type (e.g., attendee, organizer, admin).
-     * @return Account type string.
+     * Returns the user's account type (e.g., attendee, organizer, admin).
+     *
+     * @return The user's account type as a string
      */
     public String getAccountType() {
         return accountType;
@@ -157,40 +173,45 @@ public class User {
     // --- Setters ---
 
     /**
-     * @brief Sets the user's full name.
-     * @param fullName New full name.
+     * Sets the user's full name.
+     *
+     * @param fullName The new full name for the user
      */
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
 
     /**
-     * @brief Sets the user's age.
-     * @param age Age as a Long.
+     * Sets the user's age.
+     *
+     * @param age The user's age as a Long value
      */
     public void setAge(Long age) {
         this.age = age;
     }
 
     /**
-     * @brief Sets the user's email address.
-     * @param email New email address.
+     * Sets the user's email address.
+     *
+     * @param email The new email address for the user
      */
     public void setEmail(String email) {
         this.email = email;
     }
 
     /**
-     * @brief Sets the user's phone number.
-     * @param phone New phone number.
+     * Sets the user's phone number.
+     *
+     * @param phone The new phone number for the user
      */
     public void setPhone(String phone) {
         this.phone = phone;
     }
 
     /**
-     * @brief Sets the user's account type (e.g., "attendee", "organizer").
-     * @param accountType Account type label.
+     * Sets the user's account type (e.g., "attendee", "organizer").
+     *
+     * @param accountType The account type label to assign to the user
      */
     public void setAccountType(String accountType) {
         this.accountType = accountType;

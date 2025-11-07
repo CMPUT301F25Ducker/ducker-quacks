@@ -6,7 +6,11 @@ import com.google.firebase.firestore.ServerTimestamp;
 import com.google.firebase.Timestamp;
 
 /**
- * Represents an entry in the waitlist collection, tracking the relationship between users and events
+ * Represents an entry in the waitlist collection, tracking the relationship between users and events.
+ * Each entry maintains the user's status in relation to a specific event's waitlist, including
+ * timestamps for when they joined and when they were accepted (if applicable).
+ *
+ * @author DuckDuckGoose Development Team
  */
 public class WaitlistEntry {
     private String userId;
@@ -30,44 +34,82 @@ public class WaitlistEntry {
         this.notes = "";
     }
 
-    // Getters
+    /**
+     * Gets the ID of the user who is on the waitlist.
+     * @return The unique identifier of the user
+     */
     public String getUserId() {
         return userId;
     }
 
+    /**
+     * Gets the ID of the event being waitlisted for.
+     * @return The unique identifier of the event
+     */
     public String getEventId() {
         return eventId;
     }
 
+    /**
+     * Gets the timestamp when the user joined the waitlist.
+     * @return Timestamp marking when the user joined
+     */
     public Timestamp getJoinedAt() {
         return joinedAt;
     }
 
+    /**
+     * Gets the current status of the waitlist entry.
+     * @return Status string: "waiting", "accepted", or "removed"
+     */
     public String getStatus() {
         return status;
     }
 
-    // Setters
+    /**
+     * Sets the user ID for this waitlist entry.
+     * @param userId The unique identifier of the user
+     */
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
+    /**
+     * Sets the event ID for this waitlist entry.
+     * @param eventId The unique identifier of the event
+     */
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
 
+    /**
+     * Sets the timestamp when the user joined the waitlist.
+     * @param joinedAt Timestamp marking when the user joined
+     */
     public void setJoinedAt(Timestamp joinedAt) {
         this.joinedAt = joinedAt;
     }
 
+    /**
+     * Updates the status of the waitlist entry.
+     * @param status New status: "waiting", "accepted", or "removed"
+     */
     public void setStatus(String status) {
         this.status = status;
     }
 
+    /**
+     * Sets the display name of the user for convenience.
+     * @param userName The user's display name
+     */
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    /**
+     * Sets the display name of the event for convenience.
+     * @param eventName The event's display name
+     */
     public void setEventName(String eventName) {
         this.eventName = eventName;
     }

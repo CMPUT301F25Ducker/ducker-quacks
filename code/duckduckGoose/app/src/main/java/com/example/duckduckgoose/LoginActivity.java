@@ -1,13 +1,11 @@
 /**
- * @file LoginActivity.java
- * @brief Authentication entry screen with sign-in and create-account sheets.
+ * Authentication entry screen with sign-in and create-account sheets.
  *
  * Handles Firebase Auth sign-in and registration, persists user profile
  * data to Firestore, and routes to the appropriate app surface based
  * on role (Admin / Organizer / Entrant).
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -37,8 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @class LoginActivity
- * @brief Shows sign-in and registration flows; sets AppConfig role and navigates.
+ * Shows sign-in and registration flows; sets AppConfig role and navigates.
  */
 public class LoginActivity extends AppCompatActivity {
 
@@ -64,8 +61,9 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialAutoCompleteTextView edtAccountType;
 
     /**
-     * @brief Initializes UI, checks active session, and wires listeners.
-     * @param savedInstanceState Saved state bundle.
+     * Initializes UI, checks active session, and wires listeners.
+     * 
+     * @param savedInstanceState - Saved state bundle
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +102,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Binds all sheet and input views and configures the account type dropdown.
+     * Binds all sheet and input views and configures the account type dropdown.
+     * Initializes sign-in, create account, and all input fields.
      */
     private void initViews() {
         btnSignIn = findViewById(R.id.btnSignIn);
@@ -141,10 +140,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Wires click listeners for opening/closing sheets and primary actions.
+     * Sets up click listeners for all interactive UI elements.
+     * Handles sheet visibility and primary action buttons.
      */
     private void setupListeners() {
-        /** @brief Open sign-in sheet. */
+        // Open sign-in sheet, hide other elements
         btnSignIn.setOnClickListener(v -> {
             sheetSignIn.setVisibility(View.VISIBLE);
             sheetCreate.setVisibility(View.GONE);
@@ -152,7 +152,7 @@ public class LoginActivity extends AppCompatActivity {
             btnCreateAccount.setVisibility(View.GONE);
         });
 
-        /** @brief Open create-account sheet. */
+        // Open create-account sheet, hide other elements
         btnCreateAccount.setOnClickListener(v -> {
             sheetCreate.setVisibility(View.VISIBLE);
             sheetSignIn.setVisibility(View.GONE);
@@ -160,21 +160,22 @@ public class LoginActivity extends AppCompatActivity {
             btnCreateAccount.setVisibility(View.GONE);
         });
 
-        /** @brief Close sign-in sheet. */
+        // Close sign-in sheet when canceled
         btnSheetCancel1.setOnClickListener(v -> closeSheets());
 
-        /** @brief Close create-account sheet. */
+        // Close create-account sheet when canceled
         btnSheetCancel2.setOnClickListener(v -> closeSheets());
 
-        /** @brief Attempt to sign in with Firebase Auth. */
+        // Process sign-in with Firebase Auth when submitted
         btnSheetSignIn.setOnClickListener(v -> handleSignIn());
 
-        /** @brief Attempt to create an account and save profile. */
+        // Create new account and save profile when submitted
         btnCreateSubmit.setOnClickListener(v -> handleCreateAccount());
     }
 
     /**
-     * @brief Intercepts system back to close an open sheet before exiting.
+     * Sets up back press handling to close open sheets before exiting.
+     * Intercepts system back button to handle sheets properly.
      */
     private void setupBackPress() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -197,7 +198,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Hides sheets and restores primary CTA buttons.
+     * Hides all sheets and restores visibility of primary action buttons.
+     * Call this when canceling or completing a sheet action.
      */
     private void closeSheets() {
         sheetSignIn.setVisibility(View.GONE);
@@ -207,9 +209,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Signs in with FirebaseAuth after basic validation.
-     *
-     * On success, loads the user profile from Firestore and navigates based on role.
+     * Attempts to authenticate the user with Firebase Authentication.
+     * Performs basic input validation, then attempts sign in.
+     * On success, loads user profile from Firestore and navigates based on role.
      */
     private void handleSignIn() {
         String email = edtEmail.getText().toString().trim();
@@ -256,9 +258,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Creates a new FirebaseAuth user, validates inputs, and saves profile to Firestore.
-     *
-     * After storing profile, sets login mode and navigates to the correct surface.
+     * Creates a new user account with Firebase Authentication.
+     * Performs extensive input validation before attempting account creation.
+     * After successful auth creation, saves the user profile to Firestore,
+     * sets the appropriate login mode, and navigates to the correct activity.
      */
     private void handleCreateAccount() {
         String accountType = edtAccountType.getText().toString().trim();
@@ -314,14 +317,16 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Persists a newly created user's profile to Firestore and navigates by role.
-     * @param uid Firebase Auth UID.
-     * @param accountType "Admin", "Organizer", or "Entrant".
-     * @param userId App-level user handle/ID.
-     * @param fullName Display name.
-     * @param age Age (validated integer).
-     * @param email Email address.
-     * @param phone Phone number.
+     * Saves a newly created user's profile information to Firestore.
+     * After successful save, navigates to the appropriate activity based on role.
+     *
+     * @param uid The Firebase Authentication unique identifier
+     * @param accountType User's role ("Admin", "Organizer", or "Entrant")
+     * @param userId User-chosen identifier for the app
+     * @param fullName User's display name
+     * @param age User's age (pre-validated integer)
+     * @param email User's email address
+     * @param phone User's contact phone number
      */
     private void saveUserToFirestore(String uid, String accountType, String userId,
                                      String fullName, int age, String email, String phone) {
@@ -349,8 +354,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Loads user profile to determine role and navigates accordingly.
-     * @param uid Firebase Auth UID.
+     * Retrieves the user's profile from Firestore to determine their role.
+     * Navigates to the appropriate activity based on account type.
+     * Falls back to Entrant role if profile lookup fails.
+     *
+     * @param uid The Firebase Authentication unique identifier
      */
     private void loadNavigate(String uid) {
         db.collection("users").document(uid)
@@ -378,8 +386,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * @brief Sets {@link AppConfig#LOGIN_MODE} and routes to the correct screen.
-     * @param accountType Role string (e.g., "Admin", "Organizer", "Entrant").
+     * Sets the application's login mode and navigates to the appropriate activity.
+     * Updates {@link AppConfig#LOGIN_MODE} and launches the correct screen based on role.
+     *
+     * @param accountType The user's role ("Admin", "Organizer", or "Entrant")
      */
     private void loginNavigate(String accountType) {
         AppConfig.setLoginMode(accountType);

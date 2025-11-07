@@ -1,12 +1,10 @@
 /**
- * @file OrganizerProfileActivity.java
- * @brief Activity for viewing an organizer’s profile.
+ * Activity for viewing an organizer's profile.
  *
  * Displays organizer details (name and email) passed through the launching Intent,
  * and provides an action to delete or remove the organizer (currently a placeholder).
  *
- * @author
- *      DuckDuckGoose Development Team
+ * @author DuckDuckGoose Development Team
  */
 
 package com.example.duckduckgoose;
@@ -22,8 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 
 /**
- * @class OrganizerProfileActivity
- * @brief Displays basic organizer details and provides a delete option.
+ * Displays basic organizer details and provides a delete option.
  *
  * Retrieves organizer information from the intent and renders it on screen.
  * Includes a button for deleting or removing the organizer.
@@ -31,8 +28,9 @@ import com.google.android.material.button.MaterialButton;
 public class OrganizerProfileActivity extends AppCompatActivity {
 
     /**
-     * @brief Initializes UI and loads organizer information from Intent extras.
-     * @param savedInstanceState Saved instance state bundle.
+     * Initializes UI and loads organizer information from Intent extras.
+     * 
+     * @param savedInstanceState Bundle containing the activity's previously saved state, or null.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +50,13 @@ public class OrganizerProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_organizer_profile);
 
-        /** TextView for displaying the organizer’s full name. */
+        // TextView for displaying the organizer's full name
         TextView organizerName = findViewById(R.id.organizer_name);
 
-        /** TextView for displaying the organizer’s email address. */
+        // TextView for displaying the organizer's email address
         TextView organizerEmail = findViewById(R.id.organizer_email);
 
-        /** Button for deleting or removing the organizer (placeholder functionality). */
+        // Button for deleting or removing the organizer (placeholder functionality)
         MaterialButton deleteButton = findViewById(R.id.delete_organizer_button);
 
         // Retrieve organizer data from intent
@@ -73,7 +71,7 @@ public class OrganizerProfileActivity extends AppCompatActivity {
             organizerEmail.setText(email);
         }
 
-        /** @brief Finishes the activity when delete is confirmed (placeholder action). */
+        // Setup click listener for delete button - currently just finishes activity
         deleteButton.setOnClickListener(v -> {
             // Implement delete logic here
             // For now, just finish the activity

@@ -1,36 +1,33 @@
 /**
- * @file AppConfig.java
- * @brief Application-wide configuration settings.
+ * Application-wide configuration settings.
  *
- * Contains static fields and methods for managing global configuration,
- * including the current login mode across all activities.
+ * <p>Contains static fields and methods for managing global configuration,
+ * including the current login mode across all activities.</p>
  *
- * @author
- *      DuckDuckGoose Development Team
+ * <p><b>Author:</b> DuckDuckGoose Development Team</p>
  */
-
 package com.example.duckduckgoose;
 
 /**
- * @class AppConfig
- * @brief Central configuration class for global app settings.
+ * Central configuration class for global app settings.
  *
- * Provides a static login mode that controls which user type (Admin,
- * Entrant, or Organizer) is active across the entire application.
+ * <p>Provides a static login mode that controls which user type
+ * (Admin, Entrant, or Organizer) is active across the entire application.</p>
  */
 public class AppConfig {
-    
+
     /**
-     * @brief Controls the global login mode across all activities.
+     * Controls the global login mode across all activities.
      *
-     * Possible values: "ADMIN", "ENTRANT", or "ORGANIZER".
-     * Modify this field to switch between user types.
+     * <p>Possible values: {@code "ADMIN"}, {@code "ENTRANT"}, or {@code "ORGANIZER"}.
+     * Modify this field to switch between user types.</p>
      */
     public static String LOGIN_MODE = "ENTRANT";
 
     /**
-     * @brief Updates the login mode.
-     * @param mode The new login mode ("ADMIN", "ENTRANT", or "ORGANIZER").
+     * Updates the login mode.
+     *
+     * @param mode the new login mode ({@code "ADMIN"}, {@code "ENTRANT"}, or {@code "ORGANIZER"})
      */
     public static void setLoginMode(String mode) {
         LOGIN_MODE = mode.toUpperCase();
