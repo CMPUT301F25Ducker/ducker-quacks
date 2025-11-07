@@ -15,6 +15,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
+import java.util.Collections;
+import java.util.Comparator;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
@@ -102,6 +108,41 @@ public class EventManagerActivity extends AppCompatActivity {
             String[] sorts = {"Date (Soonest)", "Date (Latest)", "Registration Opens", "Registration Deadline", "Cost"};
             ArrayAdapter<String> stringAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, sorts);
             dropSort.setAdapter(stringAdapter);
+
+            // Wire the sort selection to actually sort the list
+            dropSort.setOnItemClickListener((parent, view, position, id) -> {
+                String sel = (String) parent.getItemAtPosition(position);
+                if (sel == null) return;
+                switch (sel) {
+                    case "Date (Soonest)":
+                        sortByEventDate(true);
+                        break;
+                    case "Date (Latest)":
+                        sortByEventDate(false);
+                        break;
+                    case "Registration Opens":
+                        sortByRegistrationOpens();
+                        break;
+                    case "Registration Deadline":
+                        sortByRegistrationCloses();
+                        break;
+                    case "Cost":
+                        sortByCost();
+                        break;
+                }
+                adapter.notifyDataSetChanged();
+                if (allEvents != null) {
+                    // keep search list in same order
+                    allEvents.clear();
+                    allEvents.addAll(events);
+                    if (dropSearch != null) {
+                        List<String> names = new ArrayList<>();
+                        for (Event ev : allEvents) if (ev.getName() != null) names.add(ev.getName());
+                        ArrayAdapter<String> searchAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names);
+                        dropSearch.setAdapter(searchAdapter);
+                    }
+                }
+            });
         }
 
         // Search dropdown (admin)
@@ -202,6 +243,82 @@ public class EventManagerActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     Log.e("EventManager", "Failed to load events", e);
                 });
+    }
+
+    // ----------------------
+    // Sorting helpers
+    // ----------------------
+    private Date parseDate(String s) {
+        if (s == null) return null;
+        String trimmed = s.trim();
+        String[] patterns = {"MM/dd/yy", "MM/dd/yyyy", "MMM d, yyyy", "MMM d", "MMM dd", "yyyy-MM-dd"};
+        for (String p : patterns) {
+            try {
+                SimpleDateFormat fmt = new SimpleDateFormat(p, Locale.US);
+                return fmt.parse(trimmed);
+            } catch (ParseException ignored) {}
+        }
+        return null;
+    }
+
+    private double parseCost(String s) {
+        if (s == null) return Double.MAX_VALUE;
+        String trimmed = s.trim();
+        if (trimmed.equalsIgnoreCase("free") || trimmed.equalsIgnoreCase("—")) return 0.0;
+        // remove non-digit and non-dot
+        String cleaned = trimmed.replaceAll("[^0-9.]", "");
+        if (cleaned.isEmpty()) return Double.MAX_VALUE;
+        try {
+            return Double.parseDouble(cleaned);
+        } catch (NumberFormatException ex) {
+            return Double.MAX_VALUE;
+        }
+    }
+
+    private void sortByEventDate(boolean ascending) {
+        Comparator<Event> cmp = (a, b) -> {
+            Date da = parseDate(a.getEventDate());
+            Date db = parseDate(b.getEventDate());
+            if (da == null && db == null) return 0;
+            if (da == null) return 1;
+            if (db == null) return -1;
+            return da.compareTo(db);
+        };
+        if (!ascending) cmp = cmp.reversed();
+        Collections.sort(events, cmp);
+    }
+
+    private void sortByRegistrationOpens() {
+        Comparator<Event> cmp = (a, b) -> {
+            Date da = parseDate(a.getRegistrationOpens());
+            Date db = parseDate(b.getRegistrationOpens());
+            if (da == null && db == null) return 0;
+            if (da == null) return 1;
+            if (db == null) return -1;
+            return da.compareTo(db);
+        };
+        Collections.sort(events, cmp);
+    }
+
+    private void sortByRegistrationCloses() {
+        Comparator<Event> cmp = (a, b) -> {
+            Date da = parseDate(a.getRegistrationCloses());
+            Date db = parseDate(b.getRegistrationCloses());
+            if (da == null && db == null) return 0;
+            if (da == null) return 1;
+            if (db == null) return -1;
+            return da.compareTo(db);
+        };
+        Collections.sort(events, cmp);
+    }
+
+    private void sortByCost() {
+        Comparator<Event> cmp = (a, b) -> {
+            double ca = parseCost(a.getCost());
+            double cb = parseCost(b.getCost());
+            return Double.compare(ca, cb);
+        };
+        Collections.sort(events, cmp);
     }
 
     @Override
