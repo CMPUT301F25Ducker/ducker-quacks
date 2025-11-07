@@ -106,9 +106,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         Bundle args = new Bundle();
         args.putString("name", user.getFullName());
         args.putString("userId", user.getUserId());
-        if (user.getAge() != null) {
-            args.putLong("age", user.getAge());
-        }
+        args.putLong("age", user.getAge());
         args.putString("email", user.getEmail());
         args.putString("phone", user.getPhone());
         args.putString("accountType", user.getAccountType());

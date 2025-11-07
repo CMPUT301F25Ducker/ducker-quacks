@@ -5,8 +5,6 @@
  * Binds a list of users into row views for the user manager screen. Supports
  * optional checkboxes (e.g., for attendee selection) and click callbacks.
  *
- * @date 2025-11-06
- * @version 1.0
  * @author
  *      DuckDuckGoose Development Team
  */

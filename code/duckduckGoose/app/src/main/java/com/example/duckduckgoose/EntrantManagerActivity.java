@@ -183,6 +183,7 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
         }
         for (int i = 0; i < allEntrants.size(); i++) {
             if (allEntrants.get(i).getUserId().equals(userId)) {
+                // Add actual deletion from database here <<<<
                 allEntrants.remove(i);
                 break;
             }
