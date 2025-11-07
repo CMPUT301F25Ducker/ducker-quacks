@@ -25,7 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.duckduckgoose.user.User;
+import com.example.duckduckgoose.user.Organizer;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -47,10 +47,10 @@ import java.util.List;
 public class OrganizerManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
     /** List currently shown in the RecyclerView (filtered subset). */
-    private List<User> organizers;
+    private List<Organizer> organizers;
 
     /** Full list of organizers loaded from Firestore (baseline for filtering if needed). */
-    private List<User> allOrganizers;
+    private List<Organizer> allOrganizers;
 
     /** RecyclerView adapter for organizer items. */
     private UserManagerAdapter adapter;
@@ -61,8 +61,9 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     /** Reference to the Firestore functions instance. */
     private final FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
 
-    /** Firestore "users" collection reference. */
+    /** Firestore collection references. */
     private CollectionReference usersRef;
+    private CollectionReference eventsRef;
 
     /** RecyclerView for organizer items. */
     private RecyclerView rvOrganizers;
@@ -98,6 +99,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
         // Initialize Firestore
         db = FirebaseFirestore.getInstance();
         usersRef = db.collection("users");
+        eventsRef = db.collection("events");
 
         // Initialize lists and views
         allOrganizers = new ArrayList<>();
@@ -133,10 +135,22 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
         rvOrganizers.setLayoutManager(new LinearLayoutManager(this));
         adapter = new UserManagerAdapter(organizers, false); // false = hide checkboxes
         adapter.setOnItemClickListener(user -> {
-            // For organizers, show the Events button (true). We can pass an empty string for eventCount/status.
-            ProfileSheet
-                    .newInstance(user, true, true, "", false)
-                    .show(getSupportFragmentManager(), "ProfileSheet");
+            // Fetch event count for the selected organizer
+            eventsRef.whereEqualTo("organizerId", user.getUserId()).get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        int eventCount = queryDocumentSnapshots.size();
+                        // For organizers, show the Events button (true) and pass the event count.
+                        ProfileSheet
+                                .newInstance(user, true, true, String.valueOf(eventCount), false)
+                                .show(getSupportFragmentManager(), "ProfileSheet");
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("OrganizerManager", "Failed to fetch event count for user: " + user.getFullName(), e); // we need a better unqiue identifier
+                        // Show the profile sheet anyway, just without the count
+                        ProfileSheet
+                                .newInstance(user, true, true, "N/A", false)
+                                .show(getSupportFragmentManager(), "ProfileSheet");
+                    });
         });
         rvOrganizers.setAdapter(adapter);
     }
@@ -159,7 +173,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
                 .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
                     allOrganizers.clear();
                     for (DocumentSnapshot ds : querySnapshot.getDocuments()) {
-                        User user = ds.toObject(User.class);
+                        Organizer user = ds.toObject(Organizer.class);
                         if (user != null && "Organizer".equals(user.getAccountType())) {
                             allOrganizers.add(user);
                         }
@@ -222,7 +236,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     private void removeFromLocalListsByEmail(String email) {
         // visible list
         for (int i = organizers.size() - 1; i >= 0; i--) {
-            User u = organizers.get(i);
+            Organizer u = organizers.get(i);
             if (u != null && email.equalsIgnoreCase(u.getEmail())) {
                 organizers.remove(i);
                 adapter.notifyItemRemoved(i);
@@ -230,7 +244,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
         }
         // full baseline list
         for (int i = allOrganizers.size() - 1; i >= 0; i--) {
-            User u = allOrganizers.get(i);
+            Organizer u = allOrganizers.get(i);
             if (u != null && email.equalsIgnoreCase(u.getEmail())) {
                 allOrganizers.remove(i);
             }
