@@ -28,9 +28,12 @@ import com.example.duckduckgoose.user.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.HttpsCallableResult;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,6 +57,10 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
 
     /** Reference to the Firestore database instance. */
     private FirebaseFirestore db;
+
+
+    /** Reference to the Firestore functions instance. */
+    private FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
 
     /** Reference to the Firestore "users" collection. */
     private CollectionReference usersRef;
@@ -189,35 +196,22 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
     }
 
     private void deleteUserByEmail(String email) {
-        if (email == null || email.trim().isEmpty()) {
+        if (email == null || email.isEmpty()) {
             Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
             return;
         }
-        String key = email.trim();
 
-        usersRef.whereEqualTo("email", key)
-                .limit(1) // emails are unique
-                .get()
-                .addOnSuccessListener(snap -> {
-                    if (snap.isEmpty()) {
-                        Toast.makeText(this, "No entrant found for that email.", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    String docId = snap.getDocuments().get(0).getId();
-                    usersRef.document(docId).delete()
-                            .addOnSuccessListener(v -> {
-                                removeFromLocalListsByEmail(key);
-                                updateCountDisplay();
-                                Toast.makeText(this, "Attendee deleted", Toast.LENGTH_SHORT).show();
-                            })
-                            .addOnFailureListener(e -> {
-                                android.util.Log.e("EntrantManager", "Delete failed for docId=" + docId, e);
-                                Toast.makeText(this, "Failed to delete attendee.", Toast.LENGTH_LONG).show();
-                            });
+        functions
+                .getHttpsCallable("deleteUserByEmail")
+                .call(Collections.singletonMap("email", email))
+                .addOnSuccessListener((HttpsCallableResult result) -> {
+                    Toast.makeText(this, "Entrant successfully deleted.", Toast.LENGTH_SHORT).show();
+                    removeFromLocalListsByEmail(email);
+                    updateCountDisplay();
                 })
                 .addOnFailureListener(e -> {
-                    android.util.Log.e("EntrantManager", "Query by email failed", e);
-                    Toast.makeText(this, "Error searching attendee.", Toast.LENGTH_LONG).show();
+                    Log.e("EntrantManager", "Cloud Function delete failed", e);
+                    Toast.makeText(this, "Failed to delete entrant: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 

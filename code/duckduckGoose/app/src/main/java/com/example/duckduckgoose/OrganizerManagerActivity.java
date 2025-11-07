@@ -30,8 +30,11 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.HttpsCallableResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,6 +57,9 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
 
     /** Firestore database reference. */
     private FirebaseFirestore db;
+
+    /** Reference to the Firestore functions instance. */
+    private final FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
 
     /** Firestore "users" collection reference. */
     private CollectionReference usersRef;
@@ -180,6 +186,17 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
         deleteUserByEmail(email);
     }
 
+    /**
+     * @brief Handles "Events" button from the profile sheet.
+     * Navigates to the EventManagerActivity (no change from your original behavior).
+     *
+     * @param userId The organizer's userId (not used here, but kept for parity).
+     */
+    @Override
+    public void onEventsButtonClicked(String userId) {
+        startActivity(new android.content.Intent(this, EventManagerActivity.class));
+    }
+
     private void deleteUserByEmail(String email) {
         if (email == null || email.trim().isEmpty()) {
             Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
@@ -187,29 +204,17 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
         }
         String key = email.trim();
 
-        usersRef.whereEqualTo("email", key)
-                .limit(1) // emails are unique
-                .get()
-                .addOnSuccessListener(snap -> {
-                    if (snap.isEmpty()) {
-                        Toast.makeText(this, "No organizer found for that email.", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    String docId = snap.getDocuments().get(0).getId();
-                    usersRef.document(docId).delete()
-                            .addOnSuccessListener(v -> {
-                                removeFromLocalListsByEmail(key);
-                                updateCountDisplay();
-                                Toast.makeText(this, "Organizer deleted.", Toast.LENGTH_SHORT).show();
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("OrganizerManager", "Delete failed for docId=" + docId, e);
-                                Toast.makeText(this, "Failed to delete organizer.", Toast.LENGTH_LONG).show();
-                            });
+        functions
+                .getHttpsCallable("deleteUserByEmail")
+                .call(Collections.singletonMap("email", email))
+                .addOnSuccessListener((HttpsCallableResult result) -> {
+                    Toast.makeText(this, "Organizer successfully deleted.", Toast.LENGTH_SHORT).show();
+                    removeFromLocalListsByEmail(email);
+                    updateCountDisplay();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("OrganizerManager", "Query by email failed", e);
-                    Toast.makeText(this, "Error searching organizer.", Toast.LENGTH_LONG).show();
+                    Log.e("OrganizerManager", "Cloud Function delete failed", e);
+                    Toast.makeText(this, "Failed to delete organizer: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
@@ -230,16 +235,5 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
                 allOrganizers.remove(i);
             }
         }
-    }
-
-    /**
-     * @brief Handles "Events" button from the profile sheet.
-     * Navigates to the EventManagerActivity (no change from your original behavior).
-     *
-     * @param userId The organizer's userId (not used here, but kept for parity).
-     */
-    @Override
-    public void onEventsButtonClicked(String userId) {
-        startActivity(new android.content.Intent(this, EventManagerActivity.class));
     }
 }
