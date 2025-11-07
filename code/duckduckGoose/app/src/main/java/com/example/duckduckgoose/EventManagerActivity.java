@@ -1,3 +1,16 @@
+/**
+ * @file EventManagerActivity.java
+ * @brief Admin screen to browse, sort, search, and open details for events stored in Firestore.
+ *
+ * Loads all events, supports multiple sort orders, provides live search suggestions, and
+ * opens {@link EventDetailsAdminActivity}. Only accessible to users with accountType "admin".
+ *
+ * Expected layout ids: btnBack, dropSortEvents, dropSearchEvents, rvEvents.
+ *
+ * @author
+ *     DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -39,16 +52,44 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @class EventManagerActivity
+ * @brief Activity for administrators to manage and inspect events.
+ *
+ * Responsibilities:
+ * - Verify the signed-in user is an admin.
+ * - Fetch events from Firestore and display them in a RecyclerView.
+ * - Provide sorting by event date, registration windows, and cost.
+ * - Provide live, type-ahead search by event name.
+ * - Launch {@link EventDetailsAdminActivity} for selected events and reflect deletions on return.
+ */
 public class EventManagerActivity extends AppCompatActivity {
 
+    /** Request code for launching event details expecting a result. */
     private static final int EVENT_DETAILS_REQUEST = 1;
+
+    /** Working list backing the RecyclerView (changes with search/sort). */
     private List<Event> events;
-    private List<Event> allEvents; // full list for searching/filtering
+
+    /** Full unfiltered list used to restore/reset the working list after searches. */
+    private List<Event> allEvents;
+
+    /** RecyclerView adapter responsible for binding event data to views. */
     private EventManagerAdapter adapter;
+
+    /** Firestore database instance. */
     private FirebaseFirestore db;
+
+    /** Reference to the "events" collection in Firestore. */
     private CollectionReference eventsRef;
+
+    /** Search dropdown for quick navigation to an event by name. */
     private AutoCompleteTextView dropSearch;
 
+    /**
+     * @brief Initializes the activity and sets up UI components.
+     * @param savedInstanceState saved activity state, if any.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -152,15 +193,12 @@ public class EventManagerActivity extends AppCompatActivity {
         RecyclerView rv = findViewById(R.id.rvEvents);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            events = new ArrayList<>(Arrays.asList(
-//                    new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"),
-//                    new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"),
-//                    new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled")
-            ));
+            events = new ArrayList<>(Arrays.asList());
             adapter = new EventManagerAdapter(events);
             adapter.setOnItemClickListener(event -> {
                 Intent intent = new Intent(EventManagerActivity.this, EventDetailsAdminActivity.class);
                 intent.putExtra("eventTitle", event.getName());
+                
                 // prefer passing eventId if available
                 if (event.getEventId() != null) intent.putExtra("eventId", event.getEventId());
                 startActivityForResult(intent, EVENT_DETAILS_REQUEST);
@@ -212,6 +250,7 @@ public class EventManagerActivity extends AppCompatActivity {
         }
     }
 
+    /** @brief Fetches all events from Firestore and refreshes lists and search suggestions. */
     private void loadEventsFromFirestore() {
         eventsRef.get()
                 .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
@@ -248,6 +287,8 @@ public class EventManagerActivity extends AppCompatActivity {
     // ----------------------
     // Sorting helpers
     // ----------------------
+
+    /** @brief Attempts to parse a date string using several common formats. */
     private Date parseDate(String s) {
         if (s == null) return null;
         String trimmed = s.trim();
@@ -261,6 +302,9 @@ public class EventManagerActivity extends AppCompatActivity {
         return null;
     }
 
+    /** @brief Normalizes a cost string to a numeric value for sorting.
+     * @param s Cost string (e.g., "$15", "Free", "CAD 12.50").
+     */
     private double parseCost(String s) {
         if (s == null) return Double.MAX_VALUE;
         String trimmed = s.trim();
@@ -275,6 +319,9 @@ public class EventManagerActivity extends AppCompatActivity {
         }
     }
 
+    /** @brief Sorts events by event date; earliest-to-latest if {@code ascending} is true. 
+     * @param ascending true for ascending (soonest first), false for descending.
+     * */
     private void sortByEventDate(boolean ascending) {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getEventDate());
@@ -288,6 +335,7 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /** @brief Sorts events by registration open date (earliest first). */
     private void sortByRegistrationOpens() {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getRegistrationOpens());
@@ -300,6 +348,7 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /** @brief Sorts events by registration close date (earliest first). */
     private void sortByRegistrationCloses() {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getRegistrationCloses());
@@ -312,6 +361,7 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /** @brief Sorts events by numeric cost (lowest first). Unknown costs sort last. */
     private void sortByCost() {
         Comparator<Event> cmp = (a, b) -> {
             double ca = parseCost(a.getCost());
@@ -321,6 +371,13 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /**
+     * @brief Applies updates from {@link EventDetailsAdminActivity} results.
+     *
+     * @param requestCode Identifier for the child request.
+     * @param resultCode Result status returned by the child activity.
+     * @param data Optional return data (may contain {@code "eventTitleToDelete"}).
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
