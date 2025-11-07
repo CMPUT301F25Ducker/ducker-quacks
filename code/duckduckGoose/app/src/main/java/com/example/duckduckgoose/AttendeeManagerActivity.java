@@ -52,7 +52,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private MaterialButton btnWorldMap;
     private MaterialButton btnSelectRandom;
     private AutoCompleteTextView dropFilterAttendees;
-    
+
     // Firestore and event context
     private FirebaseFirestore db;
 
@@ -60,8 +60,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-    // Get eventId from intent
-    eventId = getIntent().getStringExtra("eventId");
+        // Get eventId from intent
+        eventId = getIntent().getStringExtra("eventId");
         EdgeToEdge.enable(this);
         WindowInsetsController controller = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -138,9 +138,9 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 csv.append("UserId,FullName,Email,AccountType\n");
                 for (User u : attendees) {
                     csv.append(u.getUserId() != null ? u.getUserId() : "").append(",")
-                       .append(u.getFullName() != null ? u.getFullName() : "").append(",")
-                       .append(u.getEmail() != null ? u.getEmail() : "").append(",")
-                       .append(u.getAccountType() != null ? u.getAccountType() : "").append("\n");
+                            .append(u.getFullName() != null ? u.getFullName() : "").append(",")
+                            .append(u.getEmail() != null ? u.getEmail() : "").append(",")
+                            .append(u.getAccountType() != null ? u.getAccountType() : "").append("\n");
                 }
 
                 try {
@@ -160,7 +160,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         // Revoke Ticket button
         if (btnRevokeTicket != null) {
             btnRevokeTicket.setOnClickListener(v ->
-                Toast.makeText(this, "Revoke Ticket - Feature coming soon", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Revoke Ticket - Feature coming soon", Toast.LENGTH_SHORT).show()
             );
         }
 
@@ -185,52 +185,52 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 input.setHint("Enter message to send to waiting list");
 
                 new AlertDialog.Builder(this)
-                    .setTitle("Notify Waiting List")
-                    .setView(input)
-                    .setPositiveButton("Send", (dialog, which) -> {
-                        String message = input.getText().toString().trim();
-                        if (message.isEmpty()) {
-                            Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
+                        .setTitle("Notify Waiting List")
+                        .setView(input)
+                        .setPositiveButton("Send", (dialog, which) -> {
+                            String message = input.getText().toString().trim();
+                            if (message.isEmpty()) {
+                                Toast.makeText(this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
 
-                        // Send a notification document for each user in the list
-                        int total = attendees.size();
-                        if (total == 0) {
-                            Toast.makeText(this, "No waiting-list entrants to notify", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
+                            // Send a notification document for each user in the list
+                            int total = attendees.size();
+                            if (total == 0) {
+                                Toast.makeText(this, "No waiting-list entrants to notify", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
 
-                        int[] sentCount = {0};
-                        int[] failedCount = {0};
+                            int[] sentCount = {0};
+                            int[] failedCount = {0};
 
-                        for (User u : attendees) {
-                            if (u == null || u.getUserId() == null) continue;
-                            Map<String, Object> notif = new HashMap<>();
-                            notif.put("userId", u.getUserId());
-                            notif.put("message", message);
-                            notif.put("eventId", eventId);
-                            notif.put("sentBy", currentUser.getUid());
-                            notif.put("timestamp", com.google.firebase.Timestamp.now());
+                            for (User u : attendees) {
+                                if (u == null || u.getUserId() == null) continue;
+                                Map<String, Object> notif = new HashMap<>();
+                                notif.put("userId", u.getUserId());
+                                notif.put("message", message);
+                                notif.put("eventId", eventId);
+                                notif.put("sentBy", currentUser.getUid());
+                                notif.put("timestamp", com.google.firebase.Timestamp.now());
 
-                            db.collection("notifications")
-                                .add(notif)
-                                .addOnSuccessListener(docRef -> {
-                                    sentCount[0]++;
-                                    if (sentCount[0] + failedCount[0] >= total) {
-                                        Toast.makeText(this, "Sent to " + sentCount[0] + " / " + total, Toast.LENGTH_SHORT).show();
-                                    }
-                                })
-                                .addOnFailureListener(e -> {
-                                    failedCount[0]++;
-                                    if (sentCount[0] + failedCount[0] >= total) {
-                                        Toast.makeText(this, "Sent to " + sentCount[0] + " / " + total + " (" + failedCount[0] + " failed)", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
+                                db.collection("notifications")
+                                        .add(notif)
+                                        .addOnSuccessListener(docRef -> {
+                                            sentCount[0]++;
+                                            if (sentCount[0] + failedCount[0] >= total) {
+                                                Toast.makeText(this, "Sent to " + sentCount[0] + " / " + total, Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            failedCount[0]++;
+                                            if (sentCount[0] + failedCount[0] >= total) {
+                                                Toast.makeText(this, "Sent to " + sentCount[0] + " / " + total + " (" + failedCount[0] + " failed)", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
             });
         }
 
@@ -261,35 +261,35 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             adapter.setOnItemClickListener(user -> {
                 String status = user.getAccountType();
                 ProfileSheet.newInstance(user, true, false, status, true)
-                    .show(getSupportFragmentManager(), "ProfileSheet");
+                        .show(getSupportFragmentManager(), "ProfileSheet");
             });
             rvAttendees.setAdapter(adapter);
 
             // Load waitlisted users for this event from Firestore
             com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
             db.collection("waitlist")
-                .whereEqualTo("eventId", eventId)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    allAttendees.clear();
-                    for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String userId = doc.getString("userId");
-                        if (userId != null) {
-                            // Optionally fetch user details from 'users' collection
-                            db.collection("users").document(userId).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    User user = userDoc.toObject(User.class);
-                                    if (user != null) {
-                                        allAttendees.add(user);
-                                        attendees.clear();
-                                        attendees.addAll(allAttendees);
-                                        if (adapter != null) adapter.notifyDataSetChanged();
-                                        updateCountDisplay();
-                                    }
-                                });
+                    .whereEqualTo("eventId", eventId)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        allAttendees.clear();
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                            String userId = doc.getString("userId");
+                            if (userId != null) {
+                                // Optionally fetch user details from 'users' collection
+                                db.collection("users").document(userId).get()
+                                        .addOnSuccessListener(userDoc -> {
+                                            User user = userDoc.toObject(User.class);
+                                            if (user != null) {
+                                                allAttendees.add(user);
+                                                attendees.clear();
+                                                attendees.addAll(allAttendees);
+                                                if (adapter != null) adapter.notifyDataSetChanged();
+                                                updateCountDisplay();
+                                            }
+                                        });
+                            }
                         }
-                    }
-                });
+                    });
         }
     }
 
@@ -307,66 +307,66 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         // Verify organizer by loading event document
         db.collection("events").document(eventId).get()
-            .addOnSuccessListener(doc -> {
-                if (doc != null && doc.exists()) {
-                    String organizerId = doc.getString("organizerId");
-                    FirebaseUser cur = FirebaseAuth.getInstance().getCurrentUser();
-                    isOrganizer = (cur != null && organizerId != null && organizerId.equals(cur.getUid()));
-                    if (!isOrganizer) {
-                        // disable send message button for non-organizers
-                        if (btnSendMessage != null) btnSendMessage.setEnabled(false);
+                .addOnSuccessListener(doc -> {
+                    if (doc != null && doc.exists()) {
+                        String organizerId = doc.getString("organizerId");
+                        FirebaseUser cur = FirebaseAuth.getInstance().getCurrentUser();
+                        isOrganizer = (cur != null && organizerId != null && organizerId.equals(cur.getUid()));
+                        if (!isOrganizer) {
+                            // disable send message button for non-organizers
+                            if (btnSendMessage != null) btnSendMessage.setEnabled(false);
+                        }
                     }
-                }
-            });
+                });
 
         // Query waitlist entries for this event with status "waiting"
         db.collection("waitlist")
-            .whereEqualTo("eventId", eventId)
-            .whereEqualTo("status", "waiting")
-            .get()
-            .addOnSuccessListener((QuerySnapshot snapshot) -> {
-                if (snapshot == null || snapshot.isEmpty()) {
-                    // No waiting-list entries
-                    return;
-                }
+                .whereEqualTo("eventId", eventId)
+                .whereEqualTo("status", "waiting")
+                .get()
+                .addOnSuccessListener((QuerySnapshot snapshot) -> {
+                    if (snapshot == null || snapshot.isEmpty()) {
+                        // No waiting-list entries
+                        return;
+                    }
 
-                for (DocumentSnapshot entryDoc : snapshot.getDocuments()) {
-                    String uid = entryDoc.getString("userId");
-                    if (uid == null) continue;
+                    for (DocumentSnapshot entryDoc : snapshot.getDocuments()) {
+                        String uid = entryDoc.getString("userId");
+                        if (uid == null) continue;
 
-                    // Fetch user document for display
-                    db.collection("users").document(uid).get()
-                        .addOnSuccessListener(userDoc -> {
-                            if (userDoc != null && userDoc.exists()) {
-                                User u = userDoc.toObject(User.class);
-                                if (u != null) {
-                                    // ensure userId is set (model may not map id field)
-                                    try {
-                                        java.lang.reflect.Field f = User.class.getDeclaredField("userId");
-                                        f.setAccessible(true);
-                                        if (f.get(u) == null) f.set(u, uid);
-                                    } catch (Exception ex) {
-                                        // ignore reflection failures
+                        // Fetch user document for display
+                        db.collection("users").document(uid).get()
+                                .addOnSuccessListener(userDoc -> {
+                                    if (userDoc != null && userDoc.exists()) {
+                                        User u = userDoc.toObject(User.class);
+                                        if (u != null) {
+                                            // ensure userId is set (model may not map id field)
+                                            try {
+                                                java.lang.reflect.Field f = User.class.getDeclaredField("userId");
+                                                f.setAccessible(true);
+                                                if (f.get(u) == null) f.set(u, uid);
+                                            } catch (Exception ex) {
+                                                // ignore reflection failures
+                                            }
+                                            allAttendees.add(u);
+                                            attendees.add(u);
+                                            if (adapter != null) adapter.notifyDataSetChanged();
+                                            updateCountDisplay();
+                                        } else {
+                                            // fallback: create minimal User
+                                            User fallback = new User();
+                                            try { java.lang.reflect.Field f = User.class.getDeclaredField("userId"); f.setAccessible(true); f.set(fallback, uid); } catch (Exception ignored) {}
+                                            try { java.lang.reflect.Field f2 = User.class.getDeclaredField("fullName"); f2.setAccessible(true); f2.set(fallback, entryDoc.getString("userName")); } catch (Exception ignored) {}
+                                            allAttendees.add(fallback);
+                                            attendees.add(fallback);
+                                            if (adapter != null) adapter.notifyDataSetChanged();
+                                            updateCountDisplay();
+                                        }
                                     }
-                                    allAttendees.add(u);
-                                    attendees.add(u);
-                                    if (adapter != null) adapter.notifyDataSetChanged();
-                                    updateCountDisplay();
-                                } else {
-                                    // fallback: create minimal User
-                                    User fallback = new User();
-                                    try { java.lang.reflect.Field f = User.class.getDeclaredField("userId"); f.setAccessible(true); f.set(fallback, uid); } catch (Exception ignored) {}
-                                    try { java.lang.reflect.Field f2 = User.class.getDeclaredField("fullName"); f2.setAccessible(true); f2.set(fallback, entryDoc.getString("userName")); } catch (Exception ignored) {}
-                                    allAttendees.add(fallback);
-                                    attendees.add(fallback);
-                                    if (adapter != null) adapter.notifyDataSetChanged();
-                                    updateCountDisplay();
-                                }
-                            }
-                        });
-                }
-            })
-            .addOnFailureListener(e -> Toast.makeText(this, "Failed to load waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to load waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void applyFilter(String filter) {
