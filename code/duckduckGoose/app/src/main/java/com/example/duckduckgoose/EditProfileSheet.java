@@ -1,3 +1,14 @@
+/**
+ * @file EditProfileSheet.java
+ * @brief Bottom sheet for editing the current user's profile.
+ *
+ * Loads existing fields from Firestore and allows updates to name, age,
+ * email, and phone. Sends a fragment result on successful save.
+ *
+ * @author
+ *      DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.os.Bundle;
@@ -20,22 +31,39 @@ import com.google.firebase.firestore.SetOptions;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @class EditProfileSheet
+ * @brief BottomSheetDialogFragment to edit user profile fields.
+ *
+ * Reads/writes the current user's document in the "users" collection.
+ * Emits a fragment result when changes are saved.
+ */
 public class EditProfileSheet extends BottomSheetDialogFragment {
 
-    // FragmentResult keys so the opener can refresh after save
+    /** FragmentResult keys for notifying the opener after a successful save. */
     public static final String RESULT_KEY = "EditProfileResult";
     public static final String RESULT_SAVED = "saved";
 
+    /** Firebase auth and Firestore references. */
     private FirebaseAuth auth;
     private FirebaseFirestore db;
 
+    /** Input fields bound to profile attributes. */
     private TextInputEditText inpName;
     private TextInputEditText inpAge;
     private TextInputEditText inpEmail;
     private TextInputEditText inpPhone;
 
+    /**
+     * @brief Creates a new instance of the profile edit sheet.
+     * @return A new EditProfileSheet instance.
+     */
     public static EditProfileSheet newInstance() { return new EditProfileSheet(); }
 
+    /**
+     * @brief Inflates the profile edit sheet layout.
+     * @return Inflated view for this bottom sheet.
+     */
     @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -43,9 +71,15 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
         return inflater.inflate(R.layout.sheet_profile_edit, container, false);
     }
 
+    /**
+     * @brief Binds views, loads current profile values, and wires button actions.
+     * @param v Root view for the sheet.
+     * @param s Saved state bundle.
+     */
     @Override public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
         super.onViewCreated(v, s);
 
+        /** @brief Loads the current user's profile fields from Firestore into inputs. */
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
@@ -77,25 +111,31 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
                     );
         }
 
-        // Update button
+        /** @brief Validates inputs and saves changes to Firestore. */
         View btnUpdate = v.findViewById(R.id.btnUpdate);
         if (btnUpdate != null) {
             btnUpdate.setOnClickListener(x -> saveChanges());
         }
 
-        // Cancel button
+        /** @brief Dismisses the sheet without saving. */
         View btnCancel = v.findViewById(R.id.btnCancel);
         if (btnCancel != null) {
             btnCancel.setOnClickListener(x -> dismiss());
         }
 
-        // Close button
+        /** @brief Closes the sheet. */
         View btnClose = v.findViewById(R.id.btnClose);
         if (btnClose != null) {
             btnClose.setOnClickListener(x -> dismiss());
         }
     }
 
+    /**
+     * @brief Validates input and updates the user's profile in Firestore.
+     *
+     * On success, shows a toast, posts a fragment result ({@link #RESULT_KEY}),
+     * and dismisses the sheet.
+     */
     private void saveChanges() {
         if (auth.getCurrentUser() == null) {
             Toast.makeText(requireContext(), "Not signed in", Toast.LENGTH_SHORT).show();
@@ -156,6 +196,12 @@ public class EditProfileSheet extends BottomSheetDialogFragment {
                 });
     }
 
+    /**
+     * @brief Safely reads trimmed text from an input field.
+     * @param et The input field.
+     * @return The trimmed text or an empty string if null.
+     * I'm Kirking It
+     */
     private String textOf(@Nullable TextInputEditText et) {
         return et == null || et.getText() == null ? "" : et.getText().toString().trim();
     }
