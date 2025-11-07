@@ -10,20 +10,21 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.duckduckgoose.user.User;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class AdminManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
     private FrameLayout addAdminSheetContainer;
-    private List<UserItem> admins;
+    private List<User> admins;
     private UserManagerAdapter adapter;
 
-    private TextInputEditText edtUserId, edtFullName, edtAge, edtEmail, edtPhone, edtPassword;
+    private TextInputEditText edtFullName, edtAge, edtEmail, edtPhone, edtPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +53,6 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         }
 
         addAdminSheetContainer = findViewById(R.id.add_admin_sheet_container);
-        edtUserId = findViewById(R.id.edtAdminUserId);
         edtFullName = findViewById(R.id.edtAdminFullName);
         edtAge = findViewById(R.id.edtAdminAge);
         edtEmail = findViewById(R.id.edtAdminEmail);
@@ -75,13 +75,13 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         MaterialButton btnAdminAdd = findViewById(R.id.btnAdminAdd);
         if (btnAdminAdd != null) {
             btnAdminAdd.setOnClickListener(v -> {
-                String userId = edtUserId.getText().toString();
                 String fullName = edtFullName.getText().toString();
                 String password = edtPassword.getText().toString();
 
-                if (!userId.isEmpty() && !fullName.isEmpty() && !password.isEmpty()) {
-                    // In production, you would hash the password and store it securely
-                    admins.add(new UserItem(fullName, userId, null));
+                if (!fullName.isEmpty() && !password.isEmpty()) {
+                    User newAdmin = new User();
+                    newAdmin.setFullName(fullName);
+                    admins.add(newAdmin);
                     adapter.notifyItemInserted(admins.size() - 1);
                     clearAdminInputs();
                     addAdminSheetContainer.setVisibility(View.GONE);
@@ -93,9 +93,6 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
                     if (fullName.isEmpty()) {
                         edtFullName.setError("Full name is required");
                     }
-                    if (userId.isEmpty()) {
-                        edtUserId.setError("User ID is required");
-                    }
                 }
             });
         }
@@ -103,13 +100,12 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         RecyclerView rv = findViewById(R.id.rvAdmins);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            admins = new ArrayList<>(Arrays.asList(
-                    new UserItem("Admin 1", "admin001", null),
-                    new UserItem("Admin 2", "admin002", null),
-                    new UserItem("Admin 3", "admin003", null)
-            ));
+            admins = new ArrayList<>();
             adapter = new UserManagerAdapter(admins, false); // false = hide checkboxes
-            adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true, false, null, false).show(getSupportFragmentManager(), "ProfileSheet"));
+            adapter.setOnItemClickListener(user -> {
+                String extra = (user.getEmail() != null) ? user.getEmail() : "";
+                ProfileSheet.newInstance(user, true, false, extra, false).show(getSupportFragmentManager(), "ProfileSheet");
+            });
             rv.setAdapter(adapter);
         }
     }
@@ -131,20 +127,10 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
     }
 
     private void clearAdminInputs() {
-        edtUserId.setText("");
         edtFullName.setText("");
         edtAge.setText("");
         edtEmail.setText("");
         edtPhone.setText("");
         edtPassword.setText("");
-    }
-
-    static class UserItem implements UserManagerAdapter.BaseUserItem {
-        String name, userId, extra;
-        UserItem(String n, String u, String e) { name = n; userId = u; extra = e; }
-
-        @Override public String getName() { return name; }
-        @Override public String getUserId() { return userId; }
-        @Override public String getExtra() { return extra; }
     }
 }

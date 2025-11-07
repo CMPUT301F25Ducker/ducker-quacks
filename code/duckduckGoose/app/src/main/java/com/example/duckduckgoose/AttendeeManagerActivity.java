@@ -15,19 +15,19 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.duckduckgoose.user.User;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 public class AttendeeManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
-    private List<UserItem> attendees;
-    private List<UserItem> allAttendees; // Full list for filtering
+    private List<User> attendees;
+    private List<User> allAttendees; // Full list for filtering
     private UserManagerAdapter adapter;
-    
+
     private RecyclerView rvAttendees;
     private CardView mapPopup;
     private View mapPopupBackground;
@@ -99,21 +99,21 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private void setupButtonListeners() {
         // Export CSV button
         if (btnExportCSV != null) {
-            btnExportCSV.setOnClickListener(v -> 
+            btnExportCSV.setOnClickListener(v ->
                 Toast.makeText(this, "Export CSV - Feature coming soon", Toast.LENGTH_SHORT).show()
             );
         }
 
         // Revoke Ticket button
         if (btnRevokeTicket != null) {
-            btnRevokeTicket.setOnClickListener(v -> 
+            btnRevokeTicket.setOnClickListener(v ->
                 Toast.makeText(this, "Revoke Ticket - Feature coming soon", Toast.LENGTH_SHORT).show()
             );
         }
 
         // Send Message button
         if (btnSendMessage != null) {
-            btnSendMessage.setOnClickListener(v -> 
+            btnSendMessage.setOnClickListener(v ->
                 Toast.makeText(this, "Send Message - Feature coming soon", Toast.LENGTH_SHORT).show()
             );
         }
@@ -138,60 +138,50 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private void setupRecyclerView() {
         if (rvAttendees != null) {
             rvAttendees.setLayoutManager(new LinearLayoutManager(this));
-            
-            // Initialize with fake data including Duck/Goose statuses
-            allAttendees = new ArrayList<>(Arrays.asList(
-                    new UserItem("John Doe", "user001", "Duck"),
-                    new UserItem("Jane Smith", "user002", "Goose"),
-                    new UserItem("Bob Johnson", "user003", "Duck"),
-                    new UserItem("Alice Williams", "user004", "Selected"),
-                    new UserItem("Charlie Brown", "user005", "Waiting"),
-                    new UserItem("Diana Prince", "user006", "Goose"),
-                    new UserItem("Eve Adams", "user007", "Duck"),
-                    new UserItem("Frank Castle", "user008", "Not Selected")
-            ));
+
+            allAttendees = new ArrayList<>();
             attendees = new ArrayList<>(allAttendees);
             adapter = new UserManagerAdapter(attendees);
             adapter.setOnItemClickListener(user -> {
                 // Show profile sheet with "Kick" instead of "Delete"
-                String status = user.getExtra(); // getExtra() returns status for UserItem
-                ProfileSheet.newInstance(user.getName(), user.getUserId(), true, false, status, true)
+                String status = user.getAccountType(); // getExtra() returns status for UserItem
+                ProfileSheet.newInstance(user, true, false, status, true)
                     .show(getSupportFragmentManager(), "ProfileSheet");
             });
             rvAttendees.setAdapter(adapter);
-            
+
             updateCountDisplay();
         }
     }
 
     private void applyFilter(String filter) {
         attendees.clear();
-        
+
         switch (filter) {
             case "Selected/Waiting":
-                for (UserItem user : allAttendees) {
-                    if ("Selected".equals(user.getStatus()) || "Waiting".equals(user.getStatus())) {
+                for (User user : allAttendees) {
+                    if ("Selected".equals(user.getAccountType()) || "Waiting".equals(user.getAccountType())) {
                         attendees.add(user);
                     }
                 }
                 break;
             case "Not Selected":
-                for (UserItem user : allAttendees) {
-                    if ("Not Selected".equals(user.getStatus())) {
+                for (User user : allAttendees) {
+                    if ("Not Selected".equals(user.getAccountType())) {
                         attendees.add(user);
                     }
                 }
                 break;
             case "Duck":
-                for (UserItem user : allAttendees) {
-                    if ("Duck".equals(user.getStatus())) {
+                for (User user : allAttendees) {
+                    if ("Duck".equals(user.getAccountType())) {
                         attendees.add(user);
                     }
                 }
                 break;
             case "Goose":
-                for (UserItem user : allAttendees) {
-                    if ("Goose".equals(user.getStatus())) {
+                for (User user : allAttendees) {
+                    if ("Goose".equals(user.getAccountType())) {
                         attendees.add(user);
                     }
                 }
@@ -200,7 +190,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 attendees.addAll(allAttendees);
                 break;
         }
-        
+
         if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
@@ -214,8 +204,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         if (txtInCircle != null) {
             // Calculate how many are "Duck" or "Goose" (in circle)
             int inCircle = 0;
-            for (UserItem user : attendees) {
-                if ("Duck".equals(user.getStatus()) || "Goose".equals(user.getStatus())) {
+            for (User user : attendees) {
+                if ("Duck".equals(user.getAccountType()) || "Goose".equals(user.getAccountType())) {
                     inCircle++;
                 }
             }
@@ -226,17 +216,17 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private void selectRandomAttendees() {
         // Select random subset of attendees (for demonstration)
         if (allAttendees.isEmpty()) return;
-        
+
         Random random = new Random();
         int randomCount = random.nextInt(allAttendees.size()) + 1;
-        
+
         attendees.clear();
-        List<UserItem> tempList = new ArrayList<>(allAttendees);
+        List<User> tempList = new ArrayList<>(allAttendees);
         for (int i = 0; i < randomCount && !tempList.isEmpty(); i++) {
             int randomIndex = random.nextInt(tempList.size());
             attendees.add(tempList.remove(randomIndex));
         }
-        
+
         if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
@@ -267,7 +257,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         // For attendee manager, this acts as "Kick"
         for (int i = 0; i < attendees.size(); i++) {
             if (attendees.get(i).getUserId().equals(userId)) {
-                String name = attendees.get(i).getName();
+                String name = attendees.get(i).getFullName();
                 attendees.remove(i);
                 if (adapter != null) {
                     adapter.notifyItemRemoved(i);
@@ -289,15 +279,5 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     @Override
     public void onEventsButtonClicked(String userId) {
         // Not used for attendees
-    }
-
-    static class UserItem implements UserManagerAdapter.BaseUserItem {
-        String name, userId, status;
-        UserItem(String n, String u, String s) { name = n; userId = u; status = s; }
-
-        @Override public String getName() { return name; }
-        @Override public String getUserId() { return userId; }
-        @Override public String getExtra() { return status; }
-        public String getStatus() { return status; }
     }
 }

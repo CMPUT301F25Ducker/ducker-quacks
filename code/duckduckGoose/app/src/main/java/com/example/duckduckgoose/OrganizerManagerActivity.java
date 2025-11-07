@@ -13,13 +13,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.duckduckgoose.user.User;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class OrganizerManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
-    private List<UserItem> organizers;
+    private List<User> organizers;
     private UserManagerAdapter adapter;
 
     @Override
@@ -58,15 +59,13 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
         RecyclerView rv = findViewById(R.id.rvOrganizers);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            organizers = new ArrayList<>(Arrays.asList(
-                    new UserItem("Alice", "user123", "7"),
-                    new UserItem("Bob", "user456", "2"),
-                    new UserItem("Charlie", "user789", "15"),
-                    new UserItem("David", "user101", "1"),
-                    new UserItem("Eve", "user112", "9")
-            ));
+            organizers = new ArrayList<>();
+
             adapter = new UserManagerAdapter(organizers, false); // false = hide checkboxes
-            adapter.setOnItemClickListener(user -> ProfileSheet.newInstance(user.getName(), user.getUserId(), true, true, ((UserItem) user).extra, false).show(getSupportFragmentManager(), "ProfileSheet"));
+            adapter.setOnItemClickListener(user -> {
+                String extra = (user.getEmail() != null) ? user.getEmail() : "";
+                ProfileSheet.newInstance(user, true, true, extra, false).show(getSupportFragmentManager(), "ProfileSheet");
+            });
             rv.setAdapter(adapter);
         }
     }
@@ -85,14 +84,5 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     @Override
     public void onEventsButtonClicked(String userId) {
         startActivity(new Intent(this, EventManagerActivity.class));
-    }
-
-    static class UserItem implements UserManagerAdapter.BaseUserItem {
-        String name, userId, extra;
-        UserItem(String n, String u, String e) { name = n; userId = u; extra = e; }
-
-        @Override public String getName() { return name; }
-        @Override public String getUserId() { return userId; }
-        @Override public String getExtra() { return "Events: " + extra; }
     }
 }

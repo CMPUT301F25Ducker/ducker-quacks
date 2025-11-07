@@ -8,14 +8,16 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.duckduckgoose.user.User;
 import com.google.android.material.button.MaterialButton;
 import java.util.List;
 
 public class OrganizerAdapter extends RecyclerView.Adapter<OrganizerAdapter.ViewHolder> {
 
-    private List<OrganizerManagerActivity.UserItem> organizers;
+    private List<User> organizers;
 
-    public OrganizerAdapter(List<OrganizerManagerActivity.UserItem> organizers) {
+    public OrganizerAdapter(List<User> organizers) {
         this.organizers = organizers;
     }
 
@@ -28,21 +30,22 @@ public class OrganizerAdapter extends RecyclerView.Adapter<OrganizerAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        OrganizerManagerActivity.UserItem organizer = organizers.get(position);
-        holder.organizerName.setText(organizer.getName());
-        holder.organizerEmail.setText(organizer.getUserId()); // Using userId for email for now
+        User organizer = organizers.get(position);
+        holder.organizerName.setText(organizer.getFullName());
+        holder.organizerEmail.setText(organizer.getEmail());
 
         holder.itemView.setOnClickListener(v -> {
             Context context = v.getContext();
             Intent intent = new Intent(context, OrganizerProfileActivity.class);
-            intent.putExtra("organizerName", organizer.getName());
-            intent.putExtra("organizerEmail", organizer.getUserId());
+            intent.putExtra("organizerName", organizer.getFullName());
+            intent.putExtra("organizerEmail", organizer.getEmail());
             context.startActivity(intent);
         });
 
         holder.deleteButton.setOnClickListener(v -> {
             organizers.remove(position);
-            notifyDataSetChanged();
+            notifyItemRemoved(position);
+            notifyItemRangeChanged(position, getItemCount());
         });
     }
 
