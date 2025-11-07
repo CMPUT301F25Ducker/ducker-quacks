@@ -1,3 +1,14 @@
+/**
+ * @file EventDetailActivity.java
+ * @brief Detail screen for a single event.
+ *
+ * Displays event metadata (title, description, dates, cost, spots, poster) and
+ * provides actions such as join/waitlist, open map, or contact organizer.
+ *
+ * @author
+ *      DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -23,6 +34,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
 import com.example.duckduckgoose.waitlist.WaitlistEntry;
 
+/**
+ * @class EventDetailActivity
+ * @brief Activity to show event details and related actions.
+ *
+ * Reads Intent extras for event fields and updates the UI accordingly.
+ */
 public class EventDetailActivity extends AppCompatActivity {
 
     enum State { UNDECIDED, NOT_IN_CIRCLE, LEAVE_CIRCLE, DUCK, GOOSE, WAITING_LIST, LEAVE_WAITING_LIST }
@@ -32,6 +49,10 @@ public class EventDetailActivity extends AppCompatActivity {
     private String eventId;
     private FirebaseFirestore db;
 
+    /**
+     * @brief Initializes the layout, reads Intent extras, and wires actions.
+     * @param savedInstanceState Saved activity state.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
