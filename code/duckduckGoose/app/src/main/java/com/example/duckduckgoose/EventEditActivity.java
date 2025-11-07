@@ -98,81 +98,81 @@ public class EventEditActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     /**
- * @brief Initializes the editor screen and wires all UI, pickers, and actions.
- *
- * Sets up edge-to-edge display and status bar appearance, binds views,
- * registers the gallery picker, determines mode ("create" or "edit"), loads
- * existing event data when applicable, and configures button visibility and
- * handlers.
- *
- * @param savedInstanceState Previously saved instance state; may be null.
- */
-@Override
-public void onCreate(Bundle savedInstanceState) {
-    EdgeToEdge.enable(this);
-    WindowInsetsController controller = null;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        controller = getWindow().getInsetsController();
-    }
-    if (controller != null) {
-        controller.setSystemBarsAppearance(
-                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-        );
-    }
+     * @brief Initializes the editor screen and wires all UI, pickers, and actions.
+     *
+     * Sets up edge-to-edge display and status bar appearance, binds views,
+     * registers the gallery picker, determines mode ("create" or "edit"), loads
+     * existing event data when applicable, and configures button visibility and
+     * handlers.
+     *
+     * @param savedInstanceState Previously saved instance state; may be null.
+     */
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
+        WindowInsetsController controller = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            controller = getWindow().getInsetsController();
+        }
+        if (controller != null) {
+            controller.setSystemBarsAppearance(
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            );
+        }
 
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_event_edit);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_event_edit);
 
-    // Firestore
-    db = FirebaseFirestore.getInstance();
-    eventsRef = db.collection("events");
+        // Firestore
+        db = FirebaseFirestore.getInstance();
+        eventsRef = db.collection("events");
 
-    // Image picker
-    imagePickerLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Uri imageUri = result.getData().getData();
-                    if (imageUri != null) {
-                        addImageToContainer(imageUri.toString());
-                        Toast.makeText(this, "Image added", Toast.LENGTH_SHORT).show();
+        // Image picker
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            addImageToContainer(imageUri.toString());
+                            Toast.makeText(this, "Image added", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
-            }
-    );
+        );
 
-    // Mode
-    mode = getIntent().getStringExtra("mode");
-    if (mode == null) mode = "create";
+        // Mode
+        mode = getIntent().getStringExtra("mode");
+        if (mode == null) mode = "create";
 
-    // If editing, prefer an explicit eventId from the caller
-    eventId = getIntent().getStringExtra("eventId");
+        // If editing, prefer an explicit eventId from the caller
+        eventId = getIntent().getStringExtra("eventId");
 
-    initializeViews();
-    setupClickListeners();
+        initializeViews();
+        setupClickListeners();
 
-    // Title & button visibility by mode
-    TextView txtTopBarTitle = findViewById(R.id.txtTopBarTitle);
-    if ("edit".equalsIgnoreCase(mode)) {
-        if (txtTopBarTitle != null) txtTopBarTitle.setText("Edit Event");
-        btnCreateEvent.setVisibility(View.GONE);
-        btnSaveChanges.setVisibility(View.VISIBLE);
-        btnDeleteEvent.setVisibility(View.VISIBLE);
-        btnAttendeeManager.setVisibility(View.VISIBLE);
-        loadEventData();
-    } else {
-        if (txtTopBarTitle != null) txtTopBarTitle.setText("New Event");
-        btnSaveChanges.setVisibility(View.GONE);
-        btnCreateEvent.setVisibility(View.VISIBLE);
-        btnDeleteEvent.setVisibility(View.GONE);
-        btnAttendeeManager.setVisibility(View.GONE);
+        // Title & button visibility by mode
+        TextView txtTopBarTitle = findViewById(R.id.txtTopBarTitle);
+        if ("edit".equalsIgnoreCase(mode)) {
+            if (txtTopBarTitle != null) txtTopBarTitle.setText("Edit Event");
+            btnCreateEvent.setVisibility(View.GONE);
+            btnSaveChanges.setVisibility(View.VISIBLE);
+            btnDeleteEvent.setVisibility(View.VISIBLE);
+            btnAttendeeManager.setVisibility(View.VISIBLE);
+            loadEventData();
+        } else {
+            if (txtTopBarTitle != null) txtTopBarTitle.setText("New Event");
+            btnSaveChanges.setVisibility(View.GONE);
+            btnCreateEvent.setVisibility(View.VISIBLE);
+            btnDeleteEvent.setVisibility(View.GONE);
+            btnAttendeeManager.setVisibility(View.GONE);
+        }
+
+        // Back
+        ImageButton btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
     }
-
-    // Back
-    ImageButton btnBack = findViewById(R.id.btnBack);
-    if (btnBack != null) btnBack.setOnClickListener(v -> finish());
-}
 
     /** Bind views. */
     private void initializeViews() {
