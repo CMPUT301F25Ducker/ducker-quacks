@@ -1,0 +1,59 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isEventOrganizer(eventData) {
+      return isSignedIn() && eventData.organizerId == request.auth.uid;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == userId;
+      
+      // Allow updating arrays for waitlist/accepted events
+      allow update: if isSignedIn() 
+        && request.auth.uid == userId
+        && (
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['waitlistedEventIds', 'acceptedEventIds'])
+        );
+    }
+
+    // Events collection
+    match /events/{eventId} {
+      allow read: if true;  // Events are publicly readable
+      allow create: if isSignedIn() && request.resource.data.organizerId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        // Allow organizer to update event details
+        resource.data.organizerId == request.auth.uid ||
+        // Allow updating waitlist/accepted arrays
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['waitingList', 'acceptedFromWaitlist'])
+      );
+      allow delete: if isSignedIn() && resource.data.organizerId == request.auth.uid;
+    }
+
+    // Waitlist collection
+    match /waitlist/{entryId} {
+      allow read: if isSignedIn();
+      // Allow creating if user is adding themselves
+      allow create: if isSignedIn() && 
+        request.resource.data.userId == request.auth.uid;
+      // Allow updating status if user is the entrant or event organizer
+      allow update: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/events/$(request.resource.data.eventId)).data.organizerId == request.auth.uid
+      );
+    }
+  }
+}

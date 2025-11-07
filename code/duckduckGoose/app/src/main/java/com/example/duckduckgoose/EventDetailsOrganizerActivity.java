@@ -113,6 +113,14 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                         if (event != null) {
                             if (eventTitle != null) eventTitle.setText(event.getName());
 
+                            // Show waiting list count
+                            TextView txtWaitingList = findViewById(R.id.txtWaitingList);
+                            if (txtWaitingList != null) {
+                                int waitingListSize = event.getWaitingList().size();
+                                txtWaitingList.setText("Waiting List: " + waitingListSize + " people");
+                                txtWaitingList.setVisibility(waitingListSize > 0 ? View.VISIBLE : View.GONE);
+                            }
+
                             TextView txtDates = findViewById(R.id.txtDates);
                             TextView txtOpen = findViewById(R.id.txtOpen);
                             TextView txtDeadline = findViewById(R.id.txtDeadline);

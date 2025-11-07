@@ -1,6 +1,8 @@
 package com.example.duckduckgoose.user;
 
 import com.google.firebase.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User {
     private String userId;
@@ -9,9 +11,54 @@ public class User {
     private String email;
     private String phone;
     private String accountType;
-//    private Long createdAt;
+    private List<String> waitlistedEventIds; // List of event IDs the user is waitlisted for
+    private List<String> acceptedEventIds; // List of event IDs the user has been accepted into (from waitlist)
 
-    public User() {} // firestore needs no-arg ctor
+    public User() {
+        waitlistedEventIds = new ArrayList<>(); // Initialize empty list in no-arg constructor
+        acceptedEventIds = new ArrayList<>();
+    }
+
+    // Waitlist management
+    public List<String> getWaitlistedEventIds() {
+        return waitlistedEventIds != null ? waitlistedEventIds : new ArrayList<>();
+    }
+
+    public List<String> getAcceptedEventIds() {
+        return acceptedEventIds != null ? acceptedEventIds : new ArrayList<>();
+    }
+
+    public void addToWaitlist(String eventId) {
+        if (waitlistedEventIds == null) {
+            waitlistedEventIds = new ArrayList<>();
+        }
+        if (!waitlistedEventIds.contains(eventId)) {
+            waitlistedEventIds.add(eventId);
+        }
+    }
+
+    public void removeFromWaitlist(String eventId) {
+        if (waitlistedEventIds != null) {
+            waitlistedEventIds.remove(eventId);
+        }
+    }
+
+    public void addToAcceptedEvents(String eventId) {
+        if (acceptedEventIds == null) {
+            acceptedEventIds = new ArrayList<>();
+        }
+        if (!acceptedEventIds.contains(eventId)) {
+            acceptedEventIds.add(eventId);
+            // Remove from waitlist since now accepted
+            removeFromWaitlist(eventId);
+        }
+    }
+
+    public void removeFromAcceptedEvents(String eventId) {
+        if (acceptedEventIds != null) {
+            acceptedEventIds.remove(eventId);
+        }
+    }
 
     // Getters
     public String getUserId() {
@@ -60,4 +107,5 @@ public class User {
     public void setAccountType(String accountType) {
         this.accountType = accountType;
     }
+
 }
