@@ -129,9 +129,32 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private void setupButtonListeners() {
         // Export CSV button
         if (btnExportCSV != null) {
-            btnExportCSV.setOnClickListener(v ->
-                Toast.makeText(this, "Export CSV - Feature coming soon", Toast.LENGTH_SHORT).show()
-            );
+            btnExportCSV.setOnClickListener(v -> {
+                if (attendees == null || attendees.isEmpty()) {
+                    Toast.makeText(this, "No attendees to export", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                StringBuilder csv = new StringBuilder();
+                csv.append("UserId,FullName,Email,AccountType\n");
+                for (User u : attendees) {
+                    csv.append(u.getUserId() != null ? u.getUserId() : "").append(",")
+                       .append(u.getFullName() != null ? u.getFullName() : "").append(",")
+                       .append(u.getEmail() != null ? u.getEmail() : "").append(",")
+                       .append(u.getAccountType() != null ? u.getAccountType() : "").append("\n");
+                }
+
+                try {
+                    String fileName = "attendees_" + (eventId != null ? eventId : "event") + ".csv";
+                    java.io.File downloads = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS);
+                    java.io.File file = new java.io.File(downloads, fileName);
+                    java.io.FileOutputStream fos = new java.io.FileOutputStream(file);
+                    fos.write(csv.toString().getBytes());
+                    fos.close();
+                    Toast.makeText(this, "CSV exported to Downloads/" + fileName, Toast.LENGTH_LONG).show();
+                } catch (Exception ex) {
+                    Toast.makeText(this, "Failed to export CSV: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
         }
 
         // Revoke Ticket button
