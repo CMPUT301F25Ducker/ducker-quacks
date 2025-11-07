@@ -30,8 +30,11 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.HttpsCallableResult;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,6 +57,9 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
 
     /** Firestore database reference. */
     private FirebaseFirestore db;
+
+    /** Reference to the Firestore functions instance. */
+    private final FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
 
     /** Firestore "users" collection reference. */
     private CollectionReference usersRef;
@@ -173,28 +179,11 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
      * @brief Called when a profile deletion is confirmed via ProfileSheet.
      * Removes the organizer locally and updates the count and list UI.
      *
-     * @param userId The unique user ID to remove.
+     * @param email Email of the unique user to remove.
      */
     @Override
-    public void onProfileDeleted(String userId) {
-        // Remove from visible list
-        for (int i = 0; i < organizers.size(); i++) {
-            if (organizers.get(i).getUserId().equals(userId)) {
-                organizers.remove(i);
-                adapter.notifyItemRemoved(i);
-                break;
-            }
-        }
-        // Remove from full list
-        for (int i = 0; i < allOrganizers.size(); i++) {
-            if (allOrganizers.get(i).getUserId().equals(userId)) {
-                // Add actual deletion from database here <<<<
-                allOrganizers.remove(i);
-                break;
-            }
-        }
-        updateCountDisplay();
-        Toast.makeText(this, "Organizer removed", Toast.LENGTH_SHORT).show();
+    public void onProfileDeleted(String email) {
+        deleteUserByEmail(email);
     }
 
     /**
@@ -206,5 +195,45 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     @Override
     public void onEventsButtonClicked(String userId) {
         startActivity(new android.content.Intent(this, EventManagerActivity.class));
+    }
+
+    private void deleteUserByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String key = email.trim();
+
+        functions
+                .getHttpsCallable("deleteUserByEmail")
+                .call(Collections.singletonMap("email", email))
+                .addOnSuccessListener((HttpsCallableResult result) -> {
+                    Toast.makeText(this, "Organizer successfully deleted.", Toast.LENGTH_SHORT).show();
+                    removeFromLocalListsByEmail(email);
+                    updateCountDisplay();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerManager", "Cloud Function delete failed", e);
+                    Toast.makeText(this, "Failed to delete organizer: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    /** Removes organizer entry with the given email from both lists and updates the adapter. */
+    private void removeFromLocalListsByEmail(String email) {
+        // visible list
+        for (int i = organizers.size() - 1; i >= 0; i--) {
+            User u = organizers.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
+                organizers.remove(i);
+                adapter.notifyItemRemoved(i);
+            }
+        }
+        // full baseline list
+        for (int i = allOrganizers.size() - 1; i >= 0; i--) {
+            User u = allOrganizers.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
+                allOrganizers.remove(i);
+            }
+        }
     }
 }

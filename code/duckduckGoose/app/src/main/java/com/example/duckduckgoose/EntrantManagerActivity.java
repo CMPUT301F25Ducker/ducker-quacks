@@ -28,9 +28,12 @@ import com.example.duckduckgoose.user.User;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.functions.FirebaseFunctions;
+import com.google.firebase.functions.HttpsCallableResult;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,6 +57,10 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
 
     /** Reference to the Firestore database instance. */
     private FirebaseFirestore db;
+
+
+    /** Reference to the Firestore functions instance. */
+    private FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
 
     /** Reference to the Firestore "users" collection. */
     private CollectionReference usersRef;
@@ -170,26 +177,12 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
      * Called when a user profile is deleted through the ProfileSheet interface.
      * Removes the user from both local lists and updates the UI.
      *
-     * @param userId The ID of the deleted user.
+     * @param email The email of the deleted user.
      */
     @Override
-    public void onProfileDeleted(String userId) {
-        for (int i = 0; i < entrants.size(); i++) {
-            if (entrants.get(i).getUserId().equals(userId)) {
-                entrants.remove(i);
-                adapter.notifyItemRemoved(i);
-                break;
-            }
-        }
-        for (int i = 0; i < allEntrants.size(); i++) {
-            if (allEntrants.get(i).getUserId().equals(userId)) {
-                // Add actual deletion from database here <<<<
-                allEntrants.remove(i);
-                break;
-            }
-        }
-        updateCountDisplay();
-        Toast.makeText(this, "Attendee deleted", Toast.LENGTH_SHORT).show();
+    public void onProfileDeleted(String email) {
+        // Treat the parameter as EMAIL here
+        deleteUserByEmail(email);
     }
 
     /**
@@ -200,5 +193,43 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
     @Override
     public void onEventsButtonClicked(String userId) {
         // Not applicable to entrants
+    }
+
+    private void deleteUserByEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        functions
+                .getHttpsCallable("deleteUserByEmail")
+                .call(Collections.singletonMap("email", email))
+                .addOnSuccessListener((HttpsCallableResult result) -> {
+                    Toast.makeText(this, "Entrant successfully deleted.", Toast.LENGTH_SHORT).show();
+                    removeFromLocalListsByEmail(email);
+                    updateCountDisplay();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EntrantManager", "Cloud Function delete failed", e);
+                    Toast.makeText(this, "Failed to delete entrant: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void removeFromLocalListsByEmail(String email) {
+        // visible list
+        for (int i = entrants.size() - 1; i >= 0; i--) {
+            User u = entrants.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
+                entrants.remove(i);
+                adapter.notifyItemRemoved(i);
+            }
+        }
+        // full list
+        for (int i = allEntrants.size() - 1; i >= 0; i--) {
+            User u = allEntrants.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
+                allEntrants.remove(i);
+            }
+        }
     }
 }
