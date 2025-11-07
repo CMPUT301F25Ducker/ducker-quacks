@@ -5,6 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.example.duckduckgoose.user.User;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,11 +18,28 @@ import java.util.ArrayList;
  */
 public class OrganizerEventUnitTest {
 
+    private User organizer;
     private Event event;
 
     @Before
     public void setUp() {
+        organizer = new User();
+        organizer.setAccountType("Organizer");
+
         event = new Event();
+    }
+
+    // Test organizer account type is set correctly
+    @Test
+    public void testAdminAccountType() {
+        assertEquals("organizer", organizer.getAccountType().toLowerCase());
+    }
+
+    // Test AppConfig organizer mode
+    @Test
+    public void testAppConfigAdminMode() {
+        AppConfig.setLoginMode("ORGANIZER");
+        assertEquals("ORGANIZER", AppConfig.LOGIN_MODE);
     }
 
     // Test event has required fields

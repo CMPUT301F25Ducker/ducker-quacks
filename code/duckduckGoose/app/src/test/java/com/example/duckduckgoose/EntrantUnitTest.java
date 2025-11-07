@@ -19,35 +19,50 @@ import java.util.List;
  */
 public class EntrantUnitTest {
 
-    private User user;
+    private User entrant;
     private Event event;
 
     @Before
     public void setUp() {
-        user = new User();
+        entrant = new User();
+        entrant.setAccountType("Entrant");
+
         event = new Event();
+    }
+
+    // Test entrant account type is set correctly
+    @Test
+    public void testAdminAccountType() {
+        assertEquals("entrant", entrant.getAccountType().toLowerCase());
+    }
+
+    // Test AppConfig entrant mode
+    @Test
+    public void testAppConfigAdminMode() {
+        AppConfig.setLoginMode("ENTRANT");
+        assertEquals("ENTRANT", AppConfig.LOGIN_MODE);
     }
 
     // Test user has waitlisted events list
     @Test
     public void testUserHasWaitlistedEventsList() {
-        List<String> waitlist = user.getWaitlistedEventIds();
+        List<String> waitlist = entrant.getWaitlistedEventIds();
         assertNotNull(waitlist);
     }
 
     // Test user can join waitlist
     @Test
     public void testUserCanJoinWaitlist() {
-        user.addToWaitlist("event123");
-        assertTrue(user.getWaitlistedEventIds().contains("event123"));
+        entrant.addToWaitlist("event123");
+        assertTrue(entrant.getWaitlistedEventIds().contains("event123"));
     }
 
     // Test user can leave waitlist
     @Test
     public void testUserCanLeaveWaitlist() {
-        user.addToWaitlist("event123");
-        user.removeFromWaitlist("event123");
-        assertFalse(user.getWaitlistedEventIds().contains("event123"));
+        entrant.addToWaitlist("event123");
+        entrant.removeFromWaitlist("event123");
+        assertFalse(entrant.getWaitlistedEventIds().contains("event123"));
     }
 
     // Test user waitlist starts empty
@@ -60,52 +75,52 @@ public class EntrantUnitTest {
     // Test user can be accepted from waitlist
     @Test
     public void testUserCanBeAcceptedFromWaitlist() {
-        user.addToWaitlist("event123");
-        user.addToAcceptedEvents("event123");
+        entrant.addToWaitlist("event123");
+        entrant.addToAcceptedEvents("event123");
 
-        assertTrue(user.getAcceptedEventIds().contains("event123"));
-        assertFalse(user.getWaitlistedEventIds().contains("event123"));
+        assertTrue(entrant.getAcceptedEventIds().contains("event123"));
+        assertFalse(entrant.getWaitlistedEventIds().contains("event123"));
     }
 
     // Test accepted events list exists
     @Test
     public void testAcceptedEventsListExists() {
-        assertNotNull(user.getAcceptedEventIds());
+        assertNotNull(entrant.getAcceptedEventIds());
     }
 
     // Test user full name can be set
     @Test
     public void testUserFullNameCanBeSet() {
-        user.setFullName("John Doe");
-        assertEquals("John Doe", user.getFullName());
+        entrant.setFullName("John Doe");
+        assertEquals("John Doe", entrant.getFullName());
     }
 
     // Test user email can be set
     @Test
     public void testUserEmailCanBeSet() {
-        user.setEmail("test@example.com");
-        assertEquals("test@example.com", user.getEmail());
+        entrant.setEmail("test@example.com");
+        assertEquals("test@example.com", entrant.getEmail());
     }
 
     // Test user phone can be set
     @Test
     public void testUserPhoneCanBeSet() {
-        user.setPhone("1234567890");
-        assertEquals("1234567890", user.getPhone());
+        entrant.setPhone("1234567890");
+        assertEquals("1234567890", entrant.getPhone());
     }
 
     // Test user age can be set
     @Test
     public void testUserAgeCanBeSet() {
-        user.setAge(25L);
-        assertEquals(Long.valueOf(25L), user.getAge());
+        entrant.setAge(25L);
+        assertEquals(Long.valueOf(25L), entrant.getAge());
     }
 
     // Test user account type
     @Test
     public void testUserAccountType() {
-        user.setAccountType("Entrant");
-        assertEquals("Entrant", user.getAccountType());
+        entrant.setAccountType("Entrant");
+        assertEquals("Entrant", entrant.getAccountType());
     }
 
     // Test event has waiting list
@@ -158,28 +173,28 @@ public class EntrantUnitTest {
     // Test user can have multiple waitlisted events
     @Test
     public void testUserCanHaveMultipleWaitlistedEvents() {
-        user.addToWaitlist("event1");
-        user.addToWaitlist("event2");
-        user.addToWaitlist("event3");
+        entrant.addToWaitlist("event1");
+        entrant.addToWaitlist("event2");
+        entrant.addToWaitlist("event3");
 
-        assertEquals(3, user.getWaitlistedEventIds().size());
+        assertEquals(3, entrant.getWaitlistedEventIds().size());
     }
 
     // Test duplicate waitlist entries prevented
     @Test
     public void testDuplicateWaitlistEntriesPrevented() {
-        user.addToWaitlist("event1");
-        user.addToWaitlist("event1");
+        entrant.addToWaitlist("event1");
+        entrant.addToWaitlist("event1");
 
-        assertEquals(1, user.getWaitlistedEventIds().size());
+        assertEquals(1, entrant.getWaitlistedEventIds().size());
     }
 
     // Test user can remove from accepted events
     @Test
     public void testUserCanRemoveFromAcceptedEvents() {
-        user.addToAcceptedEvents("event123");
-        user.removeFromAcceptedEvents("event123");
+        entrant.addToAcceptedEvents("event123");
+        entrant.removeFromAcceptedEvents("event123");
 
-        assertFalse(user.getAcceptedEventIds().contains("event123"));
+        assertFalse(entrant.getAcceptedEventIds().contains("event123"));
     }
 }

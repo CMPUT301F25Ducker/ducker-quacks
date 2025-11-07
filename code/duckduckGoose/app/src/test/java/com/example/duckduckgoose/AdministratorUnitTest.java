@@ -37,6 +37,19 @@ public class AdministratorUnitTest {
         userList = new ArrayList<>();
     }
 
+    // Test admin account type is set correctly
+    @Test
+    public void testAdminAccountType() {
+        assertEquals("admin", admin.getAccountType().toLowerCase());
+    }
+
+    // Test AppConfig admin mode
+    @Test
+    public void testAppConfigAdminMode() {
+        AppConfig.setLoginMode("ADMIN");
+        assertEquals("ADMIN", AppConfig.LOGIN_MODE);
+    }
+
     // Test event can be identified for removal
     @Test
     public void testEventHasId() {
