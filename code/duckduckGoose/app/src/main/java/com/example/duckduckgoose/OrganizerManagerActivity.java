@@ -173,28 +173,63 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
      * @brief Called when a profile deletion is confirmed via ProfileSheet.
      * Removes the organizer locally and updates the count and list UI.
      *
-     * @param userId The unique user ID to remove.
+     * @param email Email of the unique user to remove.
      */
     @Override
-    public void onProfileDeleted(String userId) {
-        // Remove from visible list
-        for (int i = 0; i < organizers.size(); i++) {
-            if (organizers.get(i).getUserId().equals(userId)) {
+    public void onProfileDeleted(String email) {
+        deleteUserByEmail(email);
+    }
+
+    private void deleteUserByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String key = email.trim();
+
+        usersRef.whereEqualTo("email", key)
+                .limit(1) // emails are unique
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap.isEmpty()) {
+                        Toast.makeText(this, "No organizer found for that email.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String docId = snap.getDocuments().get(0).getId();
+                    usersRef.document(docId).delete()
+                            .addOnSuccessListener(v -> {
+                                removeFromLocalListsByEmail(key);
+                                updateCountDisplay();
+                                Toast.makeText(this, "Organizer deleted.", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("OrganizerManager", "Delete failed for docId=" + docId, e);
+                                Toast.makeText(this, "Failed to delete organizer.", Toast.LENGTH_LONG).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrganizerManager", "Query by email failed", e);
+                    Toast.makeText(this, "Error searching organizer.", Toast.LENGTH_LONG).show();
+                });
+    }
+
+    /** Removes organizer entry with the given email from both lists and updates the adapter. */
+    private void removeFromLocalListsByEmail(String email) {
+        // visible list
+        for (int i = organizers.size() - 1; i >= 0; i--) {
+            User u = organizers.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
                 organizers.remove(i);
                 adapter.notifyItemRemoved(i);
-                break;
             }
         }
-        // Remove from full list
-        for (int i = 0; i < allOrganizers.size(); i++) {
-            if (allOrganizers.get(i).getUserId().equals(userId)) {
-                // Add actual deletion from database here <<<<
+        // full baseline list
+        for (int i = allOrganizers.size() - 1; i >= 0; i--) {
+            User u = allOrganizers.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
                 allOrganizers.remove(i);
-                break;
             }
         }
-        updateCountDisplay();
-        Toast.makeText(this, "Organizer removed", Toast.LENGTH_SHORT).show();
     }
 
     /**

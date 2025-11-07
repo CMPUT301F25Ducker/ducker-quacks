@@ -170,26 +170,12 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
      * Called when a user profile is deleted through the ProfileSheet interface.
      * Removes the user from both local lists and updates the UI.
      *
-     * @param userId The ID of the deleted user.
+     * @param email The email of the deleted user.
      */
     @Override
-    public void onProfileDeleted(String userId) {
-        for (int i = 0; i < entrants.size(); i++) {
-            if (entrants.get(i).getUserId().equals(userId)) {
-                entrants.remove(i);
-                adapter.notifyItemRemoved(i);
-                break;
-            }
-        }
-        for (int i = 0; i < allEntrants.size(); i++) {
-            if (allEntrants.get(i).getUserId().equals(userId)) {
-                // Add actual deletion from database here <<<<
-                allEntrants.remove(i);
-                break;
-            }
-        }
-        updateCountDisplay();
-        Toast.makeText(this, "Attendee deleted", Toast.LENGTH_SHORT).show();
+    public void onProfileDeleted(String email) {
+        // Treat the parameter as EMAIL here
+        deleteUserByEmail(email);
     }
 
     /**
@@ -200,5 +186,56 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
     @Override
     public void onEventsButtonClicked(String userId) {
         // Not applicable to entrants
+    }
+
+    private void deleteUserByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String key = email.trim();
+
+        usersRef.whereEqualTo("email", key)
+                .limit(1) // emails are unique
+                .get()
+                .addOnSuccessListener(snap -> {
+                    if (snap.isEmpty()) {
+                        Toast.makeText(this, "No entrant found for that email.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String docId = snap.getDocuments().get(0).getId();
+                    usersRef.document(docId).delete()
+                            .addOnSuccessListener(v -> {
+                                removeFromLocalListsByEmail(key);
+                                updateCountDisplay();
+                                Toast.makeText(this, "Attendee deleted", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                android.util.Log.e("EntrantManager", "Delete failed for docId=" + docId, e);
+                                Toast.makeText(this, "Failed to delete attendee.", Toast.LENGTH_LONG).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("EntrantManager", "Query by email failed", e);
+                    Toast.makeText(this, "Error searching attendee.", Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void removeFromLocalListsByEmail(String email) {
+        // visible list
+        for (int i = entrants.size() - 1; i >= 0; i--) {
+            User u = entrants.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
+                entrants.remove(i);
+                adapter.notifyItemRemoved(i);
+            }
+        }
+        // full list
+        for (int i = allEntrants.size() - 1; i >= 0; i--) {
+            User u = allEntrants.get(i);
+            if (u != null && email.equalsIgnoreCase(u.getEmail())) {
+                allEntrants.remove(i);
+            }
+        }
     }
 }
