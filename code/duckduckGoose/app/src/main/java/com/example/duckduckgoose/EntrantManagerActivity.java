@@ -1,6 +1,6 @@
 /**
  * @file EntrantManagerActivity.java
- * @brief Activity for managing and displaying a list of entrant users in the DuckDuckGoose app.
+ *  Activity for managing and displaying a list of entrant users in the DuckDuckGoose app.
  *
  * This activity retrieves all user documents from Firestore, filters them to include only entrants,
  * and displays them in a RecyclerView. It also allows the admin to view entrant profiles
@@ -37,8 +37,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @class EntrantManagerActivity
- * @brief Manages and displays entrant users retrieved from Firestore.
+ *  EntrantManagerActivity
+ *  Manages and displays entrant users retrieved from Firestore.
  *
  * This activity provides administrative functionality to view, count,
  * and delete entrant accounts within the app. It interfaces with Firestore

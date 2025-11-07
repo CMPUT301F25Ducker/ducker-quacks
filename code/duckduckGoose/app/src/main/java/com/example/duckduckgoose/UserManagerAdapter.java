@@ -1,14 +1,11 @@
 /**
- * @file UserManagerAdapter.java
- * @brief RecyclerView adapter for displaying and interacting with User items.
+ * RecyclerView adapter for displaying and interacting with {@link User} items.
  *
- * Binds a list of users into row views for the user manager screen. Supports
- * optional checkboxes (e.g., for attendee selection) and click callbacks.
+ * <p>Binds a list of users into row views for the user manager screen. Supports
+ * optional checkboxes (e.g., for attendee selection) and click callbacks.</p>
  *
- * @author
- *      DuckDuckGoose Development Team
+ * <p><b>Author:</b> DuckDuckGoose Development Team</p>
  */
-
 package com.example.duckduckgoose;
 
 import android.view.LayoutInflater;
@@ -25,11 +22,10 @@ import com.example.duckduckgoose.user.User;
 import java.util.List;
 
 /**
- * @class UserManagerAdapter
- * @brief Adapter for rendering a list of User items in a RecyclerView.
+ * Adapter for rendering a list of {@link User} items in a RecyclerView.
  *
- * Provides a click listener callback and an option to show/hide checkboxes
- * in each row (e.g., for attendee selection flows).
+ * <p>Provides a click listener callback and an option to show/hide checkboxes
+ * in each row (e.g., for attendee selection flows).</p>
  */
 public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.ViewHolder> {
 
@@ -43,8 +39,10 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     private final boolean showCheckboxes;
 
     /**
-     * @brief Constructs an adapter with checkboxes visible by default.
-     * @param users Non-null list of users to display.
+     * Constructs an adapter with checkboxes visible by default.
+     *
+     * @param users non-null list of users to display
+     * @throws IllegalArgumentException if {@code users} is null
      */
     public UserManagerAdapter(List<? extends User> users) {
         if (users == null) {
@@ -55,9 +53,11 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     }
 
     /**
-     * @brief Constructs an adapter with explicit checkbox visibility.
-     * @param users Non-null list of users to display.
-     * @param showCheckboxes True to show the attendee checkbox for each item.
+     * Constructs an adapter with explicit checkbox visibility.
+     *
+     * @param users non-null list of users to display
+     * @param showCheckboxes {@code true} to show the attendee checkbox for each item
+     * @throws IllegalArgumentException if {@code users} is null
      */
     public UserManagerAdapter(List<? extends User> users, boolean showCheckboxes) {
         if (users == null) {
@@ -68,18 +68,20 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     }
 
     /**
-     * @brief Registers a row click callback.
-     * @param listener Listener invoked with the clicked User.
+     * Registers a row click callback.
+     *
+     * @param listener listener invoked with the clicked {@link User}
      */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
 
     /**
-     * @brief Inflates the item view and wraps it in a ViewHolder.
-     * @param parent RecyclerView parent.
-     * @param viewType Unused view type for this adapter.
-     * @return Newly created ViewHolder.
+     * Inflates the item view and wraps it in a {@link ViewHolder}.
+     *
+     * @param parent RecyclerView parent
+     * @param viewType unused view type for this adapter
+     * @return newly created {@link ViewHolder}
      */
     @NonNull
     @Override
@@ -90,11 +92,12 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     }
 
     /**
-     * @brief Binds the User at @p position to the given holder.
-     * Safely handles missing/null user fields and toggles optional views.
+     * Binds the {@link User} at the given position to the provided holder.
      *
-     * @param holder Target ViewHolder for binding.
-     * @param position Adapter position of the item to bind.
+     * <p>Safely handles missing/null user fields and toggles optional views.</p>
+     *
+     * @param holder target {@link ViewHolder} for binding
+     * @param position adapter position of the item to bind
      */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -135,8 +138,9 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     }
 
     /**
-     * @brief Returns the number of items in the adapter.
-     * @return Size of the backing user list (0 if list is empty).
+     * Returns the number of items in the adapter.
+     *
+     * @return size of the backing user list (0 if list is empty)
      */
     @Override
     public int getItemCount() {
@@ -144,8 +148,7 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     }
 
     /**
-     * @class ViewHolder
-     * @brief Caches row view references for faster binding.
+     * Caches row view references for faster binding.
      */
     static class ViewHolder extends RecyclerView.ViewHolder {
         /** Full name text field. */
@@ -160,8 +163,9 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
         android.widget.CheckBox checkboxAttendee;
 
         /**
-         * @brief Binds layout child views to fields.
-         * @param itemView The inflated row view.
+         * Binds layout child views to fields.
+         *
+         * @param itemView the inflated row view
          */
         ViewHolder(View itemView) {
             super(itemView);
@@ -174,13 +178,13 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     }
 
     /**
-     * @interface OnItemClickListener
-     * @brief Callback for row tap events.
+     * Callback for row tap events.
      */
     public interface OnItemClickListener {
         /**
-         * @brief Invoked when a user row is tapped.
-         * @param user The User represented by the tapped row.
+         * Invoked when a user row is tapped.
+         *
+         * @param user the {@link User} represented by the tapped row
          */
         void onItemClick(User user);
     }

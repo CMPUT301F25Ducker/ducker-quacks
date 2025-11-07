@@ -1,3 +1,11 @@
+/**
+ * Activity for viewing and managing admin accounts.
+ *
+ * <p>Displays a list of admin users fetched from Firestore. Allows navigation
+ * to add or view individual admin profiles.</p>
+ *
+ * <p><b>Author:</b> DuckDuckGoose Development Team</p>
+ */
 package com.example.duckduckgoose;
 
 import android.os.Build;
@@ -18,14 +26,29 @@ import com.google.android.material.textfield.TextInputEditText;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Activity to display and manage the list of admin users.
+ *
+ * <p>Handles Firestore retrieval and RecyclerView display of all registered admins.</p>
+ */
 public class AdminManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
+    /** Container for the add-admin bottom sheet. */
     private FrameLayout addAdminSheetContainer;
+
+    /** List containing all admin user objects. */
     private List<User> admins;
+    /** RecyclerView adapter for displaying admin users. */
     private UserManagerAdapter adapter;
 
+    /** Text inputs for creating a new admin. */
     private TextInputEditText edtFullName, edtAge, edtEmail, edtPhone, edtPassword;
 
+    /**
+     * Initializes the admin manager screen and sets up the RecyclerView.
+     *
+     * @param savedInstanceState saved activity state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -97,6 +120,8 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
             });
         }
 
+        // Sets up the admin list and item click behavior.
+        // Hides checkboxes and opens a profile sheet on row click.
         RecyclerView rv = findViewById(R.id.rvAdmins);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
@@ -104,12 +129,18 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
             adapter = new UserManagerAdapter(admins, false); // false = hide checkboxes
             adapter.setOnItemClickListener(user -> {
                 String extra = (user.getEmail() != null) ? user.getEmail() : "";
-                ProfileSheet.newInstance(user, true, false, extra, false).show(getSupportFragmentManager(), "ProfileSheet");
+                ProfileSheet.newInstance(user, true, false, extra, false)
+                        .show(getSupportFragmentManager(), "ProfileSheet");
             });
             rv.setAdapter(adapter);
         }
     }
 
+    /**
+     * Removes the deleted admin from the list and updates the UI.
+     *
+     * @param userId ID of the admin that was deleted
+     */
     @Override
     public void onProfileDeleted(String userId) {
         for (int i = 0; i < admins.size(); i++) {
@@ -121,11 +152,17 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         }
     }
 
+    /**
+     * No-op for admins; events button is not used here.
+     *
+     * @param userId target user ID
+     */
     @Override
     public void onEventsButtonClicked(String userId) {
         // No action needed for admins
     }
 
+    /** Clears all add-admin input fields. */
     private void clearAdminInputs() {
         edtFullName.setText("");
         edtAge.setText("");

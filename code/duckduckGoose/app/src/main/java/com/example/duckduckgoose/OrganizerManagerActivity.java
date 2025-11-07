@@ -1,6 +1,6 @@
 /**
  * @file OrganizerManagerActivity.java
- * @brief Activity for managing and displaying a list of organizer users in the DuckDuckGoose app.
+ *  Activity for managing and displaying a list of organizer users in the DuckDuckGoose app.
  *
  * Loads all users from Firestore, filters by accountType == "Organizer", and displays them
  * in a RecyclerView. Provides profile viewing via ProfileSheet, supports deleting organizers
@@ -38,8 +38,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @class OrganizerManagerActivity
- * @brief Manages and displays organizer users retrieved from Firestore.
+ *  OrganizerManagerActivity
+ *  Manages and displays organizer users retrieved from Firestore.
  *
  * Mirrors EntrantManagerActivity behavior: initializes Firestore, loads organizers,
  * shows them in a RecyclerView, keeps a running count, and opens ProfileSheet on item tap.
@@ -72,7 +72,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     private TextView txtCount;
 
     /**
-     * @brief Standard activity creation. Sets up UI, Firestore, adapter, and loads data.
+     *  Standard activity creation. Sets up UI, Firestore, adapter, and loads data.
      *
      * @param savedInstanceState Saved instance state bundle.
      */
@@ -120,7 +120,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     }
 
     /**
-     * @brief View binding for RecyclerView and count TextView.
+     *  View binding for RecyclerView and count TextView.
      */
     private void initializeViews() {
         rvOrganizers = findViewById(R.id.rvOrganizers);
@@ -128,7 +128,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     }
 
     /**
-     * @brief Configures the RecyclerView and item click behavior.
+     *  Configures the RecyclerView and item click behavior.
      */
     private void setupRecyclerView() {
         if (rvOrganizers == null) return;
@@ -156,7 +156,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     }
 
     /**
-     * @brief Updates the on-screen count of organizers.
+     *  Updates the on-screen count of organizers.
      */
     private void updateCountDisplay() {
         if (txtCount != null) {
@@ -165,7 +165,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     }
 
     /**
-     * @brief Loads all users from Firestore, filters to accountType == "Organizer",
+     *  Loads all users from Firestore, filters to accountType == "Organizer",
      * updates adapter data set, and refreshes the count.
      */
     private void loadOrganizersFromFirestore() {
@@ -190,7 +190,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     }
 
     /**
-     * @brief Called when a profile deletion is confirmed via ProfileSheet.
+     *  Called when a profile deletion is confirmed via ProfileSheet.
      * Removes the organizer locally and updates the count and list UI.
      *
      * @param email Email of the unique user to remove.
@@ -201,7 +201,7 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
     }
 
     /**
-     * @brief Handles "Events" button from the profile sheet.
+     *  Handles "Events" button from the profile sheet.
      * Navigates to the EventManagerActivity (no change from your original behavior).
      *
      * @param userId The organizer's userId (not used here, but kept for parity).

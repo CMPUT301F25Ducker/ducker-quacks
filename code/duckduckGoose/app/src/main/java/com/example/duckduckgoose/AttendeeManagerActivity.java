@@ -1,3 +1,14 @@
+/**
+ * @file AttendeeManagerActivity.java
+ *  Manager screen for viewing and controlling event attendees/waitlist.
+ *
+ * Loads waitlisted users for a given event, supports basic filtering and exports,
+ * and provides quick actions (map, random selection, messaging).
+ *
+ * @author
+ *      DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.os.Build;
@@ -34,13 +45,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ *  AttendeeManagerActivity
+ *  Activity to manage the attendee/waitlist roster for an event.
+ *
+ * Binds users to a RecyclerView, supports filters, CSV export, and organizer actions.
+ */
 public class AttendeeManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
+    /** Current event id used to scope attendees/waitlist. */
     private String eventId;
 
+    /** Visible list of attendees after filtering. */
     private List<User> attendees;
+    /** Full unfiltered attendee list (source for filters). */
     private List<User> allAttendees; // Full list for filtering
+    /** Adapter for rendering attendee rows. */
     private UserManagerAdapter adapter;
 
+    /** Count/summary UI elements. */
     private RecyclerView rvAttendees;
     private CardView mapPopup;
     private View mapPopupBackground;
@@ -51,11 +73,14 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private MaterialButton btnSendMessage;
     private MaterialButton btnWorldMap;
     private MaterialButton btnSelectRandom;
+
+    /** Filter dropdown for attendee status. */
     private AutoCompleteTextView dropFilterAttendees;
     
-    // Firestore and event context
+    /** Firestore reference for data access. */
     private FirebaseFirestore db;
 
+    /** True if the current user is the event's organizer. */
     private boolean isOrganizer = false;
 
     @Override
@@ -76,6 +101,10 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             }
         }
 
+        /**
+         *  Initializes UI, wires listeners, and loads initial waitlist data.
+         * @param savedInstanceState Saved activity state.
+         */
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee_manager);
 
@@ -101,6 +130,9 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         loadWaitlistEntrants();
     }
 
+    /**
+     *  Finds and caches view references from the layout.
+     */
     private void initializeViews() {
         rvAttendees = findViewById(R.id.rvAttendees);
         mapPopup = findViewById(R.id.mapPopup);
@@ -115,20 +147,29 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         dropFilterAttendees = findViewById(R.id.dropFilterAttendees);
     }
 
+    /**
+     *  Prepares the attendee filter dropdown and applies selection handling.
+     */
     private void setupDropdownFilter() {
         if (dropFilterAttendees != null) {
             String[] filters = {"Selected/Waiting", "Not Selected", "Duck", "Goose"};
             ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, filters);
             dropFilterAttendees.setAdapter(adapter);
+
+            /**  Applies the selected filter to the attendee list. */
             dropFilterAttendees.setOnItemClickListener((parent, view, position, id) -> {
                 applyFilter(filters[position]);
             });
         }
     }
 
+    /**
+     *  Wires all button click listeners for actions (export, revoke, message, map, random).
+     */
     private void setupButtonListeners() {
         // Export CSV button
         if (btnExportCSV != null) {
+            /**  Exports the current attendee list to a CSV file in Downloads. */
             btnExportCSV.setOnClickListener(v -> {
                 if (attendees == null || attendees.isEmpty()) {
                     Toast.makeText(this, "No attendees to export", Toast.LENGTH_SHORT).show();
@@ -157,14 +198,20 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             });
         }
 
-        // Revoke Ticket button
+        /**  Placeholder action for revoking a ticket (not yet implemented). */
         if (btnRevokeTicket != null) {
             btnRevokeTicket.setOnClickListener(v ->
                 Toast.makeText(this, "Revoke Ticket - Feature coming soon", Toast.LENGTH_SHORT).show()
             );
         }
 
-        // Send Message button - will prompt for message and write notifications for waiting-list users
+        /**
+         *  Sends a notification to waitlisted entrants (organizer action only).
+         *
+         * Prompts for a message, then writes a notification doc per user.
+         * 
+         * Will prompt for message and write notifications for waiting-list users.
+         */
         if (btnSendMessage != null) {
             btnSendMessage.setOnClickListener(v -> {
                 FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -234,7 +281,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             });
         }
 
-        // World Map button
+        /**  Shows the world map popup. */
         if (btnWorldMap != null) {
             btnWorldMap.setOnClickListener(v -> showMapPopup());
         }
@@ -251,6 +298,9 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         }
     }
 
+    /**
+     *  Initializes RecyclerView, adapter, and loads initial waitlist users.
+     */
     private void setupRecyclerView() {
         if (rvAttendees != null && eventId != null) {
             rvAttendees.setLayoutManager(new LinearLayoutManager(this));
@@ -258,6 +308,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             allAttendees = new ArrayList<>();
             attendees = new ArrayList<>(allAttendees);
             adapter = new UserManagerAdapter(attendees);
+
+            /**  Opens profile sheet for the selected attendee. */
             adapter.setOnItemClickListener(user -> {
                 String status = user.getAccountType();
                 ProfileSheet.newInstance(user, true, false, status, true)
@@ -294,7 +346,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     }
 
     /**
-     * Load waitlist entries for the provided eventId and populate attendee lists.
+     *  Loads waitlist entries for the current event and resolves user details.
+     *
      * Also checks whether current user is the organizer for the event so we can enable
      * the send-notification action only for organizers.
      */
@@ -369,6 +422,10 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             .addOnFailureListener(e -> Toast.makeText(this, "Failed to load waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     *  Applies a status-based filter to the attendee list.
+     * @param filter One of: "Selected/Waiting", "Not Selected", "Duck", "Goose".
+     */
     private void applyFilter(String filter) {
         attendees.clear();
 
@@ -412,6 +469,9 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         updateCountDisplay();
     }
 
+    /**
+     *  Updates visible counts (total and in-circle summary).
+     */
     private void updateCountDisplay() {
         if (txtCount != null) {
             txtCount.setText("Count: " + attendees.size() + "/Spots");
@@ -428,6 +488,9 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         }
     }
 
+    /**
+     *  Picks a random non-empty subset from allAttendees and displays it.
+     */
     private void selectRandomAttendees() {
         // Select random subset of attendees (for demonstration)
         if (allAttendees.isEmpty()) return;
@@ -449,6 +512,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         Toast.makeText(this, "Selected " + randomCount + " random attendees", Toast.LENGTH_SHORT).show();
     }
 
+    /**  Shows the map popup and dims the background. */
     private void showMapPopup() {
         if (mapPopup != null) {
             mapPopup.setVisibility(View.VISIBLE);
@@ -458,6 +522,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         }
     }
 
+    /**  Hides the map popup and restores the background. */
     private void hideMapPopup() {
         if (mapPopup != null) {
             mapPopup.setVisibility(View.GONE);
@@ -467,6 +532,10 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         }
     }
 
+    /**
+     *  Removes a kicked attendee from lists and updates the UI.
+     * @param userId ID of the removed attendee.
+     */
     @Override
     public void onProfileDeleted(String userId) {
         // For attendee manager, this acts as "Kick"
@@ -491,6 +560,10 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         updateCountDisplay();
     }
 
+    /**
+     *  No-op in attendee manager; events button is unused here.
+     * @param userId Target user id.
+     */
     @Override
     public void onEventsButtonClicked(String userId) {
         // Not used for attendees

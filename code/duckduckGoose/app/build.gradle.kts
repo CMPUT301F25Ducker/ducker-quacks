@@ -42,6 +42,9 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation("com.google.firebase:firebase-functions")
 
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.0.1")
+
     implementation("androidx.core:core:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
@@ -50,7 +53,10 @@ dependencies {
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)
 
-    testImplementation("junit:junit:4.13.2")
+    // for debugs
+    //implementation(files("C:\\Users\\Murtaza\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
+
+    // testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }

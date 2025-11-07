@@ -1,5 +1,15 @@
+/**
+ * Organizer-facing event details screen with edit/delete and attendee management.
+ *
+ * Loads an event from Firestore, renders key details, and provides actions to
+ * launch the attendee manager, edit the event, or delete it (with confirmation).
+ *
+ * @author DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -12,17 +22,45 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
 
+/**
+ * Activity for organizers to view and manage a single event.
+ *
+ * Fetches event data, displays key fields (dates, cost, capacity, description),
+ * and wires actions for attendee management, editing, and deletion.
+ */
 public class EventDetailsOrganizerActivity extends AppCompatActivity {
+    // --- Private fields (grouped): hold current event ID, UI references, and launchers. ---
     private String eventId;
     private ActivityResultLauncher<Intent> editLauncher;
 
+    private TextView eventTitle;
+    private TextView txtWaitingList;
+    private TextView txtDates;
+    private TextView txtOpen;
+    private TextView txtDeadline;
+    private TextView txtCost;
+    private TextView txtSpots;
+    private TextView txtDescription;
+    private MaterialButton attendeeManagerButton;
+    private MaterialButton editEventButton;
+    private MaterialButton deleteButton;
+
+    /**
+     * Initializes UI, registers activity result launcher, and loads event details.
+     *
+     * Sets up edge-to-edge content, adjusts system bar appearance on Android R+,
+     * binds view references, configures delete/edit/attendee manager actions, and
+     * triggers an initial event load if an event ID is available.
+     *
+     * @param savedInstanceState - Previously saved instance state; may be null
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -31,12 +69,10 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
             controller = getWindow().getInsetsController();
         }
         if (controller != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                controller.setSystemBarsAppearance(
-                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
-                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
-                );
-            }
+            controller.setSystemBarsAppearance(
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            );
         }
 
         super.onCreate(savedInstanceState);
@@ -44,7 +80,18 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
 
         TopBarWiring.attachProfileSheet(this);
 
-        TextView eventTitle = findViewById(R.id.txtEventTitle);
+        // Bind views once
+        eventTitle          = findViewById(R.id.txtEventTitle);
+        txtWaitingList      = findViewById(R.id.txtWaitingList);
+        txtDates            = findViewById(R.id.txtDates);
+        txtOpen             = findViewById(R.id.txtOpen);
+        txtDeadline         = findViewById(R.id.txtDeadline);
+        txtCost             = findViewById(R.id.txtCost);
+        txtSpots            = findViewById(R.id.txtSpots);
+        txtDescription      = findViewById(R.id.txtDescription);
+        attendeeManagerButton = findViewById(R.id.attendee_manager_button);
+        editEventButton       = findViewById(R.id.edit_event_button);
+        deleteButton          = findViewById(R.id.delete_event_button);
 
         Intent intent = getIntent();
         this.eventId = intent.getStringExtra("eventId");
@@ -58,112 +105,150 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                         if (data != null) {
                             boolean deleted = data.getBooleanExtra("deleted", false);
                             String returnedId = data.getStringExtra("eventId");
-                            // If item was deleted in the editor, close this details view so caller (list) can show updated state
                             if (deleted) {
+                                // Bubble up deletion to caller and close
                                 setResult(RESULT_OK, data);
                                 finish();
                                 return;
                             }
-                            // If saved/edited, reload current event (id may be same)
-                            if (returnedId != null && returnedId.equals(this.eventId)) {
-                                loadEvent();
-                            } else if (returnedId != null) {
-                                // If the id changed for some reason, update and load
+                            if (returnedId != null && !returnedId.equals(this.eventId)) {
                                 this.eventId = returnedId;
-                                loadEvent();
-                            } else {
-                                // no id provided, just reload
-                                loadEvent();
                             }
+                            loadEvent();
                         }
                     }
                 }
         );
 
-        // Load the event (will also be called from onResume to refresh after edits)
-        if (this.eventId != null) {
+        // Load the event (also refreshed in onResume)
+        if (this.eventId != null && !this.eventId.isEmpty()) {
             loadEvent();
         } else {
-            // Fallback: if no eventId was passed, optionally use a title extra (legacy behaviour)
+            // Legacy fallback
             String title = intent.getStringExtra("title");
             if (title != null && eventTitle != null) eventTitle.setText(title);
         }
 
-        MaterialButton deleteButton = findViewById(R.id.delete_event_button);
-        deleteButton.setOnClickListener(v -> {
-            // In production, show confirmation dialog and delete the Firestore document if desired
-            finish();
-        });
+        // Delete with confirmation + Firestore delete
+        if (deleteButton != null) {
+            deleteButton.setOnClickListener(v -> {
+                if (eventId == null || eventId.isEmpty()) {
+                    finish();
+                    return;
+                }
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete event?")
+                        .setMessage("This will permanently delete the event and its details. This action cannot be undone.")
+                        .setPositiveButton("Delete", (DialogInterface dlg, int which) -> {
+                            FirebaseFirestore.getInstance().collection("events")
+                                    .document(eventId)
+                                    .delete()
+                                    .addOnSuccessListener(aVoid -> {
+                                        Intent data = new Intent();
+                                        data.putExtra("eventId", eventId);
+                                        data.putExtra("deleted", true);
+                                        setResult(RESULT_OK, data);
+                                        Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(this, "Failed to delete: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                                    );
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        }
+
+        // Back button in layout (if wired via onClick)
+        View btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
     }
 
+    /**
+     * Refreshes the event details whenever the activity regains focus.
+     *
+     * If an event ID is present, re-queries Firestore and updates the UI with
+     * the latest information.
+     */
     @Override
     protected void onResume() {
         super.onResume();
-        // If we have an eventId, re-load from Firestore so any edits are reflected.
-        if (this.eventId != null) loadEvent();
+        if (this.eventId != null && !this.eventId.isEmpty()) loadEvent();
     }
 
+    // --- Private helper: loads event data from Firestore and updates bound views. ---
     private void loadEvent() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("events").document(this.eventId).get()
                 .addOnSuccessListener((DocumentSnapshot doc) -> {
                     if (doc != null && doc.exists()) {
                         Event event = doc.toObject(Event.class);
-                        TextView eventTitle = findViewById(R.id.txtEventTitle);
-                        if (event != null) {
-                            if (eventTitle != null) eventTitle.setText(event.getName());
+                        if (event == null) {
+                            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-                            // Show waiting list count
-                            TextView txtWaitingList = findViewById(R.id.txtWaitingList);
-                            if (txtWaitingList != null) {
-                                int waitingListSize = event.getWaitingList().size();
-                                txtWaitingList.setText("Waiting List: " + waitingListSize + " people");
-                                txtWaitingList.setVisibility(waitingListSize > 0 ? View.VISIBLE : View.GONE);
-                            }
+                        // Title
+                        if (eventTitle != null) eventTitle.setText(
+                                event.getName() != null ? event.getName() : "Untitled Event"
+                        );
 
-                            TextView txtDates = findViewById(R.id.txtDates);
-                            TextView txtOpen = findViewById(R.id.txtOpen);
-                            TextView txtDeadline = findViewById(R.id.txtDeadline);
-                            TextView txtCost = findViewById(R.id.txtCost);
-                            TextView txtSpots = findViewById(R.id.txtSpots);
-                            TextView txtDescription = findViewById(R.id.txtDescription);
+                        // Waiting list (hide if empty)
+                        if (txtWaitingList != null) {
+                            int waitingListSize = event.getWaitingList().size();
+                            txtWaitingList.setText("Waiting List: " + waitingListSize + " people");
+                            txtWaitingList.setVisibility(waitingListSize > 0 ? View.VISIBLE : View.GONE);
+                        }
 
-                            if (txtDates != null) txtDates.setText(event.getEventDate() != null ? event.getEventDate() : "TBD");
-                            if (txtOpen != null) txtOpen.setText("Registration Opens: " + (event.getRegistrationOpens() == null ? "TBD" : event.getRegistrationOpens()));
-                            if (txtDeadline != null) txtDeadline.setText("Registration Deadline: " + (event.getRegistrationCloses() == null ? "TBD" : event.getRegistrationCloses()));
-                            if (txtCost != null) txtCost.setText("Cost: " + (event.getCost() == null ? "—" : event.getCost()));
-                            if (txtSpots != null) txtSpots.setText("Spots: " + (event.getMaxSpots() == null ? "—" : event.getMaxSpots()));
-                            if (txtDescription != null) txtDescription.setText("Event description loaded from backend.");
+                        // Detail fields with safe fallbacks
+                        if (txtDates != null)
+                            txtDates.setText(event.getEventDate() != null ? event.getEventDate() : "TBD");
+                        if (txtOpen != null)
+                            txtOpen.setText("Registration Opens: " + (event.getRegistrationOpens() == null ? "TBD" : event.getRegistrationOpens()));
+                        if (txtDeadline != null)
+                            txtDeadline.setText("Registration Deadline: " + (event.getRegistrationCloses() == null ? "TBD" : event.getRegistrationCloses()));
+                        if (txtCost != null)
+                            txtCost.setText("Cost: " + (event.getCost() == null ? "—" : event.getCost()));
+                        if (txtSpots != null)
+                            txtSpots.setText("Spots: " + (event.getMaxSpots() == null ? "—" : event.getMaxSpots()));
+                        if (txtDescription != null)
+                            txtDescription.setText("Event description loaded from backend.");
 
-                            // update buttons to pass eventId so other screens can operate on this document
-                            MaterialButton attendeeManagerButton = findViewById(R.id.attendee_manager_button);
-                            if (attendeeManagerButton != null) {
-                                attendeeManagerButton.setOnClickListener(v -> {
-                                    Intent attendeeIntent = new Intent(this, AttendeeManagerActivity.class);
-                                    attendeeIntent.putExtra("eventId", this.eventId);
-                                    startActivity(attendeeIntent);
-                                });
-                            }
-
-                            MaterialButton editEventButton = findViewById(R.id.edit_event_button);
-                            if (editEventButton != null) {
-                                editEventButton.setOnClickListener(v -> {
-                                    Intent editIntent = new Intent(this, EventEditActivity.class);
-                                    editIntent.putExtra("mode", "edit");
-                                    editIntent.putExtra("eventId", this.eventId);
-                                    // Launch edit activity for result so we can react immediately
-                                    if (editLauncher != null) editLauncher.launch(editIntent);
-                                    else startActivity(editIntent);
-                                });
-                            }
+                        // Buttons -> pass eventId
+                        if (attendeeManagerButton != null) {
+                            attendeeManagerButton.setOnClickListener(v -> {
+                                Intent attendeeIntent = new Intent(this, AttendeeManagerActivity.class);
+                                attendeeIntent.putExtra("eventId", this.eventId);
+                                startActivity(attendeeIntent);
+                            });
+                        }
+                        if (editEventButton != null) {
+                            editEventButton.setOnClickListener(v -> {
+                                Intent editIntent = new Intent(this, EventEditActivity.class);
+                                editIntent.putExtra("mode", "edit");
+                                editIntent.putExtra("eventId", this.eventId);
+                                if (editLauncher != null) editLauncher.launch(editIntent);
+                                else startActivity(editIntent);
+                            });
                         }
                     } else {
                         Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(ex -> Toast.makeText(this, "Failed to load event: " + ex.getMessage(), Toast.LENGTH_LONG).show());
+                .addOnFailureListener(ex ->
+                        Toast.makeText(this, "Failed to load event: " + ex.getMessage(), Toast.LENGTH_LONG).show()
+                );
     }
 
+    /**
+     * Handles the optional XML onClick to navigate back.
+     *
+     * Finishes the current activity, returning to the previous screen.
+     *
+     * @param view - The source view that triggered the callback
+     */
+    // Optional onClick in XML
     public void goBack(View view) {
         finish();
     }

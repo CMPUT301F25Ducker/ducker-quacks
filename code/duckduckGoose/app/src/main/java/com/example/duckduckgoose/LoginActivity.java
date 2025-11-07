@@ -1,3 +1,13 @@
+/**
+ * Authentication entry screen with sign-in and create-account sheets.
+ *
+ * Handles Firebase Auth sign-in and registration, persists user profile
+ * data to Firestore, and routes to the appropriate app surface based
+ * on role (Admin / Organizer / Entrant).
+ *
+ * @author DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -24,14 +34,23 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Shows sign-in and registration flows; sets AppConfig role and navigates.
+ */
 public class LoginActivity extends AppCompatActivity {
 
+    /** Firebase authentication entry point. */
     private FirebaseAuth auth;
+    /** Firestore instance for user profile storage/retrieval. */
     private FirebaseFirestore db;
 
+    /** Launchers for sheets. */
     private View btnSignIn, btnCreateAccount;
+    /** Bottom sheets for sign-in / create-account. */
     private CardView sheetSignIn, sheetCreate;
+    /** Sheet close buttons. */
     private TextView btnSheetCancel1, btnSheetCancel2;
+    /** Sheet action buttons. */
     private MaterialButton btnSheetSignIn, btnCreateSubmit;
 
     // sign in fields
@@ -41,6 +60,11 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText edtRegUserId, edtFullName, edtAge, edtRegEmail, edtPhone, edtRegPassword;
     private MaterialAutoCompleteTextView edtAccountType;
 
+    /**
+     * Initializes UI, checks active session, and wires listeners.
+     * 
+     * @param savedInstanceState - Saved state bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -60,14 +84,13 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // firebase Auth
+        // Firebase
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // check if user is already signed in
+        // If already signed in -> load profile and navigate
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser != null) {
-            // user is already logged in, load their data and navigate
             loadNavigate(currentUser.getUid());
             return;
         }
@@ -78,6 +101,10 @@ public class LoginActivity extends AppCompatActivity {
         setupBackPress();
     }
 
+    /**
+     * Binds all sheet and input views and configures the account type dropdown.
+     * Initializes sign-in, create account, and all input fields.
+     */
     private void initViews() {
         btnSignIn = findViewById(R.id.btnSignIn);
         btnCreateAccount = findViewById(R.id.btnCreateAccount);
@@ -101,7 +128,7 @@ public class LoginActivity extends AppCompatActivity {
         edtPhone = findViewById(R.id.edtPhone);
         edtRegPassword = findViewById(R.id.edtRegPassword);
 
-        // account type dropdown for create account sheet
+        // Account type dropdown
         if (edtAccountType != null) {
             ArrayAdapter<String> acctAdapter = new ArrayAdapter<>(
                     this,
@@ -112,8 +139,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets up click listeners for all interactive UI elements.
+     * Handles sheet visibility and primary action buttons.
+     */
     private void setupListeners() {
-        // Open sign in sheet
+        // Open sign-in sheet, hide other elements
         btnSignIn.setOnClickListener(v -> {
             sheetSignIn.setVisibility(View.VISIBLE);
             sheetCreate.setVisibility(View.GONE);
@@ -121,7 +152,7 @@ public class LoginActivity extends AppCompatActivity {
             btnCreateAccount.setVisibility(View.GONE);
         });
 
-        // Open create account sheet
+        // Open create-account sheet, hide other elements
         btnCreateAccount.setOnClickListener(v -> {
             sheetCreate.setVisibility(View.VISIBLE);
             sheetSignIn.setVisibility(View.GONE);
@@ -129,17 +160,23 @@ public class LoginActivity extends AppCompatActivity {
             btnCreateAccount.setVisibility(View.GONE);
         });
 
-        // Close sign in sheet
+        // Close sign-in sheet when canceled
         btnSheetCancel1.setOnClickListener(v -> closeSheets());
 
-        // Close create account sheet
+        // Close create-account sheet when canceled
         btnSheetCancel2.setOnClickListener(v -> closeSheets());
 
-        // Login actions
+        // Process sign-in with Firebase Auth when submitted
         btnSheetSignIn.setOnClickListener(v -> handleSignIn());
+
+        // Create new account and save profile when submitted
         btnCreateSubmit.setOnClickListener(v -> handleCreateAccount());
     }
 
+    /**
+     * Sets up back press handling to close open sheets before exiting.
+     * Intercepts system back button to handle sheets properly.
+     */
     private void setupBackPress() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -160,6 +197,10 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Hides all sheets and restores visibility of primary action buttons.
+     * Call this when canceling or completing a sheet action.
+     */
     private void closeSheets() {
         sheetSignIn.setVisibility(View.GONE);
         sheetCreate.setVisibility(View.GONE);
@@ -167,7 +208,11 @@ public class LoginActivity extends AppCompatActivity {
         btnCreateAccount.setVisibility(View.VISIBLE);
     }
 
-    // sign in with firebase auth
+    /**
+     * Attempts to authenticate the user with Firebase Authentication.
+     * Performs basic input validation, then attempts sign in.
+     * On success, loads user profile from Firestore and navigates based on role.
+     */
     private void handleSignIn() {
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
@@ -185,26 +230,24 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Disable button to prevent double-clicks
+        // Disable to avoid double-submits
         btnSheetSignIn.setEnabled(false);
         btnSheetSignIn.setText("Logging in...");
 
-        // sign in with firebase
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     btnSheetSignIn.setEnabled(true);
 
                     if (task.isSuccessful()) {
-                        // Sign in success - now load user data from Firestore
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
                             loadNavigate(user.getUid());
                         } else {
                             Toast.makeText(this, "Login successful but user data unavailable",
                                     Toast.LENGTH_SHORT).show();
+                            btnSheetSignIn.setText("Sign In");
                         }
                     } else {
-                        // Sign in failed
                         String e = task.getException() != null ?
                                 task.getException().getMessage() : "Unknown error";
                         Toast.makeText(this, "Authentication failed: " + e,
@@ -214,7 +257,12 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    // create account with firebase auth
+    /**
+     * Creates a new user account with Firebase Authentication.
+     * Performs extensive input validation before attempting account creation.
+     * After successful auth creation, saves the user profile to Firestore,
+     * sets the appropriate login mode, and navigates to the correct activity.
+     */
     private void handleCreateAccount() {
         String accountType = edtAccountType.getText().toString().trim();
         String userId = edtRegUserId.getText().toString().trim();
@@ -224,81 +272,32 @@ public class LoginActivity extends AppCompatActivity {
         String phone = edtPhone.getText().toString().trim();
         String password = edtRegPassword.getText().toString().trim();
 
-        // Validation
-        if (accountType.isEmpty()) {
-            edtAccountType.setError("Account type is required");
-            edtAccountType.requestFocus();
-            return;
-        }
-
-        if (userId.isEmpty()) {
-            edtRegUserId.setError("User ID is required");
-            edtRegUserId.requestFocus();
-            return;
-        }
-
-        if (fullName.isEmpty()) {
-            edtFullName.setError("Full name is required");
-            edtFullName.requestFocus();
-            return;
-        }
-
-        if (ageStr.isEmpty()) {
-            edtAge.setError("Age is required");
-            edtAge.requestFocus();
-            return;
-        }
-
-        if (email.isEmpty()) {
-            edtRegEmail.setError("Email is required");
-            edtRegEmail.requestFocus();
-            return;
-        }
-
-        if (phone.isEmpty()) {
-            edtPhone.setError("Phone number is required");
-            edtPhone.requestFocus();
-            return;
-        }
-
-        if (password.isEmpty()) {
-            edtRegPassword.setError("Password is required");
-            edtRegPassword.requestFocus();
-            return;
-        }
-
-        if (password.length() < 6) {
-            edtRegPassword.setError("Password must be at least 6 characters");
-            edtRegPassword.requestFocus();
-            return;
-        }
+        // Validation (concise and user-facing)
+        if (accountType.isEmpty()) { edtAccountType.setError("Account type is required"); edtAccountType.requestFocus(); return; }
+        if (userId.isEmpty())      { edtRegUserId.setError("User ID is required");       edtRegUserId.requestFocus();  return; }
+        if (fullName.isEmpty())    { edtFullName.setError("Full name is required");      edtFullName.requestFocus();   return; }
+        if (ageStr.isEmpty())      { edtAge.setError("Age is required");                 edtAge.requestFocus();        return; }
+        if (email.isEmpty())       { edtRegEmail.setError("Email is required");          edtRegEmail.requestFocus();   return; }
+        if (phone.isEmpty())       { edtPhone.setError("Phone number is required");      edtPhone.requestFocus();      return; }
+        if (password.isEmpty())    { edtRegPassword.setError("Password is required");    edtRegPassword.requestFocus();return; }
+        if (password.length() < 6) { edtRegPassword.setError("Password must be at least 6 characters"); edtRegPassword.requestFocus(); return; }
 
         int age;
         try {
             age = Integer.parseInt(ageStr);
-            if (age < 0) {
-                edtAge.setError("Please enter a valid age");
-                edtAge.requestFocus();
-                return;
-            }
+            if (age < 0) { edtAge.setError("Please enter a valid age"); edtAge.requestFocus(); return; }
         } catch (NumberFormatException e) {
-            edtAge.setError("Please enter a valid number");
-            edtAge.requestFocus();
-            return;
+            edtAge.setError("Please enter a valid number"); edtAge.requestFocus(); return;
         }
 
         btnCreateSubmit.setEnabled(false);
         btnCreateSubmit.setText("Creating account...");
 
-        // create user with firebase
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        // success
                         FirebaseUser user = auth.getCurrentUser();
-
                         if (user != null) {
-                            // store user data in firestore
                             saveUserToFirestore(user.getUid(), accountType, userId, fullName, age, email, phone);
                         } else {
                             btnCreateSubmit.setEnabled(true);
@@ -307,7 +306,6 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        // failed
                         btnCreateSubmit.setEnabled(true);
                         btnCreateSubmit.setText("Create Account");
                         String e = task.getException() != null ?
@@ -318,10 +316,20 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    // save profile to firestore
+    /**
+     * Saves a newly created user's profile information to Firestore.
+     * After successful save, navigates to the appropriate activity based on role.
+     *
+     * @param uid The Firebase Authentication unique identifier
+     * @param accountType User's role ("Admin", "Organizer", or "Entrant")
+     * @param userId User-chosen identifier for the app
+     * @param fullName User's display name
+     * @param age User's age (pre-validated integer)
+     * @param email User's email address
+     * @param phone User's contact phone number
+     */
     private void saveUserToFirestore(String uid, String accountType, String userId,
                                      String fullName, int age, String email, String phone) {
-        // Create user data map
         Map<String, Object> userData = new HashMap<>();
         userData.put("accountType", accountType);
         userData.put("userId", userId);
@@ -331,24 +339,27 @@ public class LoginActivity extends AppCompatActivity {
         userData.put("phone", phone);
         userData.put("createdAt", System.currentTimeMillis());
 
-        // save to firestore under users collection with uid as document ID
         db.collection("users").document(uid)
                 .set(userData)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Account created successfully!",
-                            Toast.LENGTH_SHORT).show();
-                    // set login mode based on account type and navigate
+                    Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show();
                     loginNavigate(accountType);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to save user data: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
-                    // use default entrant mode as fallback
+                    // fallback: still navigate based on chosen accountType
                     loginNavigate(accountType);
                 });
     }
 
-    // load user data from firestore
+    /**
+     * Retrieves the user's profile from Firestore to determine their role.
+     * Navigates to the appropriate activity based on account type.
+     * Falls back to Entrant role if profile lookup fails.
+     *
+     * @param uid The Firebase Authentication unique identifier
+     */
     private void loadNavigate(String uid) {
         db.collection("users").document(uid)
                 .get()
@@ -360,36 +371,35 @@ public class LoginActivity extends AppCompatActivity {
                             loginNavigate(accountType);
                         } else {
                             Toast.makeText(this, "Account type not found", Toast.LENGTH_SHORT).show();
-                            // Default to ENTRANT if account type is missing
                             loginNavigate("Entrant");
                         }
                     } else {
                         Toast.makeText(this, "User profile not found", Toast.LENGTH_SHORT).show();
-                        // Default to ENTRANT if profile doesn't exist
                         loginNavigate("Entrant");
                     }
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error loading profile: " + e.getMessage(),
                             Toast.LENGTH_LONG).show();
-                    // Default to ENTRANT on error
                     loginNavigate("Entrant");
                 });
     }
 
     /**
-     * Set LOGIN_MODE in AppConfig and navigate to appropriate screen
+     * Sets the application's login mode and navigates to the appropriate activity.
+     * Updates {@link AppConfig#LOGIN_MODE} and launches the correct screen based on role.
+     *
+     * @param accountType The user's role ("Admin", "Organizer", or "Entrant")
      */
     private void loginNavigate(String accountType) {
         AppConfig.setLoginMode(accountType);
 
         Intent intent;
-
         if (AppConfig.LOGIN_MODE.equals("ADMIN")) {
             // Admin mode - go to Admin Console
             intent = new Intent(this, AdminConsoleActivity.class);
         } else {
-            // Both Organizer and Entrant go to MainActivity
+            // Organizer / Entrant -> MainActivity
             intent = new Intent(this, MainActivity.class);
             if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
                 intent.putExtra("startOn", "MY_EVENTS");
@@ -399,6 +409,6 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         startActivity(intent);
-        finish(); // prevent going back to login with back button
+        finish(); // prevent navigating back to login
     }
 }

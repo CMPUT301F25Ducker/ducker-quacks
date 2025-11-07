@@ -1,3 +1,14 @@
+/**
+ * Admin screen to browse, sort, search, and open details for events stored in Firestore.
+ *
+ * Loads all events, supports multiple sort orders, provides live search suggestions, and
+ * opens {@link EventDetailsAdminActivity}. Only accessible to users with accountType "admin".
+ *
+ * Expected layout ids: btnBack, dropSortEvents, dropSearchEvents, rvEvents.
+ *
+ * @author DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -39,16 +50,46 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Activity for administrators to manage and inspect events.
+ *
+ * Responsibilities:
+ * <ul>
+ * <li>Verify the signed-in user is an admin</li>
+ * <li>Fetch events from Firestore and display them in a RecyclerView</li>
+ * <li>Provide sorting by event date, registration windows, and cost</li>
+ * <li>Provide live, type-ahead search by event name</li>
+ * <li>Launch {@link EventDetailsAdminActivity} for selected events and reflect deletions on return</li>
+ * </ul>
+ */
 public class EventManagerActivity extends AppCompatActivity {
 
+    /** Request code for launching event details expecting a result. */
     private static final int EVENT_DETAILS_REQUEST = 1;
+
+    /** Working list backing the RecyclerView (changes with search/sort). */
     private List<Event> events;
-    private List<Event> allEvents; // full list for searching/filtering
+
+    /** Full unfiltered list used to restore/reset the working list after searches. */
+    private List<Event> allEvents;
+
+    /** RecyclerView adapter responsible for binding event data to views. */
     private EventManagerAdapter adapter;
+
+    /** Firestore database instance. */
     private FirebaseFirestore db;
+
+    /** Reference to the "events" collection in Firestore. */
     private CollectionReference eventsRef;
+
+    /** Search dropdown for quick navigation to an event by name. */
     private AutoCompleteTextView dropSearch;
 
+    /**
+     * Initializes the activity and sets up UI components.
+     * 
+     * @param savedInstanceState - saved activity state, if any
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -79,22 +120,22 @@ public class EventManagerActivity extends AppCompatActivity {
         }
         // Optionally verify accountType == Admin from users collection
         FirebaseFirestore.getInstance().collection("users").document(currentUser.getUid()).get()
-            .addOnSuccessListener(doc -> {
-                if (doc != null && doc.exists()) {
-                    String acct = doc.getString("accountType");
-                    if (acct == null || !acct.equalsIgnoreCase("admin")) {
-                        Toast.makeText(this, "You must be an administrator to access this screen", Toast.LENGTH_SHORT).show();
+                .addOnSuccessListener(doc -> {
+                    if (doc != null && doc.exists()) {
+                        String acct = doc.getString("accountType");
+                        if (acct == null || !acct.equalsIgnoreCase("admin")) {
+                            Toast.makeText(this, "You must be an administrator to access this screen", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(this, "User profile not found; admin access required", Toast.LENGTH_SHORT).show();
                         finish();
                     }
-                } else {
-                    Toast.makeText(this, "User profile not found; admin access required", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to validate admin status", Toast.LENGTH_SHORT).show();
                     finish();
-                }
-            })
-            .addOnFailureListener(e -> {
-                Toast.makeText(this, "Failed to validate admin status", Toast.LENGTH_SHORT).show();
-                finish();
-            });
+                });
 
         // Back button
         View btnBack = findViewById(R.id.btnBack);
@@ -102,7 +143,7 @@ public class EventManagerActivity extends AppCompatActivity {
             btnBack.setOnClickListener(v -> finish());
         }
 
-    // Sort dropdown
+        // Sort dropdown
         AutoCompleteTextView dropSort = findViewById(R.id.dropSortEvents);
         if (dropSort != null) {
             String[] sorts = {"Date (Soonest)", "Date (Latest)", "Registration Opens", "Registration Deadline", "Cost"};
@@ -152,15 +193,12 @@ public class EventManagerActivity extends AppCompatActivity {
         RecyclerView rv = findViewById(R.id.rvEvents);
         if (rv != null) {
             rv.setLayoutManager(new LinearLayoutManager(this));
-            events = new ArrayList<>(Arrays.asList(
-//                    new Event("City Swim Classic", "Nov 20–22", "Nov 1", "Nov 15", "$25", "12/40"),
-//                    new Event("Downtown 5K Run", "Dec 3", "Nov 10", "Dec 1", "Free", "80/100"),
-//                    new Event("Autumn Cycling Tour", "Oct 12", "Sep 25", "Oct 5 (Closed)", "$15", "Filled")
-            ));
+            events = new ArrayList<>(Arrays.asList());
             adapter = new EventManagerAdapter(events);
             adapter.setOnItemClickListener(event -> {
                 Intent intent = new Intent(EventManagerActivity.this, EventDetailsAdminActivity.class);
                 intent.putExtra("eventTitle", event.getName());
+                
                 // prefer passing eventId if available
                 if (event.getEventId() != null) intent.putExtra("eventId", event.getEventId());
                 startActivityForResult(intent, EVENT_DETAILS_REQUEST);
@@ -212,6 +250,11 @@ public class EventManagerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Loads all events from Firestore and updates the UI.
+     * Refreshes both the working list and backup list of events,
+     * updates the RecyclerView, and populates search suggestions.
+     */
     private void loadEventsFromFirestore() {
         eventsRef.get()
                 .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
@@ -248,6 +291,15 @@ public class EventManagerActivity extends AppCompatActivity {
     // ----------------------
     // Sorting helpers
     // ----------------------
+
+    /**
+     * Attempts to parse a date string using several common formats.
+     * Supported formats include "MM/dd/yy", "MM/dd/yyyy", "MMM d, yyyy",
+     * "MMM d", "MMM dd", and "yyyy-MM-dd".
+     *
+     * @param s The date string to parse
+     * @return A Date object if parsing succeeds, null otherwise
+     */
     private Date parseDate(String s) {
         if (s == null) return null;
         String trimmed = s.trim();
@@ -261,6 +313,13 @@ public class EventManagerActivity extends AppCompatActivity {
         return null;
     }
 
+    /**
+     * Normalizes a cost string to a numeric value for sorting purposes.
+     * Handles currency symbols, "Free", and invalid formats.
+     *
+     * @param s Cost string (e.g., "$15", "Free", "CAD 12.50")
+     * @return Numeric value of the cost, 0.0 for "Free", MAX_VALUE for invalid/null
+     */
     private double parseCost(String s) {
         if (s == null) return Double.MAX_VALUE;
         String trimmed = s.trim();
@@ -275,6 +334,13 @@ public class EventManagerActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sorts the events list by event date.
+     * Null dates are sorted to the end of the list.
+     *
+     * @param ascending true for chronological order (soonest first),
+     *                  false for reverse chronological order
+     */
     private void sortByEventDate(boolean ascending) {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getEventDate());
@@ -288,6 +354,11 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /**
+     * Sorts the events list by registration opening date.
+     * Events are sorted in chronological order with earliest opening dates first.
+     * Events with null registration dates are sorted to the end of the list.
+     */
     private void sortByRegistrationOpens() {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getRegistrationOpens());
@@ -300,6 +371,11 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /**
+     * Sorts the events list by registration closing date.
+     * Events are sorted in chronological order with earliest closing dates first.
+     * Events with null registration dates are sorted to the end of the list.
+     */
     private void sortByRegistrationCloses() {
         Comparator<Event> cmp = (a, b) -> {
             Date da = parseDate(a.getRegistrationCloses());
@@ -312,6 +388,11 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /**
+     * Sorts the events list by cost in ascending order.
+     * Free events are sorted first, followed by events with numeric costs.
+     * Events with unparseable or missing costs are sorted to the end.
+     */
     private void sortByCost() {
         Comparator<Event> cmp = (a, b) -> {
             double ca = parseCost(a.getCost());
@@ -321,6 +402,14 @@ public class EventManagerActivity extends AppCompatActivity {
         Collections.sort(events, cmp);
     }
 
+    /**
+     * Processes results returned from {@link EventDetailsAdminActivity}.
+     * Handles event deletions by removing the deleted event from the list.
+     *
+     * @param requestCode Identifier for the child request (should match EVENT_DETAILS_REQUEST)
+     * @param resultCode Result status returned by the child activity
+     * @param data Optional intent data which may contain "eventTitleToDelete" for deletions
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
