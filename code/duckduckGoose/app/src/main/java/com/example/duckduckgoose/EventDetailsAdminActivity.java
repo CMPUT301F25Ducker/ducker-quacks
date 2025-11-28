@@ -41,15 +41,14 @@ import java.util.HashMap;
 public class EventDetailsAdminActivity extends AppCompatActivity {
     // --- Private fields (grouped): hold current event ID, UI references, and launchers. ---
     private String eventId;
-
     private TextView eventTitle;
+    private TextView txtWaitingList;
     private TextView txtDates;
     private TextView txtOpen;
     private TextView txtDeadline;
     private TextView txtCost;
     private TextView txtSpots;
     private TextView txtDescription;
-    private TextView txtWaitingList;
 
     /**
      * Initializes the activity and wires up admin controls.
@@ -81,11 +80,24 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
         TopBarWiring.attachProfileSheet(this);
 
-        TextView eventTitle = findViewById(R.id.txtEventTitle);
+        // Bind views once
+        eventTitle = findViewById(R.id.txtEventTitle);
+        txtWaitingList = findViewById(R.id.txtWaitingList);
+        txtDates = findViewById(R.id.txtDates);
+        txtOpen = findViewById(R.id.txtOpen);
+        txtDeadline = findViewById(R.id.txtDeadline);
+        txtCost = findViewById(R.id.txtCost);
+        txtSpots = findViewById(R.id.txtSpots);
+        txtDescription = findViewById(R.id.txtDescription);
 
         Intent intent = getIntent();
         String title = intent.getStringExtra("eventTitle");
-        String eventId = intent.getStringExtra("eventId");
+        this.eventId = intent.getStringExtra("eventId"); // changed this to avoid shadow boxing
+
+        // load stuff from Firebase
+        if (this.eventId != null && !this.eventId.isEmpty()) {
+            loadEvent();
+        }
 
         if (title != null) {
             eventTitle.setText(title);
@@ -126,6 +138,67 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
             Intent imageManagerIntent = new Intent(EventDetailsAdminActivity.this, ImageManagerActivity.class);
             startActivity(imageManagerIntent);
         });
+    }
+
+    /**
+     * Refreshes the event details whenever the activity regains focus.
+     *
+     * If an event ID is present, re-queries Firestore and updates the UI with
+     * the latest information.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (this.eventId != null && !this.eventId.isEmpty()) {
+            loadEvent();
+        }
+    }
+
+    // --- Private helper: loads event data from Firestore and updates bound views. ---
+    private void loadEvent() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("events").document(this.eventId).get()
+                .addOnSuccessListener((DocumentSnapshot doc) -> {
+                    if (doc != null && doc.exists()) {
+                        Event event = doc.toObject(Event.class);
+                        if (event == null) {
+                            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // Title
+                        if (eventTitle != null) {
+                            eventTitle.setText(event.getName() != null ? event.getName() : "Untitled Event");
+                        }
+
+                        // Waiting list (hide if empty)
+                        if (txtWaitingList != null) {
+                            int waitingListSize = event.getWaitingList().size();
+                            txtWaitingList.setText("Waiting List: " + waitingListSize + (waitingListSize == 1 ? " person" : " people"));
+                            txtWaitingList.setVisibility(waitingListSize > 0 ? View.VISIBLE : View.GONE);
+                        }
+
+                        // Detail fields with safe fallbacks
+                        if (txtDates != null)
+                            txtDates.setText("Event Date: " + (event.getEventDate() == null ? "TBD" : event.getEventDate()));
+                        if (txtOpen != null)
+                            txtOpen.setText("Registration Opens: " + (event.getRegistrationOpens() == null ? "TBD" : event.getRegistrationOpens()));
+                        if (txtDeadline != null)
+                            txtDeadline.setText("Registration Deadline: " + (event.getRegistrationCloses() == null ? "TBD" : event.getRegistrationCloses()));
+                        if (txtCost != null)
+                            txtCost.setText("Cost: $" + (event.getCost() == null ? "—" : event.getCost()));
+                        if (txtSpots != null)
+                            txtSpots.setText("Spots: " + (event.getMaxSpots() == null ? "—" : event.getMaxSpots()));
+                        if (txtDescription != null)
+                            txtDescription.setText("Event description loaded from backend.");
+
+                    } else {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(ex ->
+                        Toast.makeText(this, "Failed to load event: " + ex.getMessage(), Toast.LENGTH_LONG).show()
+                );
     }
 
     /**
