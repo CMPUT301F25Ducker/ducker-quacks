@@ -1,8 +1,9 @@
 /**
- * Activity for displaying notification logs for entrant users.
+ * Activity for displaying event logs for admin users.
  *
- * Shows a list of notifications with sorting options. Currently displays
- * placeholder data that will be replaced with real notifications later.
+ * Shows a list of event notifications with sorting options and the ability
+ * to view recipients for each notification. Currently displays placeholder
+ * data that will be replaced with real event logs later.
  *
  * @author DuckDuckGoose Development Team
  */
@@ -23,27 +24,29 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
- * Displays notification logs in a scrollable list with sorting capability.
+ * Displays event logs in a scrollable list with sorting capability.
  *
- * Provides a simple interface for entrants to view their notification history.
- * Currently populated with mock data for UI demonstration purposes.
+ * Provides an interface for admins to view event notification history
+ * and see who received each notification. Currently populated with
+ * mock data for UI demonstration purposes.
  */
-public class NotificationLogsActivity extends AppCompatActivity {
+public class AdminEventLogsActivity extends AppCompatActivity {
 
-    /** RecyclerView for displaying notification items. */
-    private RecyclerView recyclerNotifications;
+    /** RecyclerView for displaying event log items. */
+    private RecyclerView recyclerEventLogs;
 
-    /** Adapter for binding notification data to the RecyclerView. */
-    private NotificationAdapter adapter;
+    /** Adapter for binding event log data to the RecyclerView. */
+    private AdminEventLogAdapter adapter;
 
-    /** List of mock notifications for demonstration. */
-    private List<NotificationItem> notifications;
+    /** List of mock event logs for demonstration. */
+    private List<EventLogItem> eventLogs;
 
     /**
-     * Initializes the notification logs screen and populates with mock data.
+     * Initializes the event logs screen and populates with mock data.
      *
      * @param savedInstanceState - Saved state bundle
      */
@@ -64,21 +67,21 @@ public class NotificationLogsActivity extends AppCompatActivity {
         }
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_notification_logs);
+        setContentView(R.layout.activity_admin_event_logs);
 
         // Attach top bar profile sheet
         TopBarWiring.attachProfileSheet(this);
 
         // Initialize RecyclerView
-        recyclerNotifications = findViewById(R.id.recyclerNotifications);
-        recyclerNotifications.setLayoutManager(new LinearLayoutManager(this));
+        recyclerEventLogs = findViewById(R.id.recyclerEventLogs);
+        recyclerEventLogs.setLayoutManager(new LinearLayoutManager(this));
 
-        // Create mock notifications
-        notifications = createMockNotifications();
+        // Create mock event logs
+        eventLogs = createMockEventLogs();
 
         // Set up adapter
-        adapter = new NotificationAdapter(notifications);
-        recyclerNotifications.setAdapter(adapter);
+        adapter = new AdminEventLogAdapter(this, eventLogs);
+        recyclerEventLogs.setAdapter(adapter);
 
         // Set up sort dropdown
         MaterialAutoCompleteTextView dropSort = findViewById(R.id.dropSort);
@@ -103,52 +106,59 @@ public class NotificationLogsActivity extends AppCompatActivity {
     }
 
     /**
-     * Creates a list of mock notifications for demonstration.
+     * Creates a list of mock event logs for demonstration.
      *
-     * @return List of placeholder NotificationItem objects
+     * @return List of placeholder EventLogItem objects
      */
-    private List<NotificationItem> createMockNotifications() {
-        List<NotificationItem> mockNotifications = new ArrayList<>();
+    private List<EventLogItem> createMockEventLogs() {
+        List<EventLogItem> mockEventLogs = new ArrayList<>();
 
-        mockNotifications.add(new NotificationItem(
+        mockEventLogs.add(new EventLogItem(
                 "Notification Text",
-                "Organizer Name:"
+                "Organizer Name:",
+                Arrays.asList("Recipient 1", "Recipient 2", "Recipient 3")
         ));
 
-        mockNotifications.add(new NotificationItem(
+        mockEventLogs.add(new EventLogItem(
                 "Notification Text",
-                "Organizer Name:"
+                "Organizer Name:",
+                Arrays.asList("Recipient 1", "Recipient 2", "Recipient 3", "Recipient 4", "Recipient 5")
         ));
 
-        mockNotifications.add(new NotificationItem(
+        mockEventLogs.add(new EventLogItem(
                 "Notification Text",
-                "Organizer Name:"
+                "Organizer Name:",
+                Arrays.asList("Recipient 1", "Recipient 2")
         ));
 
-        mockNotifications.add(new NotificationItem(
+        mockEventLogs.add(new EventLogItem(
                 "Notification Text",
-                "Organizer Name:"
+                "Organizer Name:",
+                Arrays.asList("Recipient 1", "Recipient 2", "Recipient 3", "Recipient 4")
         ));
 
-        return mockNotifications;
+        return mockEventLogs;
     }
 
     /**
-     * Simple data class for holding notification information.
+     * Simple data class for holding event log information.
      */
-    public static class NotificationItem {
+    public static class EventLogItem {
         private String title;
         private String organizer;
+        private List<String> recipients;
 
         /**
-         * Creates a new notification item.
+         * Creates a new event log item.
          *
          * @param title - The notification message text
          * @param organizer - The organizer information
+         * @param recipients - List of recipients who received the notification
          */
-        public NotificationItem(String title, String organizer) {
+        public EventLogItem(String title, String organizer, List<String> recipients) {
             this.title = title;
             this.organizer = organizer;
+            this.recipients = recipients;
         }
 
         public String getTitle() {
@@ -157,6 +167,10 @@ public class NotificationLogsActivity extends AppCompatActivity {
 
         public String getOrganizer() {
             return organizer;
+        }
+
+        public List<String> getRecipients() {
+            return recipients;
         }
     }
 }

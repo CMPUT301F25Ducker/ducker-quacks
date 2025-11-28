@@ -86,6 +86,16 @@ public class MyEventsActivity extends AppCompatActivity {
         loadEventsFromFirestore();
     }
 
+    /**
+     * Navigates back to the previous screen.
+     * Finishes the activity in response to a back button tap.
+     *
+     * @param view The View that triggered the action
+     */
+    public void goBack(View view) {
+        finish();
+    }
+
     private void loadEventsFromFirestore() {
         eventsRef.whereEqualTo("organizerId", organizerId).get()
                 .addOnSuccessListener((QuerySnapshot querySnapshot) -> {

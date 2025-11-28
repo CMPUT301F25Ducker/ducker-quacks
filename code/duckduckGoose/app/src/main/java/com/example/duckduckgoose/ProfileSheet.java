@@ -235,25 +235,25 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 btnDelete.setText("Delete Account");
                 btnDelete.setOnClickListener(x -> confirmDeleteSelf());
                 
-                // Show notification icon for own profile
+                // Show notification icon for entrants only
                 if (btnNotification != null) {
-                    boolean hasNewNotifications = arguments.getBoolean("new_notifications", false);
-                    if (hasNewNotifications) {
-                        btnNotification.setImageResource(R.drawable.notifications_unread_24px);
-                    } else {
-                        btnNotification.setImageResource(R.drawable.notifications_24px);
-                    }
-                    // Set click listener for entrants only (reuse accountType from above)
+                    // Only show notification button for entrants
                     if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
+                        btnNotification.setVisibility(View.VISIBLE);
+                        boolean hasNewNotifications = arguments.getBoolean("new_notifications", false);
+                        if (hasNewNotifications) {
+                            btnNotification.setImageResource(R.drawable.notifications_unread_24px);
+                        } else {
+                            btnNotification.setImageResource(R.drawable.notifications_24px);
+                        }
                         btnNotification.setOnClickListener(notifView -> {
                             dismiss();
                             Intent intent = new Intent(getActivity(), NotificationLogsActivity.class);
                             startActivity(intent);
                         });
                     } else {
-                        btnNotification.setOnClickListener(notifView -> {
-                            // Non-entrants: no action for now
-                        });
+                        // Hide notification button for non-entrants
+                        btnNotification.setVisibility(View.GONE);
                     }
                 }
             }
@@ -300,23 +300,23 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                                 bindSelfProfile(v, me);
                                 // Update notification icon based on new_notifications field
                                 if (btnNotification != null) {
-                                    if (me.getNew_notifications()) {
-                                        btnNotification.setImageResource(R.drawable.notifications_unread_24px);
-                                    } else {
-                                        btnNotification.setImageResource(R.drawable.notifications_24px);
-                                    }
-                                    // Set click listener for entrants only
+                                    // Only show notification button for entrants
                                     String accountType = me.getAccountType();
                                     if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
+                                        btnNotification.setVisibility(View.VISIBLE);
+                                        if (me.getNew_notifications()) {
+                                            btnNotification.setImageResource(R.drawable.notifications_unread_24px);
+                                        } else {
+                                            btnNotification.setImageResource(R.drawable.notifications_24px);
+                                        }
                                         btnNotification.setOnClickListener(notifView -> {
                                             dismiss();
                                             Intent intent = new Intent(getActivity(), NotificationLogsActivity.class);
                                             startActivity(intent);
                                         });
                                     } else {
-                                        btnNotification.setOnClickListener(notifView -> {
-                                            // Non-entrants: no action for now
-                                        });
+                                        // Hide notification button for non-entrants
+                                        btnNotification.setVisibility(View.GONE);
                                     }
                                 }
                             } else {

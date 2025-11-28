@@ -34,10 +34,11 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_back"
             android:contentDescription="Back"
+            android:onClick="goBack"
+            app:tint="@color/fg_charcoal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/fg_charcoal"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/btnProfile"
@@ -53,7 +54,7 @@
 
     <LinearLayout
         android:orientation="vertical"
-        android.paddingHorizontal="12dp"
+        android:paddingHorizontal="12dp"
         android:paddingTop="6dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -62,6 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/Text.Fresh.Display"
+            android:gravity="center"
             android:text="My Events"/>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -70,12 +72,14 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             app:endIconMode="dropdown_menu"
             android:hint="Sort By"
+            android:paddingHorizontal="10dp"
             android:layout_marginTop="6dp">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/dropSortMy"
                 android:layout_width="match_parent"
-                android:layout_height="56dp" />
+                android:layout_height="56dp"
+                android:paddingLeft="10dp"/>
         </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>
@@ -84,5 +88,6 @@
         android:id="@+id/rvMyEvents"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:paddingHorizontal="20dp"
         android:layout_weight="1"/>
 </LinearLayout>
