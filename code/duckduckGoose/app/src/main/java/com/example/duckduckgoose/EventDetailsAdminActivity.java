@@ -39,6 +39,17 @@ import java.util.HashMap;
  * (with notifications to affected users) and linking to the image manager.
  */
 public class EventDetailsAdminActivity extends AppCompatActivity {
+    // --- Private fields (grouped): hold current event ID, UI references, and launchers. ---
+    private String eventId;
+
+    private TextView eventTitle;
+    private TextView txtDates;
+    private TextView txtOpen;
+    private TextView txtDeadline;
+    private TextView txtCost;
+    private TextView txtSpots;
+    private TextView txtDescription;
+    private TextView txtWaitingList;
 
     /**
      * Initializes the activity and wires up admin controls.
