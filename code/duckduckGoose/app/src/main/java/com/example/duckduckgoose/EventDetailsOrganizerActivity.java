@@ -197,19 +197,19 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                         // Waiting list (hide if empty)
                         if (txtWaitingList != null) {
                             int waitingListSize = event.getWaitingList().size();
-                            txtWaitingList.setText("Waiting List: " + waitingListSize + " people");
+                            txtWaitingList.setText("Waiting List: " + waitingListSize + (waitingListSize == 1 ? " person" : " people"));
                             txtWaitingList.setVisibility(waitingListSize > 0 ? View.VISIBLE : View.GONE);
                         }
 
                         // Detail fields with safe fallbacks
                         if (txtDates != null)
-                            txtDates.setText(event.getEventDate() != null ? event.getEventDate() : "TBD");
+                            txtDates.setText("\nEvent Date: " + (event.getEventDate() == null ? "TBD" : event.getEventDate()));
                         if (txtOpen != null)
                             txtOpen.setText("Registration Opens: " + (event.getRegistrationOpens() == null ? "TBD" : event.getRegistrationOpens()));
                         if (txtDeadline != null)
                             txtDeadline.setText("Registration Deadline: " + (event.getRegistrationCloses() == null ? "TBD" : event.getRegistrationCloses()));
                         if (txtCost != null)
-                            txtCost.setText("Cost: " + (event.getCost() == null ? "—" : event.getCost()));
+                            txtCost.setText("Cost: $" + (event.getCost() == null ? "—" : event.getCost()));
                         if (txtSpots != null)
                             txtSpots.setText("Spots: " + (event.getMaxSpots() == null ? "—" : event.getMaxSpots()));
                         if (txtDescription != null)

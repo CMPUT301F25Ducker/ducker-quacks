@@ -126,44 +126,44 @@
                     android:layout_height="wrap_content"
                     android:text="Event description goes here." />
 
-                <TextView
-                    style="@style/Text.Fresh.Headline"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Date (Maybe Recurring):" />
+<!--                <TextView-->
+<!--                    style="@style/Text.Fresh.Headline"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Date (Maybe Recurring):" />-->
 
                 <TextView
                     android:id="@+id/txtDates"
-                    style="@style/Text.Fresh"
+                    style="@style/Text.Fresh.Headline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="TBD" />
+                    android:text="Event Date: TBD" />
 
-                <TextView
-                    style="@style/Text.Fresh"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Registration Opens:" />
+<!--                <TextView-->
+<!--                    style="@style/Text.Fresh"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Registration Opens:" />-->
 
                 <TextView
                     android:id="@+id/txtOpen"
                     style="@style/Text.Fresh"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="TBD" />
+                    android:text="Registration Opens: TBD" />
 
-                <TextView
-                    style="@style/Text.Fresh"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Registration Deadline:" />
+<!--                <TextView-->
+<!--                    style="@style/Text.Fresh"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Registration Deadline:" />-->
 
                 <TextView
                     android:id="@+id/txtDeadline"
                     style="@style/Text.Fresh"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="TBD" />
+                    android:text="Registration Deadline: TBD" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
