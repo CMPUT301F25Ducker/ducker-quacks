@@ -167,7 +167,10 @@ public class Event {
      * @param userId The unique identifier of the user to add to waitlist
      */
     public void addToWaitingList(String userId) {
-        if (waitingList == null) waitingList = new ArrayList<>();
+        addToWaitingList(userId, null, null);
+    }
+
+    public void addToWaitingList(String userId, Double latitude, Double longitude) {
         if (waitingList.contains(userId)) return;
 
         waitingList.add(userId);
@@ -175,7 +178,7 @@ public class Event {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         WriteBatch batch = db.batch();
 
-        WaitlistEntry entry = new WaitlistEntry(userId, eventId);
+        WaitlistEntry entry = new WaitlistEntry(userId, eventId, latitude, longitude);
         batch.set(db.collection("waitlist").document(userId + "_" + eventId), entry);
 
         batch.update(db.collection("events").document(eventId),
@@ -207,7 +210,7 @@ public class Event {
                 "waitingList", FieldValue.arrayRemove(userId));
         batch.update(db.collection("users").document(userId),
                 "waitlistedEventIds", FieldValue.arrayRemove(eventId));
-
+        batch.delete(db.collection("waitlist").document(userId + "_" + eventId));
         batch.commit().addOnFailureListener(e ->
                 Log.e("Event", "Failed to remove from waiting list", e)
         );

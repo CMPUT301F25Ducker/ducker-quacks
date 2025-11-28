@@ -1,6 +1,8 @@
 package com.example.duckduckgoose;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -11,11 +13,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.duckduckgoose.waitlist.WaitlistEntry;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,6 +48,10 @@ public class EventDetailActivity extends AppCompatActivity {
     private String eventId;
     private FirebaseFirestore db;
 
+    private Event currentEvent;
+    private FusedLocationProviderClient fusedLocationClient;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+
     /**
      * Initializes the layout, reads {@link Intent} extras, and wires button actions.
      *
@@ -63,6 +73,18 @@ public class EventDetailActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        locatejoin();
+                    } else {
+                        Toast.makeText(this, "location permission not granted \uD83D\uDC4E", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
 
         // Determine mode (organizer or entrant)
         isOrganizerMode = AppConfig.LOGIN_MODE.equals("ORGANIZER");
@@ -192,8 +214,9 @@ public class EventDetailActivity extends AppCompatActivity {
         db.collection("events").document(eventId).get()
                 .addOnSuccessListener(doc -> {
                     if (doc != null && doc.exists()) {
-                        Event event = doc.toObject(Event.class);
-                        if (event != null) {
+                        this.currentEvent = doc.toObject(Event.class);
+                        if (currentEvent != null) {
+                            if (currentEvent.getEventId() == null) currentEvent.setEventId(eventId);
                             TextView tvTitle     = findViewById(R.id.txtEventTitle);
                             TextView tvDesc      = findViewById(R.id.txtDescription);
                             TextView tvDates     = findViewById(R.id.txtDates);
@@ -202,16 +225,16 @@ public class EventDetailActivity extends AppCompatActivity {
                             TextView tvCost      = findViewById(R.id.txtCost);
                             TextView tvSpots     = findViewById(R.id.txtSpots);
 
-                            if (tvTitle != null)    tvTitle.setText(event.getName() != null ? event.getName() : "Event");
+                            if (tvTitle != null)    tvTitle.setText(currentEvent.getName() != null ? currentEvent.getName() : "Event");
                             if (tvDesc != null)     tvDesc.setText("Event details loaded from backend.");
-                            if (tvDates != null)    tvDates.setText(event.getEventDate() != null ? event.getEventDate() : "TBD");
-                            if (tvOpen != null)     tvOpen.setText("Registration Opens: " + (event.getRegistrationOpens() != null ? event.getRegistrationOpens() : "TBD"));
-                            if (tvDeadline != null) tvDeadline.setText("Registration Deadline: " + (event.getRegistrationCloses() != null ? event.getRegistrationCloses() : "TBD"));
-                            if (tvCost != null)     tvCost.setText("Cost: " + (event.getCost() != null ? event.getCost() : "—"));
-                            if (tvSpots != null)    tvSpots.setText("Spots: " + (event.getMaxSpots() != null ? event.getMaxSpots() : "—"));
+                            if (tvDates != null)    tvDates.setText(currentEvent.getEventDate() != null ? currentEvent.getEventDate() : "TBD");
+                            if (tvOpen != null)     tvOpen.setText("Registration Opens: " + (currentEvent.getRegistrationOpens() != null ? currentEvent.getRegistrationOpens() : "TBD"));
+                            if (tvDeadline != null) tvDeadline.setText("Registration Deadline: " + (currentEvent.getRegistrationCloses() != null ? currentEvent.getRegistrationCloses() : "TBD"));
+                            if (tvCost != null)     tvCost.setText("Cost: " + (currentEvent.getCost() != null ? currentEvent.getCost() : "—"));
+                            if (tvSpots != null)    tvSpots.setText("Spots: " + (currentEvent.getMaxSpots() != null ? currentEvent.getMaxSpots() : "—"));
 
                             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-                            if (currentUser != null && event.isOnWaitingList(currentUser.getUid())) {
+                            if (currentUser != null && currentEvent.isOnWaitingList(currentUser.getUid())) {
                                 currentState = State.LEAVE_WAITING_LIST;
                             } else {
                                 currentState = State.WAITING_LIST;
@@ -264,6 +287,7 @@ public class EventDetailActivity extends AppCompatActivity {
             btnAttendeeManager.setOnClickListener(v -> {
                 Intent intent = new Intent(this, AttendeeManagerActivity.class);
                 intent.putExtra("eventTitle", title);
+                if (eventId != null) intent.putExtra("eventId", eventId);
                 startActivity(intent);
             });
         }
@@ -286,7 +310,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Accept/Decline pair
         View areaButtons = findViewById(R.id.areaButtons);
-        if (areaButtons != null && areaButtons.getVisibility() == View.VISIBLE) {
+        if (areaButtons != null) {
             MaterialButton btnDecline = findViewById(R.id.btnLeft);
             MaterialButton btnAccept  = findViewById(R.id.btnRight);
 
@@ -308,13 +332,13 @@ public class EventDetailActivity extends AppCompatActivity {
         // Single CTA
         MaterialButton btnSingle = findViewById(R.id.btnSingleCta);
         View singleArea = findViewById(R.id.singleCtaArea);
-        if (btnSingle != null && singleArea != null && singleArea.getVisibility() == View.VISIBLE) {
+        if (btnSingle != null && singleArea != null) {
             btnSingle.setOnClickListener(v ->
                     animateTap(v, () -> {
                         if (currentState == State.NOT_IN_CIRCLE) currentState = State.LEAVE_CIRCLE;
                         else if (currentState == State.LEAVE_CIRCLE) currentState = State.NOT_IN_CIRCLE;
                         else if (currentState == State.WAITING_LIST) {
-                            joinWaitingList();
+                            joinclick();
                             return;
                         } else if (currentState == State.LEAVE_WAITING_LIST) {
                             leaveWaitingList();
@@ -326,74 +350,44 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Attempts to join the waiting list for this event.
-     * <p>If {@code eventId} is not available, resolves it by querying Firestore using the passed title
-     * from the Intent, then proceeds.</p>
-     */
-    private void joinWaitingList() {
-        if (db == null) return;
-
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(this, "Please sign in first", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String uid = currentUser.getUid();
-
-        if (eventId == null) {
-            String title = getIntent().getStringExtra("title");
-            if (title == null) {
-                Toast.makeText(this, "Event identifier not available", Toast.LENGTH_SHORT).show();
-                return;
+    private void joinclick() {
+        if (currentEvent.isGeolocationEnabled()) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                locatejoin();
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
             }
-            db.collection("events").whereEqualTo("name", title).limit(1).get()
-                    .addOnSuccessListener(qs -> {
-                        if (qs != null && !qs.isEmpty()) {
-                            String resolvedId = qs.getDocuments().get(0).getId();
-                            this.eventId = resolvedId;
-                            performJoin(uid, resolvedId);
-                        } else {
-                            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Failed to resolve event", Toast.LENGTH_SHORT).show());
-            return;
+        } else {
+            performJoin(FirebaseAuth.getInstance().getUid(), eventId, null, null);
         }
-
-        performJoin(uid, eventId);
     }
 
-    /**
-     * Performs the Firestore operations to add the user to the event's waiting list.
-     *
-     * @param uid  user id
-     * @param eid  event id
-     */
-    private void performJoin(String uid, String eid) {
-        WaitlistEntry entry = new WaitlistEntry(uid, eid);
-        FirebaseFirestore firestore = db;
-        WriteBatch batch = firestore.batch();
 
-        DocumentReference waitRef = firestore.collection("waitlist").document(uid + "_" + eid);
-        batch.set(waitRef, entry);
+    private void locatejoin() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
 
-        DocumentReference eventRef = firestore.collection("events").document(eid);
-        batch.update(eventRef, "waitingList", FieldValue.arrayUnion(uid));
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    String uid = FirebaseAuth.getInstance().getUid();
+                    if (location != null) {
+                        performJoin(uid, eventId, location.getLatitude(), location.getLongitude());
+                    } else {
+                        Toast.makeText(this, "join without location", Toast.LENGTH_SHORT).show();
+                        performJoin(uid, eventId, null, null);
+                    }
+                });
+    }
 
-        DocumentReference userRef = firestore.collection("users").document(uid);
-        batch.update(userRef, "waitlistedEventIds", FieldValue.arrayUnion(eid));
-
-        batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Successfully joined waiting list", Toast.LENGTH_SHORT).show();
-                    currentState = State.LEAVE_WAITING_LIST;
-                    applyState(currentState);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to join waiting list", Toast.LENGTH_SHORT).show());
+    private void performJoin(String uid, String eid, Double lat, Double lon) {
+        if (currentEvent == null) return;
+        currentEvent.addToWaitingList(uid, lat, lon);
+        Toast.makeText(this, "join waiting list", Toast.LENGTH_SHORT).show();
+        currentState = State.LEAVE_WAITING_LIST;
+        applyState(currentState);
     }
 
     /**
@@ -401,32 +395,20 @@ public class EventDetailActivity extends AppCompatActivity {
      */
     private void leaveWaitingList() {
         if (db == null || eventId == null) return;
-
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(this, "Please sign in first", Toast.LENGTH_SHORT).show();
-            return;
+        if (currentUser == null) return;
+
+        if (currentEvent != null) {
+            currentEvent.removeFromWaitingList(currentUser.getUid());
+        } else {
+            WriteBatch batch = db.batch();
+            batch.update(db.collection("events").document(eventId), "waitingList", FieldValue.arrayRemove(currentUser.getUid()));
+            batch.update(db.collection("users").document(currentUser.getUid()), "waitlistedEventIds", FieldValue.arrayRemove(eventId));
+            batch.delete(db.collection("waitlist").document(currentUser.getUid() + "_" + eventId));
+            batch.commit();
         }
-
-        String uid = currentUser.getUid();
-        WriteBatch batch = db.batch();
-
-        DocumentReference eventRef = db.collection("events").document(eventId);
-        batch.update(eventRef, "waitingList", FieldValue.arrayRemove(uid));
-
-        DocumentReference userRef = db.collection("users").document(uid);
-        batch.update(userRef, "waitlistedEventIds", FieldValue.arrayRemove(eventId));
-
-        DocumentReference waitlistRef = db.collection("waitlist").document(uid + "_" + eventId);
-        batch.delete(waitlistRef);
-
-        batch.commit()
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Successfully left waiting list", Toast.LENGTH_SHORT).show();
-                    finish(); // Return to My Events page
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to leave waiting list: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+        Toast.makeText(this, "left waiting list", Toast.LENGTH_SHORT).show();
+        finish();
     }
 
     /**
@@ -447,51 +429,46 @@ public class EventDetailActivity extends AppCompatActivity {
         }
 
         FirebaseFirestore firestore = db;
-
-        // Fetch user then event, then perform batched writes
         firestore.collection("users").document(uid).get()
                 .addOnSuccessListener(userDoc -> {
                     final String userName = userDoc.getString("fullName");
+                    final String eventName = (currentEvent != null) ? currentEvent.getName() : "Event";
 
-                    firestore.collection("events").document(eid).get()
-                            .addOnSuccessListener(eventDoc -> {
-                                final String eventName = eventDoc.getString("name");
+                    WriteBatch batch = firestore.batch();
 
-                                WriteBatch batch = firestore.batch();
+                    // Update WaitlistEntry
+                    DocumentReference waitRef = firestore.collection("waitlist").document(uid + "_" + eid);
 
-                                // Create/update waitlist entry with status & names
-                                WaitlistEntry entry = new WaitlistEntry(uid, eid);
-                                entry.setStatus("accepted");
-                                entry.setUserName(userName);
-                                entry.setEventName(eventName);
-                                DocumentReference waitRef = firestore.collection("waitlist").document(uid + "_" + eid);
-                                batch.set(waitRef, entry);
+                    java.util.Map<String, Object> updates = new java.util.HashMap<>();
+                    updates.put("status", "accepted");
+                    updates.put("acceptedAt", com.google.firebase.Timestamp.now());
+                    if (userName != null) updates.put("userName", userName);
+                    if (eventName != null) updates.put("eventName", eventName);
 
-                                // Update event arrays
-                                DocumentReference eventRef = firestore.collection("events").document(eid);
-                                batch.update(eventRef,
-                                        "waitingList", FieldValue.arrayUnion(uid),
-                                        "acceptedFromWaitlist", FieldValue.arrayUnion(uid)
-                                );
+                    batch.update(waitRef, updates);
 
-                                // Update user arrays
-                                DocumentReference userRef = firestore.collection("users").document(uid);
-                                batch.update(userRef,
-                                        "waitlistedEventIds", FieldValue.arrayUnion(eid),
-                                        "acceptedEventIds", FieldValue.arrayUnion(eid)
-                                );
+                    // 2. Update event arrays
+                    DocumentReference eventRef = firestore.collection("events").document(eid);
+                    batch.update(eventRef,
+                            "waitingList", FieldValue.arrayRemove(uid),
+                            "acceptedFromWaitlist", FieldValue.arrayUnion(uid)
+                    );
 
-                                batch.commit()
-                                        .addOnSuccessListener(aVoid -> {
-                                            Toast.makeText(this, "Successfully accepted the event!", Toast.LENGTH_SHORT).show();
-                                            currentState = State.GOOSE;
-                                            applyState(currentState);
-                                        })
-                                        .addOnFailureListener(e ->
-                                                Toast.makeText(this, "Failed to accept event: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    // 3. Update user arrays
+                    DocumentReference userRef = firestore.collection("users").document(uid);
+                    batch.update(userRef,
+                            "waitlistedEventIds", FieldValue.arrayRemove(eid),
+                            "acceptedEventIds", FieldValue.arrayUnion(eid)
+                    );
+
+                    batch.commit()
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Successfully accepted the event!", Toast.LENGTH_SHORT).show();
+                                currentState = State.GOOSE;
+                                applyState(currentState);
                             })
                             .addOnFailureListener(e ->
-                                    Toast.makeText(this, "Failed to fetch event details", Toast.LENGTH_SHORT).show());
+                                    Toast.makeText(this, "Failed to accept event: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to fetch user details", Toast.LENGTH_SHORT).show());
@@ -550,8 +527,11 @@ public class EventDetailActivity extends AppCompatActivity {
                 break;
 
             case WAITING_LIST:
-                twoBtns.setVisibility(View.VISIBLE);
-                single.setVisibility(View.GONE);
+                twoBtns.setVisibility(View.GONE);
+                single.setVisibility(View.VISIBLE);
+                btn.setText("Join Waiting List");
+                btn.setBackgroundResource(R.drawable.btn_primary_green);
+                btn.setTextColor(charcoal);
                 break;
 
             case LEAVE_WAITING_LIST:
