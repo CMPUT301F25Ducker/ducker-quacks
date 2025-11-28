@@ -218,6 +218,7 @@ public class User {
         this.accountType = accountType;
     }
 
+<<<<<<< HEAD
     /**
      * Returns whether the user has new notifications.
      *
@@ -252,5 +253,9 @@ public class User {
      */
     public void setCreatedAt(Long createdAt) {
         this.createdAt = createdAt;
+=======
+    public void setUserId(String userId) {
+        this.userId = userId;
+>>>>>>> c2ced09 (Have you ever seen when a when a fish has been taken out of the water? The fish goes through 3 stages, the first is when you see the fish quivering and shaking as it tried to gasp some air, then after awhile the fish has no more energy to shake, and, so all it does is it tries to breathe then if you take the fish and then throw it back in the water then it'll be able to still live and breath. But then there is the third stage. When all you see is the fish slowly moving it's lips, closing the mouth up and down, at that point if you took the fish and you threw it back in the water it would still die, because of the lack of oxygen, the fish has now experienced total organ failure it will die anyway. 🐟😢)
     }
 }

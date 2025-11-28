@@ -10,6 +10,7 @@
 package com.example.duckduckgoose;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.view.View;
 
 /**
@@ -38,6 +39,19 @@ public final class TopBarWiring {
                             ((androidx.fragment.app.FragmentActivity) activity)
                                     .getSupportFragmentManager(),
                             "ProfileSheet"));
+        }
+
+        View notifBtn = activity.findViewById(R.id.btnNotifications);
+        if (notifBtn != null) {
+            notifBtn.setOnClickListener(v -> {
+                if (activity instanceof NotificationActivity) {
+                    return;
+                }
+                Intent intent = new Intent(activity, NotificationActivity.class);
+                // no multiple copies
+                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                activity.startActivity(intent);
+            });
         }
     }
 }
