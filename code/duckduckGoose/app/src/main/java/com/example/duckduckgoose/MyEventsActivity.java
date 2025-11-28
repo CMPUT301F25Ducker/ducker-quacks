@@ -69,9 +69,14 @@ public class MyEventsActivity extends AppCompatActivity {
             return;
         }
 
-        View btnBack = findViewById(R.id.btnBack);
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
+        // Wire up "New Event" button to launch EventEditActivity
+        View btnNewEvent = findViewById(R.id.btnNewEvent);
+        if (btnNewEvent != null) {
+            btnNewEvent.setOnClickListener(v -> {
+                Intent createIntent = new Intent(MyEventsActivity.this, EventEditActivity.class);
+                createIntent.putExtra("organizerId", organizerId);
+                startActivityForResult(createIntent, EVENT_DETAILS_REQUEST);
+            });
         }
 
         MaterialAutoCompleteTextView drop = findViewById(R.id.dropSortMy);
