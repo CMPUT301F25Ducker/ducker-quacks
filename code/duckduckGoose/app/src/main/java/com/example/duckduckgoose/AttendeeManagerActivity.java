@@ -88,6 +88,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee_manager);
 
+        Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+        Configuration.getInstance().setUserAgentValue(getPackageName());
         // Attach profile sheet to top bar
         TopBarWiring.attachProfileSheet(this);
         Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
