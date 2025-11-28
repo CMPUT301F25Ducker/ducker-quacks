@@ -12,6 +12,7 @@
 
 package com.example.duckduckgoose;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -202,13 +203,15 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
 
     /**
      *  Handles "Events" button from the profile sheet.
-     * Navigates to the EventManagerActivity (no change from your original behavior).
+     * Navigates to the MyEventsActivity, passing the organizer's ID.
      *
-     * @param userId The organizer's userId (not used here, but kept for parity).
+     * @param userId The organizer's userId.
      */
     @Override
     public void onEventsButtonClicked(String userId) {
-        startActivity(new android.content.Intent(this, EventManagerActivity.class));
+        Intent intent = new Intent(this, MyEventsActivity.class);
+        intent.putExtra("organizerId", userId);
+        startActivity(intent);
     }
 
     private void deleteUserByEmail(String email) {
