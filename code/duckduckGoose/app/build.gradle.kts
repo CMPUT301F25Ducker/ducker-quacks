@@ -53,10 +53,14 @@ dependencies {
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)
 
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("androidx.preference:preference:1.2.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
     // for debugs
     //implementation(files("C:\\Users\\Murtaza\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
 
-    // testImplementation("junit:junit:4.13.2")
+     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }

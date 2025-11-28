@@ -272,7 +272,6 @@ public class LoginActivity extends AppCompatActivity {
         String phone = edtPhone.getText().toString().trim();
         String password = edtRegPassword.getText().toString().trim();
 
-        // Validation (concise and user-facing)
         if (accountType.isEmpty()) { edtAccountType.setError("Account type is required"); edtAccountType.requestFocus(); return; }
         if (userId.isEmpty())      { edtRegUserId.setError("User ID is required");       edtRegUserId.requestFocus();  return; }
         if (fullName.isEmpty())    { edtFullName.setError("Full name is required");      edtFullName.requestFocus();   return; }
@@ -319,14 +318,6 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Saves a newly created user's profile information to Firestore.
      * After successful save, navigates to the appropriate activity based on role.
-     *
-     * @param uid The Firebase Authentication unique identifier
-     * @param accountType User's role ("Admin", "Organizer", or "Entrant")
-     * @param userId User-chosen identifier for the app
-     * @param fullName User's display name
-     * @param age User's age (pre-validated integer)
-     * @param email User's email address
-     * @param phone User's contact phone number
      */
     private void saveUserToFirestore(String uid, String accountType, String userId,
                                      String fullName, int age, String email, String phone) {
@@ -356,9 +347,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Retrieves the user's profile from Firestore to determine their role.
      * Navigates to the appropriate activity based on account type.
-     * Falls back to Entrant role if profile lookup fails.
-     *
-     * @param uid The Firebase Authentication unique identifier
+     * Falls back to Entrant role if profile lookup fails
      */
     private void loadNavigate(String uid) {
         db.collection("users").document(uid)
@@ -388,8 +377,6 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Sets the application's login mode and navigates to the appropriate activity.
      * Updates {@link AppConfig#LOGIN_MODE} and launches the correct screen based on role.
-     *
-     * @param accountType The user's role ("Admin", "Organizer", or "Entrant")
      */
     private void loginNavigate(String accountType) {
         AppConfig.setLoginMode(accountType);
@@ -399,7 +386,6 @@ public class LoginActivity extends AppCompatActivity {
             // Admin mode - go to Admin Console
             intent = new Intent(this, AdminConsoleActivity.class);
         } else {
-            // Organizer / Entrant -> MainActivity
             intent = new Intent(this, MainActivity.class);
             if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
                 intent.putExtra("startOn", "MY_EVENTS");
@@ -409,6 +395,6 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         startActivity(intent);
-        finish(); // prevent navigating back to login
+        finish();
     }
 }
