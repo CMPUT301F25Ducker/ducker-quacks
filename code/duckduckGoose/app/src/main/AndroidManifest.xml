@@ -70,6 +70,12 @@
         <activity
             android:name=".EventDetailsOrganizerActivity"
             android:exported="false" />
+        <activity
+            android:name=".NotificationLogsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdminEventLogsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

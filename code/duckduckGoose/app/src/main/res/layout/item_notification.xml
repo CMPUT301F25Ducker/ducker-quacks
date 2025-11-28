@@ -15,9 +15,13 @@
         android:layout_height="wrap_content">
         <TextView android:id="@+id/txtNotifTitle"
             style="@style/Text.Fresh.Headline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Notification Text"/>
         <TextView android:id="@+id/txtOrganizer"
             style="@style/Text.Fresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Organizer Name:"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

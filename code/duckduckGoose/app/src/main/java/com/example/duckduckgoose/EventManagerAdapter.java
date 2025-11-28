@@ -69,11 +69,12 @@ public class EventManagerAdapter extends RecyclerView.Adapter<EventManagerAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Event event = events.get(position);
 
+        // Please let this format stay. I cannot go through this again.
         holder.txtTitle.setText(event.getName());
-        String details = event.getEventDate() + "\n" +
+        String details = "Event Date: " + event.getEventDate() + "\n" +
                 "Registration Opens: " + event.getRegistrationOpens() + "\n" +
                 "Registration Deadline: " + event.getRegistrationCloses() + "\n" +
-                "Cost: " + event.getCost() + "\n" +
+                "Cost: $" + event.getCost() + "\n" +
                 "Spots: " + event.getMaxSpots();
         holder.txtDetails.setText(details);
 

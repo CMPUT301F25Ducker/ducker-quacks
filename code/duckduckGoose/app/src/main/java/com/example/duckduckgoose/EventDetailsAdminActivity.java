@@ -106,7 +106,8 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
         MaterialButton eventLogsButton = findViewById(R.id.event_logs_button);
         eventLogsButton.setOnClickListener(v -> {
-            Toast.makeText(this, "Event logs not implemented yet", Toast.LENGTH_SHORT).show();
+            Intent eventLogsIntent = new Intent(EventDetailsAdminActivity.this, AdminEventLogsActivity.class);
+            startActivity(eventLogsIntent);
         });
 
         MaterialButton imagePosterButton = findViewById(R.id.image_poster_button);

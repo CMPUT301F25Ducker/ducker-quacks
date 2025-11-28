@@ -810,5 +810,29 @@ public class MainActivity extends AppCompatActivity {
 
         @Override public int getItemCount(){ return rows.size(); }
     }
+
+    /**
+     * Navigates back based on current screen state.
+     * Called when back button is clicked in My Events view.
+     *
+     * @param view The View that triggered the action
+     */
+    public void goBack(View view) {
+        switch (current) {
+            case MY_EVENTS:
+                // For Organizer mode, go back to login (logout)
+                if (AppConfig.LOGIN_MODE.equals("ORGANIZER")) {
+                    goToLogin();
+                } else {
+                    // For Entrant mode, go to Event List
+                    showEventList();
+                }
+                break;
+            default:
+                // Default behavior: go to event list
+                showEventList();
+                break;
+        }
+    }
 }
 //dhruv

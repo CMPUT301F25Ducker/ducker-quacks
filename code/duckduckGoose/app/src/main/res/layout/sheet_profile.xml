@@ -29,6 +29,16 @@
                 app:shapeAppearanceOverlay="@style/RoundedCornerImage"/>
 
             <ImageButton
+                android:id="@+id/btnNotification"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_alignParentStart="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/notifications_24px"
+                android:contentDescription="Notifications"
+                android:tint="@color/fg_charcoal"/>
+
+            <ImageButton
                 android:id="@+id/btnClose"
                 android:layout_width="32dp"
                 android:layout_height="32dp"

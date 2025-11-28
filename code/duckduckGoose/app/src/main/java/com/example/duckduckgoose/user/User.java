@@ -9,7 +9,6 @@
 
 package com.example.duckduckgoose.user;
 
-import com.google.firebase.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +19,8 @@ public class User {
     private String email;
     private String phone;
     private String accountType;
+    private boolean new_notifications = false; // Flag to indicate if user has new notifications
+    private Long createdAt; // Timestamp when the user was created (in milliseconds)
     private List<String> waitlistedEventIds; // List of event IDs the user is waitlisted for
     private List<String> acceptedEventIds; // List of event IDs the user has been accepted into (from waitlist)
 
@@ -215,5 +216,41 @@ public class User {
      */
     public void setAccountType(String accountType) {
         this.accountType = accountType;
+    }
+
+    /**
+     * Returns whether the user has new notifications.
+     *
+     * @return true if the user has new notifications, false otherwise
+     */
+    public boolean getNew_notifications() {
+        return new_notifications;
+    }
+
+    /**
+     * Sets the user's notification flag.
+     *
+     * @param new_notifications true if the user has new notifications, false otherwise
+     */
+    public void setNew_notifications(boolean new_notifications) {
+        this.new_notifications = new_notifications;
+    }
+
+    /**
+     * Returns the timestamp when the user was created.
+     *
+     * @return Timestamp of user creation in milliseconds
+     */
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    /**
+     * Sets the timestamp when the user was created.
+     *
+     * @param createdAt Timestamp of user creation in milliseconds
+     */
+    public void setCreatedAt(Long createdAt) {
+        this.createdAt = createdAt;
     }
 }
