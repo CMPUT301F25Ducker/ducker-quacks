@@ -371,6 +371,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 .show();
     }
 
+
+
     /**
      *  Deletes the current user's Firestore document and Auth account.
      *
