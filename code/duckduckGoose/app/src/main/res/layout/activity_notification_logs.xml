@@ -49,7 +49,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:shapeAppearanceOverlay="@style/RoundedCornerImage"
-            app:srcCompat="@drawable/person" />
+            app:srcCompat="@drawable/person_pfp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
@@ -57,13 +57,16 @@
         android:paddingHorizontal="12dp"
         android:paddingTop="6dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        >
 
         <TextView
             style="@style/Text.Fresh.Display"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Notification Logs"/>
+            android:text="Notification Logs"
+            />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
