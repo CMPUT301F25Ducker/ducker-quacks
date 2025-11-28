@@ -1,3 +1,13 @@
+/**
+ * Organizer's event list screen displaying all events they've created.
+ *
+ * Loads events from Firestore filtered by organizer ID, displays them in a
+ * RecyclerView, and provides navigation to individual event detail screens.
+ * Also includes sorting options and handles event list refreshes after deletion.
+ *
+ * @author DuckDuckGoose Development Team
+ */
+
 package com.example.duckduckgoose;
 
 import android.content.Intent;
