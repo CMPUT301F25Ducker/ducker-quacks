@@ -114,6 +114,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         args.putBoolean("showEventsButton", showEventsButton);
         args.putString("eventCount", eventCount);
         args.putBoolean("showAttendeeInfo", showAttendeeInfo);
+        args.putBoolean("new_notifications", user.getNew_notifications());
         fragment.setArguments(args);
         return fragment;
     }
@@ -169,6 +170,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         MaterialButton btnLogout = v.findViewById(R.id.btnLogout);
         MaterialButton btnDelete = v.findViewById(R.id.btnDelete);
         MaterialButton btnEvents = v.findViewById(R.id.btnEvents);
+        ImageButton btnNotification = v.findViewById(R.id.btnNotification);
 
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -212,6 +214,10 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 btnEdit.setVisibility(View.GONE);
                 btnLogout.setVisibility(View.GONE);
                 btnDelete.setVisibility(View.VISIBLE);
+                // Hide notification icon when viewing another user
+                if (btnNotification != null) {
+                    btnNotification.setVisibility(View.GONE);
+                }
 
                 if (arguments.getBoolean("showAttendeeInfo")) {
                     btnDelete.setText("Kick");
@@ -228,6 +234,28 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 btnDelete.setVisibility(View.VISIBLE);
                 btnDelete.setText("Delete Account");
                 btnDelete.setOnClickListener(x -> confirmDeleteSelf());
+                
+                // Show notification icon for own profile
+                if (btnNotification != null) {
+                    boolean hasNewNotifications = arguments.getBoolean("new_notifications", false);
+                    if (hasNewNotifications) {
+                        btnNotification.setImageResource(R.drawable.notifications_unread_24px);
+                    } else {
+                        btnNotification.setImageResource(R.drawable.notifications_24px);
+                    }
+                    // Set click listener for entrants only (reuse accountType from above)
+                    if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
+                        btnNotification.setOnClickListener(notifView -> {
+                            dismiss();
+                            Intent intent = new Intent(getActivity(), NotificationLogsActivity.class);
+                            startActivity(intent);
+                        });
+                    } else {
+                        btnNotification.setOnClickListener(notifView -> {
+                            // Non-entrants: no action for now
+                        });
+                    }
+                }
             }
 
             if (arguments.getBoolean("showEventsButton")) {
@@ -270,6 +298,27 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                             User me = ds.toObject(User.class);
                             if (me != null) {
                                 bindSelfProfile(v, me);
+                                // Update notification icon based on new_notifications field
+                                if (btnNotification != null) {
+                                    if (me.getNew_notifications()) {
+                                        btnNotification.setImageResource(R.drawable.notifications_unread_24px);
+                                    } else {
+                                        btnNotification.setImageResource(R.drawable.notifications_24px);
+                                    }
+                                    // Set click listener for entrants only
+                                    String accountType = me.getAccountType();
+                                    if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
+                                        btnNotification.setOnClickListener(notifView -> {
+                                            dismiss();
+                                            Intent intent = new Intent(getActivity(), NotificationLogsActivity.class);
+                                            startActivity(intent);
+                                        });
+                                    } else {
+                                        btnNotification.setOnClickListener(notifView -> {
+                                            // Non-entrants: no action for now
+                                        });
+                                    }
+                                }
                             } else {
                                 android.util.Log.w("Firestore", "User doc exists? " + ds.exists() + " but toObject() returned null");
                                 Toast.makeText(getContext(), "Could not load profile.", Toast.LENGTH_SHORT).show();
