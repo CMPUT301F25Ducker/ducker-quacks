@@ -253,4 +253,7 @@ public class User {
     public void setCreatedAt(Long createdAt) {
         this.createdAt = createdAt;
     }
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }
