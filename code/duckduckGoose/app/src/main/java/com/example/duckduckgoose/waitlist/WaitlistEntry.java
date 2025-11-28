@@ -22,6 +22,9 @@ public class WaitlistEntry {
     private Timestamp acceptedAt; // When the user was accepted (if applicable)
     private String notes; // Optional notes about the waitlist entry
 
+    private Double latitude;
+    private Double longitude;
+
     // Required no-arg constructor for Firestore
     public WaitlistEntry() {}
 
@@ -32,6 +35,17 @@ public class WaitlistEntry {
         this.status = "waiting";
         this.acceptedAt = null;
         this.notes = "";
+    }
+
+    public WaitlistEntry(String userId, String eventId, Double latitude, Double longitude) {
+        this.userId = userId;
+        this.eventId = eventId;
+        this.joinedAt = Timestamp.now();
+        this.status = "waiting";
+        this.acceptedAt = null;
+        this.notes = "";
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     /**
@@ -65,6 +79,9 @@ public class WaitlistEntry {
     public String getStatus() {
         return status;
     }
+
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
 
     /**
      * Sets the user ID for this waitlist entry.
@@ -113,4 +130,7 @@ public class WaitlistEntry {
     public void setEventName(String eventName) {
         this.eventName = eventName;
     }
+
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

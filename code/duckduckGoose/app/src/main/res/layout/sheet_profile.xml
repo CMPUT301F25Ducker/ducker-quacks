@@ -23,7 +23,7 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:layout_centerHorizontal="true"
-                android:src="@drawable/person"
+                android:src="@drawable/person_pfp"
                 android:contentDescription="@string/empty"
                 android:scaleType="centerCrop"
                 app:shapeAppearanceOverlay="@style/RoundedCornerImage"/>

@@ -23,11 +23,14 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.duckduckgoose.user.User;
 import android.content.Intent;
+
+import com.example.duckduckgoose.waitlist.WaitlistEntry;
 import com.google.android.material.button.MaterialButton;
 
 import androidx.appcompat.app.AlertDialog;
@@ -44,6 +47,13 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.api.IMapController;
 
 /**
  *  AttendeeManagerActivity
@@ -76,6 +86,9 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
     /** Filter dropdown for attendee status. */
     private AutoCompleteTextView dropFilterAttendees;
+
+    private MapView map;
+    private IMapController mapController;
     
     /** Firestore reference for data access. */
     private FirebaseFirestore db;
@@ -86,7 +99,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     @Override
     protected void onCreate(Bundle savedInstanceState) {
     // Get eventId from intent
-    eventId = getIntent().getStringExtra("eventId");
+        eventId = getIntent().getStringExtra("eventId");
         EdgeToEdge.enable(this);
         WindowInsetsController controller = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -110,6 +123,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         // Attach profile sheet to top bar
         TopBarWiring.attachProfileSheet(this);
+        Configuration.getInstance().load(getApplicationContext(), PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+        Configuration.getInstance().setUserAgentValue(getPackageName());
 
         View btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
@@ -118,6 +133,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         // Initialize views
         initializeViews();
+        setupMap();
         // Setup Firestore and load waitlist for provided event id (if any)
         db = FirebaseFirestore.getInstance();
         Intent intent = getIntent();
@@ -131,6 +147,30 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         // Load waitlist entrants for the event (if eventId provided)
         loadWaitlistEntrants();
+    }
+
+    private void setupMap() {
+        map = findViewById(R.id.mapView);
+        if (map != null) {
+            map.setTileSource(TileSourceFactory.MAPNIK);
+            map.setMultiTouchControls(true);
+            mapController = map.getController();
+            mapController.setZoom(17.0);
+            GeoPoint startPoint = new GeoPoint(53.52505537879172, -113.5255503277704);
+            mapController.setCenter(startPoint);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (map != null) map.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (map != null) map.onPause();
     }
 
     /**
@@ -319,32 +359,6 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                     .show(getSupportFragmentManager(), "ProfileSheet");
             });
             rvAttendees.setAdapter(adapter);
-
-            // Load waitlisted users for this event from Firestore
-            com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
-            db.collection("waitlist")
-                .whereEqualTo("eventId", eventId)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    allAttendees.clear();
-                    for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshot.getDocuments()) {
-                        String userId = doc.getString("userId");
-                        if (userId != null) {
-                            // Optionally fetch user details from 'users' collection
-                            db.collection("users").document(userId).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    User user = userDoc.toObject(User.class);
-                                    if (user != null) {
-                                        allAttendees.add(user);
-                                        attendees.clear();
-                                        attendees.addAll(allAttendees);
-                                        if (adapter != null) adapter.notifyDataSetChanged();
-                                        updateCountDisplay();
-                                    }
-                                });
-                        }
-                    }
-                });
         }
     }
 
@@ -356,73 +370,63 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
      */
     private void loadWaitlistEntrants() {
         if (db == null) db = FirebaseFirestore.getInstance();
-        if (eventId == null || eventId.isEmpty()) {
-            // Nothing to load
-            return;
-        }
+        if (eventId == null || eventId.isEmpty()) return;
 
-        // Verify organizer by loading event document
+        // Check organizer status
         db.collection("events").document(eventId).get()
-            .addOnSuccessListener(doc -> {
-                if (doc != null && doc.exists()) {
-                    String organizerId = doc.getString("organizerId");
-                    FirebaseUser cur = FirebaseAuth.getInstance().getCurrentUser();
-                    isOrganizer = (cur != null && organizerId != null && organizerId.equals(cur.getUid()));
-                    if (!isOrganizer) {
-                        // disable send message button for non-organizers
-                        if (btnSendMessage != null) btnSendMessage.setEnabled(false);
+                .addOnSuccessListener(doc -> {
+                    if (doc != null && doc.exists()) {
+                        String organizerId = doc.getString("organizerId");
+                        FirebaseUser cur = FirebaseAuth.getInstance().getCurrentUser();
+                        isOrganizer = (cur != null && organizerId != null && organizerId.equals(cur.getUid()));
+                        if (btnSendMessage != null) btnSendMessage.setEnabled(isOrganizer);
                     }
-                }
-            });
+                });
 
-        // Query waitlist entries for this event with status "waiting"
+        // Load entrants
         db.collection("waitlist")
-            .whereEqualTo("eventId", eventId)
-            .whereEqualTo("status", "waiting")
-            .get()
-            .addOnSuccessListener((QuerySnapshot snapshot) -> {
-                if (snapshot == null || snapshot.isEmpty()) {
-                    // No waiting-list entries
-                    return;
-                }
+                .whereEqualTo("eventId", eventId)
+                .whereEqualTo("status", "waiting")
+                .get()
+                .addOnSuccessListener((QuerySnapshot snapshot) -> {
+                    allAttendees.clear();
+                    attendees.clear();
 
-                for (DocumentSnapshot entryDoc : snapshot.getDocuments()) {
-                    String uid = entryDoc.getString("userId");
-                    if (uid == null) continue;
+                    if (adapter != null) adapter.notifyDataSetChanged();
 
-                    // Fetch user document for display
-                    db.collection("users").document(uid).get()
-                        .addOnSuccessListener(userDoc -> {
-                            if (userDoc != null && userDoc.exists()) {
+                    if (snapshot != null && !snapshot.isEmpty()) {
+                        for (DocumentSnapshot entryDoc : snapshot.getDocuments()) {
+                            String uid = entryDoc.getString("userId");
+                            if (uid == null) continue;
+
+                            // Fetch User Details
+                            db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
                                 User u = userDoc.toObject(User.class);
-                                if (u != null) {
-                                    // ensure userId is set (model may not map id field)
-                                    try {
-                                        java.lang.reflect.Field f = User.class.getDeclaredField("userId");
-                                        f.setAccessible(true);
-                                        if (f.get(u) == null) f.set(u, uid);
-                                    } catch (Exception ex) {
-                                        // ignore reflection failures
-                                    }
+                                if (u == null) {
+                                    u = new User();
+                                }
+
+                                if (!containsUser(allAttendees, u.getUserId())) {
                                     allAttendees.add(u);
                                     attendees.add(u);
                                     if (adapter != null) adapter.notifyDataSetChanged();
                                     updateCountDisplay();
-                                } else {
-                                    // fallback: create minimal User
-                                    User fallback = new User();
-                                    try { java.lang.reflect.Field f = User.class.getDeclaredField("userId"); f.setAccessible(true); f.set(fallback, uid); } catch (Exception ignored) {}
-                                    try { java.lang.reflect.Field f2 = User.class.getDeclaredField("fullName"); f2.setAccessible(true); f2.set(fallback, entryDoc.getString("userName")); } catch (Exception ignored) {}
-                                    allAttendees.add(fallback);
-                                    attendees.add(fallback);
-                                    if (adapter != null) adapter.notifyDataSetChanged();
-                                    updateCountDisplay();
                                 }
-                            }
-                        });
-                }
-            })
-            .addOnFailureListener(e -> Toast.makeText(this, "Failed to load waitlist: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                            });
+                        }
+                    } else {
+                        updateCountDisplay();
+                    }
+                });
+    }
+
+    private boolean containsUser(List<User> list, String userId) {
+        for (User u : list) {
+            if (u.getUserId() != null && u.getUserId().equals(userId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -515,24 +519,78 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         Toast.makeText(this, "Selected " + randomCount + " random attendees", Toast.LENGTH_SHORT).show();
     }
 
-    /**  Shows the map popup and dims the background. */
     private void showMapPopup() {
-        if (mapPopup != null) {
-            mapPopup.setVisibility(View.VISIBLE);
-        }
-        if (mapPopupBackground != null) {
-            mapPopupBackground.setVisibility(View.VISIBLE);
-        }
+        if (mapPopup != null) mapPopup.setVisibility(View.VISIBLE);
+        if (mapPopupBackground != null) mapPopupBackground.setVisibility(View.VISIBLE);
+        loadMapMarkers();
     }
 
-    /**  Hides the map popup and restores the background. */
     private void hideMapPopup() {
-        if (mapPopup != null) {
-            mapPopup.setVisibility(View.GONE);
-        }
-        if (mapPopupBackground != null) {
-            mapPopupBackground.setVisibility(View.GONE);
-        }
+        if (mapPopup != null) mapPopup.setVisibility(View.GONE);
+        if (mapPopupBackground != null) mapPopupBackground.setVisibility(View.GONE);
+    }
+
+    private void loadMapMarkers() {
+        if (map == null || eventId == null) return;
+
+        map.getOverlays().clear();
+
+        db.collection("waitlist")
+                .whereEqualTo("eventId", eventId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    double minLat = 90, maxLat = -90, minLon = 180, maxLon = -180;
+                    boolean hasPoints = false;
+
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        WaitlistEntry entry = doc.toObject(WaitlistEntry.class);
+
+                        if (entry != null && entry.getLatitude() != null && entry.getLongitude() != null) {
+                            double lat = entry.getLatitude();
+                            double lon = entry.getLongitude();
+                            String uid = entry.getUserId();
+
+                            if (lat < minLat) minLat = lat;
+                            if (lat > maxLat) maxLat = lat;
+                            if (lon < minLon) minLon = lon;
+                            if (lon > maxLon) maxLon = lon;
+                            hasPoints = true;
+
+                            db.collection("users").document(uid).get()
+                                    .addOnSuccessListener(userDoc -> {
+                                        User u = userDoc.toObject(User.class);
+                                        String realName = (u != null && u.getFullName() != null && !u.getFullName().isEmpty())
+                                                ? u.getFullName()
+                                                : "mystery entrant";
+
+                                        GeoPoint point = new GeoPoint(lat, lon);
+                                        Marker marker = new Marker(map);
+                                        marker.setPosition(point);
+                                        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                                        marker.setTitle(realName);
+                                        marker.setSnippet("status: " + entry.getStatus());
+
+                                        map.getOverlays().add(marker);
+                                        map.invalidate();
+                                    });
+                        }
+                    }
+
+                    if (hasPoints) {
+                        if (minLat == maxLat && minLon == maxLon) {
+                            mapController.setCenter(new GeoPoint(minLat, minLon));
+                            mapController.setZoom(15.0);
+                        } else {
+                            mapController.setCenter(new GeoPoint((minLat + maxLat)/2, (minLon + maxLon)/2));
+                            mapController.setZoom(10.0);
+                        }
+                    } else {
+                        Toast.makeText(this, "locations not there", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "error", Toast.LENGTH_SHORT).show()
+                );
     }
 
     /**
