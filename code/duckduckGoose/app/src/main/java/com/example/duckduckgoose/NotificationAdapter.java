@@ -2,6 +2,8 @@
  * RecyclerView adapter for displaying notification items.
  *
  * Binds notification data (title and organizer) to card-based list items.
+ * Note: This adapter is kept for compatibility but NotificationLogsActivity
+ * now uses its own internal adapter.
  *
  * @author DuckDuckGoose Development Team
  */
@@ -16,7 +18,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Adapter for binding NotificationItem objects to RecyclerView rows.
@@ -25,6 +29,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     /** List of notifications to display. */
     private final List<NotificationLogsActivity.NotificationItem> notifications;
+
+    /** Date formatter for timestamp display. */
+    private SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault());
 
     /**
      * Constructs the adapter with a notification list.
@@ -60,7 +67,15 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         NotificationLogsActivity.NotificationItem notification = notifications.get(position);
         holder.txtNotifTitle.setText(notification.getTitle());
-        holder.txtOrganizer.setText(notification.getOrganizer());
+        
+        // Show organizer name and timestamp
+        String orgName = notification.getOrganizerName();
+        String timestamp = sdf.format(notification.getDate());
+        if (orgName != null && !orgName.isEmpty()) {
+            holder.txtOrganizer.setText(orgName + " • " + timestamp);
+        } else {
+            holder.txtOrganizer.setText(timestamp);
+        }
     }
 
     /**
