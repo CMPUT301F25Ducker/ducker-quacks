@@ -108,6 +108,9 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendee_manager);
 
+        // Attach profile sheet to top bar
+        TopBarWiring.attachProfileSheet(this);
+
         View btnBack = findViewById(R.id.btnBack);
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> finish());
