@@ -316,10 +316,11 @@ public class EventDetailActivity extends AppCompatActivity {
 
             if (btnDecline != null) {
                 btnDecline.setOnClickListener(v ->
-                        animateTap(v, () -> {
-                            currentState = State.DUCK; // Decline -> DUCK (per your UI metaphor)
-                            applyState(currentState);
-                        })
+                        animateTap(v, this::performDecline)
+//                        animateTap(v, () -> {
+//                            currentState = State.DUCK; // Decline -> DUCK (per your UI metaphor)
+//                            applyState(currentState);
+//                        })
                 );
             }
             if (btnAccept != null) {
@@ -572,5 +573,35 @@ public class EventDetailActivity extends AppCompatActivity {
         if (t.contains("enter")) return State.NOT_IN_CIRCLE;
         if (t.contains("leave")) return State.LEAVE_CIRCLE;
         return State.UNDECIDED;
+    }
+
+    private void performDecline() {
+        if (currentEvent == null) return;
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        String uid = currentUser.getUid();
+        String eid = currentEvent.getEventId();
+
+        // firestore: change status to declined
+        // we do NOT remove the document, because we want to keep a record that they declined
+        db.collection("waitlist").document(uid + "_" + eid)
+                .update("status", "declined")
+                .addOnSuccessListener(v -> {
+                    Toast.makeText(this, "You have declined the invitation.", Toast.LENGTH_SHORT).show();
+
+                    WriteBatch batch = db.batch();
+                    batch.update(db.collection("events").document(eid),
+                            "waitingList", FieldValue.arrayRemove(uid));
+                    batch.update(db.collection("users").document(uid),
+                            "waitlistedEventIds", FieldValue.arrayRemove(eid));
+                    batch.commit();
+
+                    currentState = State.DUCK;
+                    applyState(currentState);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to decline: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
 }

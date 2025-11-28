@@ -216,4 +216,8 @@ public class User {
     public void setAccountType(String accountType) {
         this.accountType = accountType;
     }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }
