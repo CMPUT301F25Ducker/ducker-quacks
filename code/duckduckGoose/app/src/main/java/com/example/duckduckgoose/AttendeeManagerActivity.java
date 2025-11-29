@@ -735,7 +735,14 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                         return;
                     }
 
-                    String ticketDocId = ticketSnap.getDocuments().get(0).getId();
+                    DocumentSnapshot ticketDoc = ticketSnap.getDocuments().get(0);
+                    String ticketDocId = ticketDoc.getId();
+                    String currentStatus = ticketDoc.getString("status");
+                    if (currentStatus == null) currentStatus = "waiting";
+                    currentStatus = currentStatus.toLowerCase();
+
+                    // Check if user was selected or accepted (had choice to be duck/goose or chose goose)
+                    boolean wasSelectedOrAccepted = currentStatus.equals("selected") || currentStatus.equals("accepted");
 
                     com.google.firebase.firestore.WriteBatch batch = db.batch();
 
@@ -743,6 +750,12 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
                     batch.update(db.collection("events").document(eventId),
                             "waitingList", com.google.firebase.firestore.FieldValue.arrayRemove(userId));
+
+                    // If they were selected or accepted, increment redrawCount so organizer can redraw for this spot
+                    if (wasSelectedOrAccepted) {
+                        batch.update(db.collection("events").document(eventId),
+                                "redrawCount", com.google.firebase.firestore.FieldValue.increment(1));
+                    }
 
                     batch.update(db.collection("users").document(userId),
                             "waitlistedEventIds", com.google.firebase.firestore.FieldValue.arrayRemove(eventId));
