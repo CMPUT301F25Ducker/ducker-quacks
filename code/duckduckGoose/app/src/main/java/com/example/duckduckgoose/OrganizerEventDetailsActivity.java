@@ -14,6 +14,8 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 /**
  * Activity for viewing event details from an organizer's perspective.
  *
@@ -21,6 +23,9 @@ import androidx.appcompat.app.AppCompatActivity;
  * Future work includes retrieving event data and setting up interactive controls.
  */
 public class OrganizerEventDetailsActivity extends AppCompatActivity {
+
+    private String eventId;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

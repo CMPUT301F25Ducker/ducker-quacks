@@ -38,6 +38,10 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.BarcodeFormat;
 
+import com.bumptech.glide.Glide;
+
+import java.util.List;
+
 /**
  * Detail screen for a single event.
  *
@@ -124,9 +128,9 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Firestore
         db = FirebaseFirestore.getInstance();
-        if (this.eventId != null) {
-            loadEventDetails();
-        }
+//        if (this.eventId != null) {
+//            loadEventDetails();
+//        }
 
         // Bind text views
         TextView tvTitle     = findViewById(R.id.txtEventTitle);
@@ -253,6 +257,40 @@ public class EventDetailActivity extends AppCompatActivity {
                                 tvCost.setText("Cost: $" + (currentEvent.getCost() == null ? "—" : currentEvent.getCost()));
                             if (tvSpots != null)
                                 tvSpots.setText("Spots: " + (currentEvent.getMaxSpots() == null ? "—" : currentEvent.getMaxSpots()));
+
+                            // image
+                            LinearLayout gallery = findViewById(R.id.imageGallery);
+                            if (gallery != null) {
+                                gallery.removeAllViews();
+
+                                List<String> paths = currentEvent.getImagePaths();
+
+                                if (paths == null || paths.isEmpty()) {
+                                    // placeholder?
+                                } else {
+                                    int screenW = getResources().getDisplayMetrics().widthPixels;
+                                    int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
+
+                                    for (String url : paths) {
+                                        ImageView img = new ImageView(this);
+                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                        lp.setMargins(0, 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
+                                        img.setLayoutParams(lp);
+                                        img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                                        // glide
+                                        Glide.with(this)
+                                                .load(url)
+                                                .placeholder(R.drawable.poolphoto) //  while loading
+                                                .error(R.drawable.poolphoto)      //  if error
+                                                .into(img);
+
+                                        gallery.addView(img);
+                                    }
+                                }
+                            }
+
+
 
                             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                             if (currentUser != null) {
@@ -707,5 +745,15 @@ public class EventDetailActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to decline: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
+    }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (this.eventId != null) {
+            loadEventDetails();
+        }
     }
 }
