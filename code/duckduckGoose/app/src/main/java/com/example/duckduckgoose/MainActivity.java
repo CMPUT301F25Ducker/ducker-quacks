@@ -470,46 +470,61 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
 
-                                db.collection("events")
-                                        .whereIn("eventId", new ArrayList<>(signupDates.keySet()))
-                                        .get()
-                                        .addOnSuccessListener(eventSnapshots -> {
-                                            for (DocumentSnapshot doc : eventSnapshots) {
-                                                Event event = doc.toObject(Event.class);
-                                                if (event != null && event.getEventDate() != null) {
-                                                    try {
-                                                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.getDefault());
-                                                        Date eventDate = sdf.parse(event.getEventDate());
-                                                        Date today = new Date();
-                                                        Date signupDate = signupDates.get(event.getEventId());
+                                // If the user hasn't signed up for any events, show empty sections instead
+                                if (signupDates.isEmpty()) {
+                                    rows.add("Pre-Registration Deadline");
+                                    rows.addAll(preregEvents);
+                                    rows.add("Past Registration Deadline");
+                                    rows.addAll(pastEvents);
+                                    rv.setAdapter(new SectionedEventAdapter(rows));
+                                } else {
+                                    // Safer: fetch each event document individually rather than using whereIn.
+                                    List<String> eventIds = new ArrayList<>(signupDates.keySet());
+                                    final java.util.concurrent.atomic.AtomicInteger remaining = new java.util.concurrent.atomic.AtomicInteger(eventIds.size());
 
-                                                        if (eventDate != null && signupDate != null) {
-                                                            if (eventDate.before(today)) {
-                                                                pastEvents.add(event);
-                                                            } else {
+                                    for (String eid : eventIds) {
+                                        db.collection("events").document(eid).get()
+                                                .addOnSuccessListener(doc -> {
+                                                    if (doc != null && doc.exists()) {
+                                                        Event event = doc.toObject(Event.class);
+                                                        if (event != null && event.getEventDate() != null) {
+                                                            try {
+                                                                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy", Locale.getDefault());
+                                                                Date eventDate = sdf.parse(event.getEventDate());
+                                                                Date today = new Date();
+                                                                Date signupDate = signupDates.get(event.getEventId());
+
+                                                                if (eventDate != null && signupDate != null) {
+                                                                    if (eventDate.before(today)) {
+                                                                        pastEvents.add(event);
+                                                                    } else {
+                                                                        preregEvents.add(event);
+                                                                    }
+                                                                }
+                                                            } catch (ParseException ex) {
+                                                                Log.e("Firestore", "Date parse error for event: " + event.getEventDate(), ex);
                                                                 preregEvents.add(event);
                                                             }
                                                         }
-                                                    } catch (ParseException ex) {
-                                                        Log.e("Firestore", "Date parse error for event: " + event.getEventDate(), ex);
-                                                        preregEvents.add(event);
                                                     }
-                                                }
-                                            }
+                                                    if (remaining.decrementAndGet() == 0) {
+                                                        // All fetched: sort and display
+                                                        preregEvents.sort(Comparator.comparing(ev -> signupDates.get(ev.getEventId())));
+                                                        pastEvents.sort(Comparator.comparing(ev -> signupDates.get(ev.getEventId())));
 
-                                            // Sort by signup date
-                                            preregEvents.sort(Comparator.comparing(ev -> signupDates.get(ev.getEventId())));
-                                            pastEvents.sort(Comparator.comparing(ev -> signupDates.get(ev.getEventId())));
+                                                        rows.add("Pre-Registration Deadline");
+                                                        rows.addAll(preregEvents);
+                                                        rows.add("Past Registration Deadline");
+                                                        rows.addAll(pastEvents);
 
-                                            rows.add("Pre-Registration Deadline");
-                                            rows.addAll(preregEvents);
-                                            rows.add("Past Registration Deadline");
-                                            rows.addAll(pastEvents);
-
-                                            rv.setAdapter(new SectionedEventAdapter(rows));
-                                        });
+                                                        rv.setAdapter(new SectionedEventAdapter(rows));
+                                                    }
+                                                });
+                                    }
+                                }
                             });
-                } else {
+                }
+                else {
                     // Not signed in: show empty sections
                     rows.add("Pre-Registration Deadline");
                     rows.add("Past Registration Deadline");
