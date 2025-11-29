@@ -18,7 +18,9 @@ import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -32,6 +34,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.example.duckduckgoose.user.User;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -61,6 +64,89 @@ public class ProfileSheet extends BottomSheetDialogFragment {
          * @param userId The unique ID of the user whose events are requested.
          */
         void onEventsButtonClicked(String userId);
+    }
+
+    /**
+     * Attach single/double tap handlers to the notification bell.
+     * Single tap: open notification logs. Double tap: toggle `receive_notifications` in Firestore.
+     */
+    private void attachNotificationHandler(ImageButton btnNotification, boolean hasNewNotifications) {
+        if (btnNotification == null) return;
+
+        // initial icon state
+        if (hasNewNotifications) {
+            btnNotification.setImageResource(R.drawable.notifications_unread_24px);
+        } else {
+            btnNotification.setImageResource(R.drawable.notifications_24px);
+        }
+
+        // Set visual alpha based on current Firestore preference (if available)
+        FirebaseUser curUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (curUser != null && db != null) {
+            db.collection("users").document(curUser.getUid()).get()
+                .addOnSuccessListener(doc -> {
+                    if (doc != null && doc.exists()) {
+                        Boolean opted = doc.getBoolean("receive_notifications");
+                        if (opted != null && !opted) {
+                            btnNotification.setAlpha(0.4f);
+                        } else {
+                            btnNotification.setAlpha(1.0f);
+                        }
+                    }
+                });
+        }
+
+        GestureDetector detector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                // single tap: open notification logs
+                if (getActivity() != null) {
+                    dismiss();
+                    Intent intent = new Intent(getActivity(), NotificationLogsActivity.class);
+                    startActivity(intent);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                // double tap: toggle the receive_notifications flag in Firestore
+                FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
+                if (u == null) {
+                    Toast.makeText(getContext(), "Please sign in to change notification settings.", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+
+                String uid = u.getUid();
+                if (db == null) db = FirebaseFirestore.getInstance();
+
+                db.collection("users").document(uid).get()
+                    .addOnSuccessListener(doc -> {
+                        boolean current = true; // default
+                        if (doc != null && doc.exists()) {
+                            Boolean b = doc.getBoolean("receive_notifications");
+                            if (b != null) current = b;
+                        }
+                        boolean next = !current;
+                        db.collection("users").document(uid).update("receive_notifications", next)
+                            .addOnSuccessListener(v -> {
+                                btnNotification.setAlpha(next ? 1.0f : 0.4f);
+                                Toast.makeText(getContext(), next ? "Notifications unmuted" : "Notifications muted", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to update preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
+                    })
+                    .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to read preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
+
+                return true;
+            }
+        });
+
+        btnNotification.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return detector.onTouchEvent(event);
+            }
+        });
     }
 
     /** Callback target implemented by the hosting context. */
@@ -234,29 +320,22 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 btnDelete.setVisibility(View.VISIBLE);
                 btnDelete.setText("Delete Account");
                 btnDelete.setOnClickListener(x -> confirmDeleteSelf());
-                
+
                 // Show notification icon for entrants only
                 if (btnNotification != null) {
                     // Only show notification button for entrants
                     if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
                         btnNotification.setVisibility(View.VISIBLE);
                         boolean hasNewNotifications = arguments.getBoolean("new_notifications", false);
-                        if (hasNewNotifications) {
-                            btnNotification.setImageResource(R.drawable.notifications_unread_24px);
-                        } else {
-                            btnNotification.setImageResource(R.drawable.notifications_24px);
-                        }
-                        btnNotification.setOnClickListener(notifView -> {
-                            dismiss();
-                            Intent intent = new Intent(getActivity(), NotificationLogsActivity.class);
-                            startActivity(intent);
-                        });
+                        // attach a handler that supports single-tap (open logs) and double-tap (mute/unmute)
+                        attachNotificationHandler(btnNotification, hasNewNotifications);
                     } else {
                         // Hide notification button for non-entrants
                         btnNotification.setVisibility(View.GONE);
                     }
                 }
             }
+
 
             if (arguments.getBoolean("showEventsButton")) {
                 btnEvents.setVisibility(View.VISIBLE);
@@ -304,16 +383,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                                     String accountType = me.getAccountType();
                                     if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
                                         btnNotification.setVisibility(View.VISIBLE);
-                                        if (me.getNew_notifications()) {
-                                            btnNotification.setImageResource(R.drawable.notifications_unread_24px);
-                                        } else {
-                                            btnNotification.setImageResource(R.drawable.notifications_24px);
-                                        }
-                                        btnNotification.setOnClickListener(notifView -> {
-                                            dismiss();
-                                            Intent intent = new Intent(getActivity(), NotificationLogsActivity.class);
-                                            startActivity(intent);
-                                        });
+                                        // set up single/double tap behavior on the bell
+                                        attachNotificationHandler(btnNotification, me.getNew_notifications());
                                     } else {
                                         // Hide notification button for non-entrants
                                         btnNotification.setVisibility(View.GONE);

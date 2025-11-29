@@ -76,6 +76,9 @@
         <activity
             android:name=".AdminEventLogsActivity"
             android:exported="false" />
+        <activity
+            android:name=".SettingsNotificationsActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
