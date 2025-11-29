@@ -463,11 +463,70 @@ public class EventEditActivity extends AppCompatActivity {
      * @return {@code true} if valid; {@code false} otherwise
      */
     private boolean validateForm() {
+        // instantiations for the fields themselves
         String eventName = edtEventName.getText().toString().trim();
+        String spots = edtSpots.getText().toString().trim();
+        String cost = edtCost.getText().toString().trim();
+        String eventDateStr = txtEventDate.getText().toString().trim();
+        String regOpensStr = txtRegOpens.getText().toString().trim();
+        String regClosesStr = txtRegCloses.getText().toString().trim();
+
+        // verify that the Event Name field is not empty
         if (eventName.isEmpty()) {
             Toast.makeText(this, "Please enter an event name", Toast.LENGTH_SHORT).show();
+            edtEventName.requestFocus();
             return false;
         }
+
+        // verify that the Spots field is not empty
+        if (spots.isEmpty()) {
+            Toast.makeText(this, "Please enter the maximum number of spots", Toast.LENGTH_SHORT).show();
+            edtSpots.requestFocus();
+            return false;
+        } else if (Integer.parseInt(spots) < 1) {
+            Toast.makeText(this, "Maximum # of spots must be at least 1", Toast.LENGTH_SHORT).show();
+            edtSpots.requestFocus();
+            return false;
+        }
+
+        // verify that the Cost field is not empty
+        if (cost.isEmpty()) {
+            Toast.makeText(this, "Please enter the event cost (or enter 0 for free)", Toast.LENGTH_SHORT).show();
+            edtCost.requestFocus();
+            return false;
+        } else if (Double.parseDouble(cost) < 0) { // casted to avoid CasteException
+            Toast.makeText(this, "Cost cannot be negative", Toast.LENGTH_SHORT).show();
+            edtCost.requestFocus();
+            return false;
+        }
+
+
+        // ====== using compareTo() so here's the quick debug logic ======
+        // returns negative integer if the first date is before the second
+        // returns 0 if dates are equal
+        // returns positive integer if the first date is after the second
+
+        // verify that registration opens before registration closes
+        if (regOpensDate.compareTo(regClosesDate) >= 0) { // >= means "greater than or equal to" (not before)
+            Toast.makeText(this, "Registration opens must be before registration closes", Toast.LENGTH_SHORT).show();
+            txtRegOpens.requestFocus();
+            return false;
+        }
+
+// verify that registration closes before or on the event date
+        if (regClosesDate.compareTo(eventDate) > 0) { // means "greater than" (after)
+            Toast.makeText(this, "Registration deadline must be before or on the event date", Toast.LENGTH_SHORT).show();
+            txtRegCloses.requestFocus();
+            return false;
+        }
+
+// verify that registration opens before the event date
+        if (regOpensDate.compareTo(eventDate) >= 0) { // means "less than" (before)
+            Toast.makeText(this, "Registration opens must be before the event date", Toast.LENGTH_SHORT).show();
+            txtRegOpens.requestFocus();
+            return false;
+        }
+
         return true;
     }
 
