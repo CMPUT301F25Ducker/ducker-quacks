@@ -147,14 +147,17 @@ public class NotificationLogsActivity extends AppCompatActivity {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(userDoc -> {
                     boolean receive = true;
+                    com.google.firebase.Timestamp optOutTs = null;
                     if (userDoc != null && userDoc.exists()) {
                         Boolean b = userDoc.getBoolean("receive_notifications");
                         if (b != null) receive = b;
+                        optOutTs = userDoc.getTimestamp("opt_out_updated_at");
                     }
 
                     // Attach listener to notifications; if user has muted organizer/admin notices
-                    // we will filter out event-related notifications (those with an eventId).
+                    // we will filter out event-related notifications that were created at/after opt-out.
                     final boolean finalReceive = receive;
+                    final com.google.firebase.Timestamp finalOptOutTs = optOutTs;
 
                     db.collection("notifications")
                             .whereEqualTo("userId", uid)
@@ -169,11 +172,21 @@ public class NotificationLogsActivity extends AppCompatActivity {
                     if (value != null && !value.isEmpty()) {
                         android.util.Log.d("NotificationLogs", "Found " + value.size() + " notifications");
                         for (QueryDocumentSnapshot doc : value) {
-                            // If the user has muted organizer/admin notifications, skip event-related notifications.
+                            // If the user has muted organizer/admin notifications, skip event-related notifications
+                            // that were created at/after the opt-out timestamp. If no opt-out timestamp exists,
+                            // fall back to skipping all event-related notifications (legacy behavior).
                             String eventId = doc.getString("eventId");
                             if (!finalReceive && eventId != null && !eventId.isEmpty()) {
-                                // Skip this notification since it's event-related and the user muted such notices.
-                                continue;
+                                com.google.firebase.Timestamp notifTs = doc.getTimestamp("timestamp");
+                                if (finalOptOutTs == null) {
+                                    // No opt-out timestamp available: use legacy behavior and skip the notification.
+                                    continue;
+                                } else {
+                                    // Skip only notifications created at/after the opt-out timestamp.
+                                    if (notifTs != null && notifTs.toDate().compareTo(finalOptOutTs.toDate()) >= 0) {
+                                        continue;
+                                    }
+                                }
                             }
 
                             String message = doc.getString("message");

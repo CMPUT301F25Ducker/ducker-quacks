@@ -37,6 +37,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A Material BottomSheet that shows a user's profile and actions.
@@ -128,12 +131,20 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                             if (b != null) current = b;
                         }
                         boolean next = !current;
-                        db.collection("users").document(uid).update("receive_notifications", next)
-                            .addOnSuccessListener(v -> {
-                                btnNotification.setAlpha(next ? 1.0f : 0.4f);
-                                Toast.makeText(getContext(), next ? "Notifications unmuted" : "Notifications muted", Toast.LENGTH_SHORT).show();
-                            })
-                            .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to update preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("receive_notifications", next);
+                        if (!next) {
+                            updates.put("opt_out_updated_at", com.google.firebase.Timestamp.now());
+                        } else {
+                            updates.put("opt_out_updated_at", FieldValue.delete());
+                        }
+
+                        db.collection("users").document(uid).update(updates)
+                                .addOnSuccessListener(v -> {
+                                    btnNotification.setAlpha(next ? 1.0f : 0.4f);
+                                    Toast.makeText(getContext(), next ? "Notifications unmuted" : "Notifications muted", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to update preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
                     })
                     .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to read preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
 
