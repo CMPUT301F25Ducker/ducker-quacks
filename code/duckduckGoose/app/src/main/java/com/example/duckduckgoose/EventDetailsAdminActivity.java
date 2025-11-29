@@ -138,6 +138,19 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
             Intent imageManagerIntent = new Intent(EventDetailsAdminActivity.this, ImageManagerActivity.class);
             startActivity(imageManagerIntent);
         });
+
+        MaterialButton viewCancelled = findViewById(R.id.view_cancelled_button);
+        if (viewCancelled != null) {
+            viewCancelled.setOnClickListener(v -> {
+                if (eventId == null || eventId.isEmpty()) {
+                    Toast.makeText(this, "Event identifier not available", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Intent i = new Intent(EventDetailsAdminActivity.this, CancelledEntrantsActivity.class);
+                i.putExtra("eventId", eventId);
+                startActivity(i);
+            });
+        }
     }
 
     /**

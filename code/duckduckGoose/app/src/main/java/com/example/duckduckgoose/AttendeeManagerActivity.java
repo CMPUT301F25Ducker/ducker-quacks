@@ -60,6 +60,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private MaterialButton btnSendMessage;
     private MaterialButton btnWorldMap;
     private MaterialButton btnSelectRandom;
+    private MaterialButton btnViewCancelled;
     private AutoCompleteTextView dropFilterAttendees;
     private MapView map;
     private IMapController mapController;
@@ -144,6 +145,8 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         btnSendMessage = findViewById(R.id.btnSendMessage);
         btnWorldMap = findViewById(R.id.btnWorldMap);
         btnSelectRandom = findViewById(R.id.btnSelectRandom);
+        btnViewCancelled = findViewById(R.id.btnViewCancelled);
+        if (btnViewCancelled != null) btnViewCancelled.setVisibility(View.GONE);
         dropFilterAttendees = findViewById(R.id.dropFilterAttendees);
     }
 
@@ -221,6 +224,20 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         if (btnWorldMap != null) btnWorldMap.setOnClickListener(v -> showMapPopup());
         if (btnSelectRandom != null) btnSelectRandom.setOnClickListener(v -> selectRandomAttendees());
+        if (btnViewCancelled != null) btnViewCancelled.setOnClickListener(v -> {
+            try {
+                if (eventId == null || eventId.isEmpty()) {
+                    Toast.makeText(this, "Event not available", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Intent i = new Intent(AttendeeManagerActivity.this, CancelledEntrantsActivity.class);
+                i.putExtra("eventId", eventId);
+                startActivity(i);
+            } catch (Exception ex) {
+                android.util.Log.e("AttendeeManager", "Failed to launch CancelledEntrantsActivity", ex);
+                Toast.makeText(this, "Unable to open cancelled entrants: " + ex.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
         View btnCloseMap = findViewById(R.id.btnCloseMap);
         if (btnCloseMap != null) btnCloseMap.setOnClickListener(v -> hideMapPopup());
     }
@@ -298,6 +315,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 FirebaseUser cur = FirebaseAuth.getInstance().getCurrentUser();
                 isOrganizer = (cur != null && organizerId != null && organizerId.equals(cur.getUid()));
                 if (btnSendMessage != null) btnSendMessage.setEnabled(isOrganizer);
+                if (btnViewCancelled != null) btnViewCancelled.setVisibility(isOrganizer ? View.VISIBLE : View.GONE);
             }
         });
 

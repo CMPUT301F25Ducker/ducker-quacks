@@ -211,6 +211,17 @@
             android:textColor="@color/fg_white"
             android:backgroundTint="@color/fg_charcoal" />
 
+        <!-- View Cancelled Entrants Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewCancelled"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="View Cancelled Entrants"
+            android:textColor="@color/fg_white"
+            android:backgroundTint="@color/fg_charcoal" />
+
         <!-- Attendee List (scrollable) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvAttendees"

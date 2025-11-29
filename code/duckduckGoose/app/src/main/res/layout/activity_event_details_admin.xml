@@ -232,6 +232,20 @@
             app:backgroundTint="@null" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/view_cancelled_button"
+            style="@style/Text.Fresh.Button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/btn_primary_charcoal"
+            android:text="View Cancelled"
+            android:textColor="@color/fg_white"
+            android:textSize="14sp"
+            app:backgroundTint="@null" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/image_poster_button"
             style="@style/Text.Fresh.Button"
             android:layout_width="0dp"
