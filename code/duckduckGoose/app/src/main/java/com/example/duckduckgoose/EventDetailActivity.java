@@ -225,13 +225,20 @@ public class EventDetailActivity extends AppCompatActivity {
                             TextView tvCost      = findViewById(R.id.txtCost);
                             TextView tvSpots     = findViewById(R.id.txtSpots);
 
-                            if (tvTitle != null)    tvTitle.setText(currentEvent.getName() != null ? currentEvent.getName() : "Event");
-                            if (tvDesc != null)     tvDesc.setText("Event details loaded from backend.");
-                            if (tvDates != null)    tvDates.setText(currentEvent.getEventDate() != null ? currentEvent.getEventDate() : "TBD");
-                            if (tvOpen != null)     tvOpen.setText(currentEvent.getRegistrationOpens() != null ? currentEvent.getRegistrationOpens() : "TBD");
-                            if (tvDeadline != null) tvDeadline.setText(currentEvent.getRegistrationCloses() != null ? currentEvent.getRegistrationCloses() : "TBD");
-                            if (tvCost != null)     tvCost.setText("Cost: " + (currentEvent.getCost() != null ? currentEvent.getCost() : "—"));
-                            if (tvSpots != null)    tvSpots.setText("Spots: " + (currentEvent.getMaxSpots() != null ? currentEvent.getMaxSpots() : "—"));
+                            if (tvTitle != null)
+                                tvTitle.setText(currentEvent.getName() != null ? currentEvent.getName() : "Event");
+                            if (tvDesc != null)
+                                tvDesc.setText("Event details loaded from backend.");
+                            if (tvDates != null)
+                                tvDates.setText("\nEvent Date: " + (currentEvent.getEventDate() == null ? "TBD" : currentEvent.getEventDate()));
+                            if (tvOpen != null)
+                                tvOpen.setText("Registration Opens: " + (currentEvent.getRegistrationOpens() == null ? "TBD" : currentEvent.getRegistrationOpens()));
+                            if (tvDeadline != null)
+                                tvDeadline.setText("Registration Deadline: " + (currentEvent.getRegistrationCloses() == null ? "TBD" : currentEvent.getRegistrationCloses()));
+                            if (tvCost != null)
+                                tvCost.setText("Cost: $" + (currentEvent.getCost() == null ? "—" : currentEvent.getCost()));
+                            if (tvSpots != null)
+                                tvSpots.setText("Spots: " + (currentEvent.getMaxSpots() == null ? "—" : currentEvent.getMaxSpots()));
 
                             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                             if (currentUser != null && currentEvent.isOnWaitingList(currentUser.getUid())) {

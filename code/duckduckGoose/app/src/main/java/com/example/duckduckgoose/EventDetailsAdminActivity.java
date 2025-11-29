@@ -180,7 +180,7 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
                         // Detail fields with safe fallbacks
                         if (txtDates != null)
-                            txtDates.setText("Event Date: " + (event.getEventDate() == null ? "TBD" : event.getEventDate()));
+                            txtDates.setText("\nEvent Date: " + (event.getEventDate() == null ? "TBD" : event.getEventDate()));
                         if (txtOpen != null)
                             txtOpen.setText("Registration Opens: " + (event.getRegistrationOpens() == null ? "TBD" : event.getRegistrationOpens()));
                         if (txtDeadline != null)
