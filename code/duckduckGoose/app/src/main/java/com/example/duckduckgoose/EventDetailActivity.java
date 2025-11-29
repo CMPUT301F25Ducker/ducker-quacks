@@ -29,6 +29,14 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.content.ClipboardManager;
+import android.content.ClipData;
+import android.content.Context;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.BarcodeFormat;
 
 /**
  * Detail screen for a single event.
@@ -170,6 +178,12 @@ public class EventDetailActivity extends AppCompatActivity {
         } else {
             applyState(currentState);
             setupEntrantButtons();
+        }
+
+        // Wire the QR share button (shows QR that deep-links to this event)
+        MaterialButton btnShowQr = findViewById(R.id.btnShowQr);
+        if (btnShowQr != null) {
+            btnShowQr.setOnClickListener(v -> showEventQrDialog());
         }
     }
 
@@ -396,6 +410,55 @@ public class EventDetailActivity extends AppCompatActivity {
         Toast.makeText(this, "join waiting list", Toast.LENGTH_SHORT).show();
         currentState = State.LEAVE_WAITING_LIST;
         applyState(currentState);
+    }
+
+    /**
+     * Generates a QR code that encodes a deep-link / URL to this event and shows it in a dialog.
+     */
+    private void showEventQrDialog() {
+        if (this.eventId == null) {
+            Toast.makeText(this, "Event identifier not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Deep link (optional): apps can register a handler for this scheme. Also provide an https fallback.
+        String deepLink = "duckduckgoose://event?eventId=" + this.eventId;
+        String webLink = "https://example.com/event?eventId=" + this.eventId;
+        final String link = deepLink; // use deep link by default
+
+        int size = (int) (240 * getResources().getDisplayMetrics().density);
+        QRCodeWriter writer = new QRCodeWriter();
+        try {
+            BitMatrix matrix = writer.encode(link, BarcodeFormat.QR_CODE, size, size);
+            Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            for (int x = 0; x < size; x++) {
+                for (int y = 0; y < size; y++) {
+                    bmp.setPixel(x, y, matrix.get(x, y) ? Color.BLACK : Color.WHITE);
+                }
+            }
+
+            ImageView iv = new ImageView(this);
+            iv.setImageBitmap(bmp);
+            int pad = (int) (12 * getResources().getDisplayMetrics().density);
+            iv.setPadding(pad, pad, pad, pad);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Share Event")
+                    .setView(iv)
+                    .setPositiveButton("Close", (d, w) -> d.dismiss())
+                    .setNeutralButton("Copy Link", (d, w) -> {
+                        ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        if (cm != null) {
+                            ClipData cd = ClipData.newPlainText("event-link", link);
+                            cm.setPrimaryClip(cd);
+                            Toast.makeText(this, "Link copied to clipboard", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .show();
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Failed to generate QR: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
