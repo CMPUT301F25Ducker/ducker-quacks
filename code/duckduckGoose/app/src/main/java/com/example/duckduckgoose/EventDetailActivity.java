@@ -255,12 +255,43 @@ public class EventDetailActivity extends AppCompatActivity {
                                 tvSpots.setText("Spots: " + (currentEvent.getMaxSpots() == null ? "—" : currentEvent.getMaxSpots()));
 
                             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-                            if (currentUser != null && currentEvent.isOnWaitingList(currentUser.getUid())) {
-                                currentState = State.LEAVE_WAITING_LIST;
+                            if (currentUser != null) {
+                                String uid = currentUser.getUid();
+                                // Check explicit waitlist entry for this user/event to determine status
+                                db.collection("waitlist").document(uid + "_" + eventId).get()
+                                        .addOnSuccessListener(d -> {
+                                            if (d != null && d.exists()) {
+                                                String status = d.getString("status");
+                                                if (status == null) status = "waiting";
+                                                status = status.toLowerCase();
+                                                if (status.equals("selected") || status.equals("invited")) {
+                                                    // Organizer has selected/invited this user — show Accept / Decline
+                                                    currentState = State.UNDECIDED;
+                                                } else if (status.equals("accepted")) {
+                                                    currentState = State.GOOSE;
+                                                } else if (status.equals("declined") || status.equals("cancelled")) {
+                                                    currentState = State.DUCK;
+                                                } else if (currentEvent.isOnWaitingList(uid)) {
+                                                    currentState = State.LEAVE_WAITING_LIST;
+                                                } else {
+                                                    currentState = State.WAITING_LIST;
+                                                }
+                                            } else {
+                                                if (currentEvent.isOnWaitingList(uid)) currentState = State.LEAVE_WAITING_LIST;
+                                                else currentState = State.WAITING_LIST;
+                                            }
+                                            applyState(currentState);
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            if (currentEvent.isOnWaitingList(uid)) currentState = State.LEAVE_WAITING_LIST;
+                                            else currentState = State.WAITING_LIST;
+                                            applyState(currentState);
+                                        });
                             } else {
+                                // Not signed in
                                 currentState = State.WAITING_LIST;
+                                applyState(currentState);
                             }
-                            applyState(currentState);
                         }
                     }
                 })
