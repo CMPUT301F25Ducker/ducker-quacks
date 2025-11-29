@@ -20,6 +20,7 @@ public class User {
     private String phone;
     private String accountType;
     private boolean new_notifications = false; // Flag to indicate if user has new notifications
+    private boolean receive_notifications = true; // Opt-in flag for receiving organizer/admin notifications
     private Long createdAt; // Timestamp when the user was created (in milliseconds)
     private List<String> waitlistedEventIds; // List of event IDs the user is waitlisted for
     private List<String> acceptedEventIds; // List of event IDs the user has been accepted into (from waitlist)
@@ -234,6 +235,21 @@ public class User {
      */
     public void setNew_notifications(boolean new_notifications) {
         this.new_notifications = new_notifications;
+    }
+
+    /**
+     * Returns whether the user has opted in to receive notifications from organizers/admins.
+     * Defaults to true for backwards compatibility for existing users.
+     */
+    public boolean getReceive_notifications() {
+        return receive_notifications;
+    }
+
+    /**
+     * Sets the user's opt-in preference for administrative/organizer notifications.
+     */
+    public void setReceive_notifications(boolean receive_notifications) {
+        this.receive_notifications = receive_notifications;
     }
 
     /**

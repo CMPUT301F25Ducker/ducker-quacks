@@ -141,12 +141,27 @@ public class NotificationLogsActivity extends AppCompatActivity {
             Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
             return;
         }
-
         android.util.Log.d("NotificationLogs", "Loading notifications for user: " + uid);
 
-        db.collection("notifications")
-                .whereEqualTo("userId", uid)
-                .addSnapshotListener((value, error) -> {
+        // First, read the user's preference for receiving organizer/admin notifications.
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(userDoc -> {
+                    boolean receive = true;
+                    com.google.firebase.Timestamp optOutTs = null;
+                    if (userDoc != null && userDoc.exists()) {
+                        Boolean b = userDoc.getBoolean("receive_notifications");
+                        if (b != null) receive = b;
+                        optOutTs = userDoc.getTimestamp("opt_out_updated_at");
+                    }
+
+                    // Attach listener to notifications; if user has muted organizer/admin notices
+                    // we will filter out event-related notifications that were created at/after opt-out.
+                    final boolean finalReceive = receive;
+                    final com.google.firebase.Timestamp finalOptOutTs = optOutTs;
+
+                    db.collection("notifications")
+                            .whereEqualTo("userId", uid)
+                            .addSnapshotListener((value, error) -> {
                     if (error != null) {
                         android.util.Log.e("NotificationLogs", "Error loading notifications", error);
                         Toast.makeText(this, "Error loading notifications", Toast.LENGTH_SHORT).show();
@@ -157,10 +172,26 @@ public class NotificationLogsActivity extends AppCompatActivity {
                     if (value != null && !value.isEmpty()) {
                         android.util.Log.d("NotificationLogs", "Found " + value.size() + " notifications");
                         for (QueryDocumentSnapshot doc : value) {
-                            String message = doc.getString("message");
+                            // If the user has muted organizer/admin notifications, skip event-related notifications
+                            // that were created at/after the opt-out timestamp. If no opt-out timestamp exists,
+                            // fall back to skipping all event-related notifications (legacy behavior).
                             String eventId = doc.getString("eventId");
+                            if (!finalReceive && eventId != null && !eventId.isEmpty()) {
+                                com.google.firebase.Timestamp notifTs = doc.getTimestamp("timestamp");
+                                if (finalOptOutTs == null) {
+                                    // No opt-out timestamp available: use legacy behavior and skip the notification.
+                                    continue;
+                                } else {
+                                    // Skip only notifications created at/after the opt-out timestamp.
+                                    if (notifTs != null && notifTs.toDate().compareTo(finalOptOutTs.toDate()) >= 0) {
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            String message = doc.getString("message");
                             String sentBy = doc.getString("sentBy");
-                            
+
                             // Handle Firestore Timestamp properly
                             Date timestamp;
                             com.google.firebase.Timestamp ts = doc.getTimestamp("timestamp");
@@ -177,9 +208,9 @@ public class NotificationLogsActivity extends AppCompatActivity {
                             if (sentBy != null && !sentBy.isEmpty()) {
                                 final NotificationItem finalItem = item;
                                 db.collection("users").document(sentBy).get()
-                                        .addOnSuccessListener(userDoc -> {
-                                            if (userDoc.exists()) {
-                                                String organizerName = userDoc.getString("fullName");
+                                        .addOnSuccessListener(userDoc2 -> {
+                                            if (userDoc2.exists()) {
+                                                String organizerName = userDoc2.getString("fullName");
                                                 if (organizerName != null && !organizerName.isEmpty()) {
                                                     finalItem.setOrganizerName("From: " + organizerName);
                                                     adapter.notifyDataSetChanged();
@@ -195,9 +226,9 @@ public class NotificationLogsActivity extends AppCompatActivity {
                                                 String organizerId = eventDoc.getString("organizerId");
                                                 if (organizerId != null) {
                                                     db.collection("users").document(organizerId).get()
-                                                            .addOnSuccessListener(userDoc -> {
-                                                                if (userDoc.exists()) {
-                                                                    String organizerName = userDoc.getString("fullName");
+                                                            .addOnSuccessListener(userDoc2 -> {
+                                                                if (userDoc2.exists()) {
+                                                                    String organizerName = userDoc2.getString("fullName");
                                                                     if (organizerName != null && !organizerName.isEmpty()) {
                                                                         finalItem.setOrganizerName("From: " + organizerName);
                                                                         adapter.notifyDataSetChanged();
@@ -213,6 +244,35 @@ public class NotificationLogsActivity extends AppCompatActivity {
                         android.util.Log.d("NotificationLogs", "No notifications found for user");
                     }
                     sortList(dropSort.getText().toString());
+                });
+
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("NotificationLogs", "Failed to read user preferences", e);
+                    // Fallback to attaching listener without filtering
+                    db.collection("notifications")
+                            .whereEqualTo("userId", uid)
+                            .addSnapshotListener((value, error) -> {
+                                if (error != null) {
+                                    android.util.Log.e("NotificationLogs", "Error loading notifications", error);
+                                    Toast.makeText(this, "Error loading notifications", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                                notifications.clear();
+                                if (value != null && !value.isEmpty()) {
+                                    for (QueryDocumentSnapshot doc : value) {
+                                        String message = doc.getString("message");
+                                        String eventId = doc.getString("eventId");
+                                        String sentBy = doc.getString("sentBy");
+                                        Date timestamp;
+                                        com.google.firebase.Timestamp ts = doc.getTimestamp("timestamp");
+                                        if (ts != null) timestamp = ts.toDate(); else timestamp = new Date();
+                                        NotificationItem item = new NotificationItem(message, "", timestamp, eventId, sentBy);
+                                        notifications.add(item);
+                                    }
+                                }
+                                sortList(dropSort.getText().toString());
+                            });
                 });
     }
 
