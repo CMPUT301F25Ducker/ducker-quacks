@@ -694,6 +694,9 @@ public class EventDetailActivity extends AppCompatActivity {
                     WriteBatch batch = db.batch();
                     batch.update(db.collection("events").document(eid),
                             "waitingList", FieldValue.arrayRemove(uid));
+                    // Increment redrawCount so organizer can redraw for this declined spot
+                    batch.update(db.collection("events").document(eid),
+                            "redrawCount", FieldValue.increment(1));
                     batch.update(db.collection("users").document(uid),
                             "waitlistedEventIds", FieldValue.arrayRemove(eid));
                     batch.commit();

@@ -43,6 +43,7 @@ public class Event {
     private List<String> acceptedFromWaitlist;    // user IDs accepted
     private List<String> registeredUsers;         // user IDs registered
     private int signupCount;                      // number of signed-up users
+    private int redrawCount;                      // number of people who declined and are pending redraw
 
     /**
      * No-arg constructor for Firestore deserialization.
@@ -53,6 +54,7 @@ public class Event {
         this.registeredUsers = new ArrayList<>();
         this.imagePaths = new ArrayList<>();
         this.signupCount = 0;
+        this.redrawCount = 0;
     }
 
     /**
@@ -91,6 +93,7 @@ public class Event {
         this.acceptedFromWaitlist = new ArrayList<>();
         this.registeredUsers = new ArrayList<>();
         this.signupCount = 0;
+        this.redrawCount = 0;
     }
 
     // ================================
@@ -310,6 +313,24 @@ public class Event {
      */
     public int getSignupCount() {
         return signupCount;
+    }
+
+    /**
+     * Returns the number of declined positions pending redraw.
+     *
+     * @return The current redraw count
+     */
+    public int getRedrawCount() {
+        return redrawCount;
+    }
+
+    /**
+     * Sets the number of declined positions pending redraw.
+     *
+     * @param redrawCount The new redraw count
+     */
+    public void setRedrawCount(int redrawCount) {
+        this.redrawCount = redrawCount;
     }
 
     /**

@@ -60,6 +60,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     private MaterialButton btnSendMessage;
     private MaterialButton btnWorldMap;
     private MaterialButton btnSelectRandom;
+    private MaterialButton btnRedrawDucks;
     private AutoCompleteTextView dropFilterAttendees;
     private MapView map;
     private IMapController mapController;
@@ -144,6 +145,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
         btnSendMessage = findViewById(R.id.btnSendMessage);
         btnWorldMap = findViewById(R.id.btnWorldMap);
         btnSelectRandom = findViewById(R.id.btnSelectRandom);
+        btnRedrawDucks = findViewById(R.id.btnRedrawDucks);
         dropFilterAttendees = findViewById(R.id.dropFilterAttendees);
     }
 
@@ -221,6 +223,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         if (btnWorldMap != null) btnWorldMap.setOnClickListener(v -> showMapPopup());
         if (btnSelectRandom != null) btnSelectRandom.setOnClickListener(v -> selectRandomAttendees());
+        if (btnRedrawDucks != null) btnRedrawDucks.setOnClickListener(v -> redrawDucks());
         View btnCloseMap = findViewById(R.id.btnCloseMap);
         if (btnCloseMap != null) btnCloseMap.setOnClickListener(v -> hideMapPopup());
     }
@@ -443,6 +446,112 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    /**
+     * Redraws for declined positions. Gets the redrawCount from the event,
+     * selects that many users from the waiting pool, and resets the count to 0.
+     */
+    private void redrawDucks() {
+        if (eventId == null || eventId.isEmpty()) {
+            Toast.makeText(this, "Event ID not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // First, fetch the current redrawCount from the event document
+        db.collection("events").document(eventId).get()
+                .addOnSuccessListener(doc -> {
+                    if (doc == null || !doc.exists()) {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    Long redrawCountLong = doc.getLong("redrawCount");
+                    int redrawCount = (redrawCountLong != null) ? redrawCountLong.intValue() : 0;
+
+                    if (redrawCount <= 0) {
+                        Toast.makeText(this, "No declined positions to redraw", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Get all users with "waiting" status (still in the pool, not yet selected)
+                    List<User> waitingPool = new ArrayList<>();
+                    for (User u : allAttendees) {
+                        String status = entrantStatusMap.get(u.getUserId());
+                        if (status != null && status.equals("waiting")) {
+                            waitingPool.add(u);
+                        }
+                    }
+
+                    if (waitingPool.isEmpty()) {
+                        Toast.makeText(this, "No waiting entrants available for redraw", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Confirm with the organizer before proceeding
+                    int actualRedrawCount = Math.min(redrawCount, waitingPool.size());
+                    new AlertDialog.Builder(this)
+                            .setTitle("Redraw Ducks")
+                            .setMessage("There are " + redrawCount + " declined position(s). " +
+                                    "This will select " + actualRedrawCount + " new entrant(s) from " +
+                                    waitingPool.size() + " waiting. Proceed?")
+                            .setPositiveButton("Redraw", (dialog, which) -> {
+                                performRedraw(waitingPool, actualRedrawCount);
+                            })
+                            .setNegativeButton("Cancel", null)
+                            .show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to fetch event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    /**
+     * Performs the actual redraw lottery and resets redrawCount to 0.
+     */
+    private void performRedraw(List<User> pool, int count) {
+        if (pool.isEmpty() || count <= 0) return;
+
+        java.util.Collections.shuffle(pool);
+        List<User> winners = pool.subList(0, Math.min(count, pool.size()));
+
+        com.google.firebase.firestore.WriteBatch batch = db.batch();
+        boolean hasUpdates = false;
+
+        // Process winners - update their status to "selected"
+        for (User winner : winners) {
+            String docId = entrantDocIds.get(winner.getUserId());
+
+            if (docId != null) {
+                batch.update(db.collection("waitlist").document(docId), "status", "selected");
+                hasUpdates = true;
+
+                Map<String, Object> notif = new HashMap<>();
+                notif.put("userId", winner.getUserId());
+                notif.put("eventId", eventId);
+                String title = getIntent().getStringExtra("eventTitle");
+                notif.put("message", "Congratulations! You have been selected in a redraw for " + (title != null ? title : "an event"));
+                notif.put("timestamp", com.google.firebase.Timestamp.now());
+                notif.put("type", "selected");
+                batch.set(db.collection("notifications").document(), notif);
+            }
+        }
+
+        // Reset redrawCount to 0
+        batch.update(db.collection("events").document(eventId), "redrawCount", 0);
+
+        if (hasUpdates) {
+            batch.commit()
+                    .addOnSuccessListener(v -> {
+                        Toast.makeText(this, "Redraw complete! " + winners.size() + " new entrant(s) selected.", Toast.LENGTH_LONG).show();
+                        loadWaitlistEntrants();
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Redraw failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+        } else {
+            Toast.makeText(this, "No valid entrants found to update", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void lotterydraw(List<User> pool, int count) {

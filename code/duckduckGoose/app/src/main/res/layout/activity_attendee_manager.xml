@@ -206,8 +206,19 @@
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:text="(Select Random)"
+            android:textColor="@color/fg_white"
+            android:backgroundTint="@color/fg_charcoal" />
+
+        <!-- Redraw Ducks Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRedrawDucks"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Redraw Ducks"
             android:textColor="@color/fg_white"
             android:backgroundTint="@color/fg_charcoal" />
 
