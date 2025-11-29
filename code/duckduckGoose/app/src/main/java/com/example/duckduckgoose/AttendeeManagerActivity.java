@@ -301,10 +301,15 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             }
         });
 
+        // Listen for live updates to waitlist entries for this event so organizer sees accept/decline in real time
         db.collection("waitlist")
                 .whereEqualTo("eventId", eventId)
-                .get()
-                .addOnSuccessListener((QuerySnapshot snapshot) -> {
+                .addSnapshotListener((QuerySnapshot snapshot, com.google.firebase.firestore.FirebaseFirestoreException e) -> {
+                    if (e != null) {
+                        Toast.makeText(this, "Error loading entrants: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
                     allAttendees.clear();
                     attendees.clear();
                     entrantDocIds.clear();
@@ -320,27 +325,34 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                             if (uid == null) continue;
 
                             entrantDocIds.put(uid, entryDoc.getId());
-
                             entrantStatusMap.put(uid, rawStatus != null ? rawStatus.toLowerCase() : "waiting");
 
+                            // Load user profile and add to lists if not already present
                             db.collection("users").document(uid).get().addOnSuccessListener(userDoc -> {
-                                User u = userDoc.toObject(User.class);
+                                User u = userDoc != null ? userDoc.toObject(User.class) : null;
                                 if (u == null) u = new User();
                                 u.setUserId(uid);
 
-
-                                if (!containsUser(allAttendees, u.getUserId())) {
+                                // Replace or add user in allAttendees
+                                if (!containsUser(allAttendees, uid)) {
                                     allAttendees.add(u);
-
-                                    String currentFilter = dropFilterAttendees != null ?
-                                            dropFilterAttendees.getText().toString() : "Value";
-
-                                    if (shouldShowUser(u, currentFilter)) {
-                                        attendees.add(u);
-                                        if (adapter != null) adapter.notifyDataSetChanged();
-                                    }
-                                    updateCountDisplay();
                                 }
+
+                                String currentFilter = dropFilterAttendees != null ? dropFilterAttendees.getText().toString() : "Value";
+                                // Re-evaluate whether the user should be shown under current filter
+                                if (shouldShowUser(u, currentFilter)) {
+                                    // avoid duplicates in attendees
+                                    if (!containsUser(attendees, uid)) {
+                                        attendees.add(u);
+                                    }
+                                } else {
+                                    // remove if present but no longer matches
+                                    final String removeId = uid;
+                                    attendees.removeIf(x -> x.getUserId() != null && x.getUserId().equals(removeId));
+                                }
+
+                                if (adapter != null) adapter.notifyDataSetChanged();
+                                updateCountDisplay();
                             });
                         }
                     } else {

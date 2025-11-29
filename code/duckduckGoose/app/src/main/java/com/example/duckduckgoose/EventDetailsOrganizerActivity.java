@@ -42,6 +42,7 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
 
     private TextView eventTitle;
     private TextView txtWaitingList;
+    private TextView txtInviteSummary;
     private TextView txtDates;
     private TextView txtOpen;
     private TextView txtDeadline;
@@ -83,6 +84,7 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
         // Bind views once
         eventTitle          = findViewById(R.id.txtEventTitle);
         txtWaitingList      = findViewById(R.id.txtWaitingList);
+        txtInviteSummary    = findViewById(R.id.txtInviteSummary);
         txtDates            = findViewById(R.id.txtDates);
         txtOpen             = findViewById(R.id.txtOpen);
         txtDeadline         = findViewById(R.id.txtDeadline);
@@ -223,6 +225,29 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                                 startActivity(attendeeIntent);
                             });
                         }
+                        // Also load a quick invitation summary for organizer: invited/accepted/rejected counts
+                        db.collection("waitlist")
+                                .whereEqualTo("eventId", this.eventId)
+                                .get()
+                                .addOnSuccessListener(snap -> {
+                                    if (snap == null || snap.isEmpty()) {
+                                        if (txtInviteSummary != null) txtInviteSummary.setVisibility(View.GONE);
+                                        return;
+                                    }
+                                    int invited = 0, accepted = 0, rejected = 0;
+                                    for (DocumentSnapshot d : snap.getDocuments()) {
+                                        String status = d.getString("status");
+                                        if (status == null) status = "waiting";
+                                        status = status.toLowerCase();
+                                        if (status.equals("selected") || status.equals("invited")) invited++;
+                                        else if (status.equals("accepted")) accepted++;
+                                        else if (status.equals("declined") || status.equals("cancelled")) rejected++;
+                                    }
+                                    if (txtInviteSummary != null) {
+                                        txtInviteSummary.setText("Invited: " + invited + "  Accepted: " + accepted + "  Rejected: " + rejected);
+                                        txtInviteSummary.setVisibility(View.VISIBLE);
+                                    }
+                                });
                         if (editEventButton != null) {
                             editEventButton.setOnClickListener(v -> {
                                 Intent editIntent = new Intent(this, EventEditActivity.class);

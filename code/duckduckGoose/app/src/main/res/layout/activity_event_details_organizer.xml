@@ -199,6 +199,16 @@
                     android:layout_marginTop="16dp"
                     android:visibility="gone"
                     android:text="Waiting List: 0 people" />
+
+                <!-- Invitation summary: invited / accepted / rejected counts -->
+                <TextView
+                    android:id="@+id/txtInviteSummary"
+                    style="@style/Text.Fresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    android:text="Invited: 0  Accepted: 0  Rejected: 0" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>    <!-- Action Buttons -->
