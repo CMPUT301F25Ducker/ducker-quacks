@@ -1,8 +1,8 @@
 /**
  * RecyclerView adapter for previewing and removing image resources.
  *
- * Binds a list of drawable resource IDs into simple preview rows with a
- * delete action for each item.
+ * Binds a list of image items (URL + Event ID) into simple preview rows with a
+ * delete action for each item. Uses Glide for image loading.
  *
  * @author DuckDuckGoose Development Team
  */
@@ -17,6 +17,9 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 /**
@@ -24,17 +27,28 @@ import java.util.List;
  */
 public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapter.ViewHolder> {
 
-    /** Backing list of drawable resource IDs. */
-    private final List<Integer> images;
-
     /**
      * Constructs an adapter with the given image list.
      * 
      * @param images - List of drawable resource IDs to display
      */
-    public ImageManagerAdapter(List<Integer> images) {
-        this.images = images;
+    public static class ImageItem {
+        public String eventId;
+        public String imageUrl;
+
+        public ImageItem(String eventId, String imageUrl) {
+            this.eventId = eventId;
+            this.imageUrl = imageUrl;
+        }
     }
+
+    public interface OnImageDeleteListener {
+        void onDelete(ImageItem item, int position);
+    }
+
+    private final List<ImageItem> imageItems;
+
+    private final OnImageDeleteListener deleteListener;
 
     /**
      * Inflates an image row view holder.
@@ -43,6 +57,11 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
      * @param viewType - The view type to create
      * @return A new ViewHolder for the image row
      */
+    public ImageManagerAdapter(List<ImageItem> imageItems, OnImageDeleteListener deleteListener) {
+        this.imageItems = imageItems;
+        this.deleteListener = deleteListener;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -51,35 +70,28 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
         return new ViewHolder(view);
     }
 
-    /**
-     * Binds the image preview and wires the delete click handler.
-     * 
-     * @param holder - Row view holder
-     * @param position - Adapter position
-     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.imgPreview.setImageResource(images.get(position));
+        ImageItem item = imageItems.get(position);
+
         holder.txtImageLabel.setText("Image " + (position + 1));
 
-        // Delete handler: Removes image and updates the adapter
+        Glide.with(holder.itemView.getContext())
+                .load(item.imageUrl)
+                .placeholder(R.drawable.poolphoto)
+                .centerCrop()
+                .into(holder.imgPreview);
+
         holder.btnDelete.setOnClickListener(v -> {
-            int currentPosition = holder.getAdapterPosition();
-            if (currentPosition != RecyclerView.NO_POSITION) {
-                images.remove(currentPosition);
-                notifyItemRemoved(currentPosition);
+            if (deleteListener != null) {
+                deleteListener.onDelete(item, holder.getAdapterPosition());
             }
         });
     }
 
-    /**
-     * Returns the number of images in the list.
-     * 
-     * @return The total number of images
-     */
     @Override
     public int getItemCount() {
-        return images.size();
+        return imageItems.size();
     }
 
     /**
@@ -90,11 +102,6 @@ public class ImageManagerAdapter extends RecyclerView.Adapter<ImageManagerAdapte
         TextView txtImageLabel;
         View btnDelete;
 
-        /**
-         * Binds view references for the row.
-         * 
-         * @param itemView - Root row view
-         */
         ViewHolder(View itemView) {
             super(itemView);
             imgPreview = itemView.findViewById(R.id.imgPreview);

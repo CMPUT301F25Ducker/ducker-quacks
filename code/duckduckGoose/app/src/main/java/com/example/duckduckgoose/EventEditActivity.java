@@ -25,6 +25,7 @@ import android.view.WindowInsetsController;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,15 +36,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Activity for organizers to create or edit events stored in Firestore.
@@ -103,6 +108,8 @@ public class EventEditActivity extends AppCompatActivity {
     private Calendar regClosesDate = Calendar.getInstance();
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy", Locale.US);
 
+    private StorageReference storageRef;
+
     /**
      * Initializes the activity and sets up UI components.
      *
@@ -127,6 +134,7 @@ public class EventEditActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("events");
+        storageRef = FirebaseStorage.getInstance().getReference();
 
         // Initialize image picker launcher for selecting images from the gallery
         imagePickerLauncher = registerForActivityResult(
@@ -135,8 +143,7 @@ public class EventEditActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
-                            addImageToContainer(imageUri.toString());
-                            Toast.makeText(this, "Image added", Toast.LENGTH_SHORT).show();
+                            uploadImageToStorage(imageUri);
                         }
                     }
                 }
@@ -271,19 +278,53 @@ public class EventEditActivity extends AppCompatActivity {
         updateImageDisplay();
     }
 
+    private void uploadImageToStorage(Uri fileUri) {
+        Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show();
+
+        String filename = "events/" + UUID.randomUUID().toString() + ".jpg";
+        StorageReference fileRef = storageRef.child(filename);
+
+        fileRef.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
+                        imagePaths.add(downloadUrl);
+                        updateImageDisplay();
+                        Toast.makeText(EventEditActivity.this, "Image uploaded!", Toast.LENGTH_SHORT).show();
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(EventEditActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     /** Updates the visible list of selected images in the layout. */
     private void updateImageDisplay() {
         imageContainer.removeAllViews();
-        for (int i = 0; i < imagePaths.size() && i < 3; i++) {
+
+        for (int i = 0; i < imagePaths.size(); i++) {
             View imageItem = getLayoutInflater().inflate(R.layout.item_image, imageContainer, false);
 
+            ImageView imgPreview = imageItem.findViewById(R.id.imgPreview);
             TextView txtImageLabel = imageItem.findViewById(R.id.txtImageLabel);
             MaterialButton btnDeleteImage = imageItem.findViewById(R.id.btnDeleteImage);
 
-            final int index = i;
+            String imageUrl = imagePaths.get(i);
+
             txtImageLabel.setText("Image " + (i + 1));
+
+            // USE GLIDE TO LOAD IMAGE
+            if (imgPreview != null) {
+                Glide.with(this)
+                        .load(imageUrl)
+                        .centerCrop()
+                        .into(imgPreview);
+            }
+
+            final int index = i;
             btnDeleteImage.setOnClickListener(v -> {
                 imagePaths.remove(index);
+                //  storageRef.child(...).delete()
                 updateImageDisplay();
             });
 

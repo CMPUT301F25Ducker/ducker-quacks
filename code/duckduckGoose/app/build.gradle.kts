@@ -57,6 +57,9 @@ dependencies {
     implementation("androidx.preference:preference:1.2.1")
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
+    implementation("com.google.firebase:firebase-storage")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
     // QR code generation (ZXing core)
     implementation("com.google.zxing:core:3.5.0")
     // for debugs
