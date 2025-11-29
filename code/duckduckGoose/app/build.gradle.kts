@@ -57,6 +57,8 @@ dependencies {
     implementation("androidx.preference:preference:1.2.1")
     implementation("com.google.android.gms:play-services-location:21.0.1")
 
+    // QR code generation (ZXing core)
+    implementation("com.google.zxing:core:3.5.0")
     // for debugs
     //implementation(files("C:\\Users\\Murtaza\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
 

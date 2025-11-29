@@ -146,6 +146,18 @@
                     android:gravity="end"
                     android:text="Spots: —" />
             </LinearLayout>
+
+            <!-- QR share button (shows QR code for this event) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShowQr"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:text="Share QR"
+                android:textAllCaps="false"
+                android:textColor="@color/fg_white"
+                android:background="@drawable/btn_primary_charcoal"
+                app:backgroundTint="@null" />
         </LinearLayout>
 
         <!-- Two-button layout (Undecided) -->
