@@ -36,7 +36,7 @@
             style="@style/Text.Fresh.Display"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="E"
+            android:text="New Event"
             android:textSize="28sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -151,7 +151,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:hint="(calendar selection pop up)">
+                android:hint="Select event date">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/txtEventDate"
@@ -178,7 +178,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:hint="(calendar selection pop up)">
+                android:hint="Select registration open date">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/txtRegOpens"
@@ -205,7 +205,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:hint="(calendar selection pop up)">
+                android:hint="Select registration close date">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/txtRegCloses"
