@@ -133,7 +133,12 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
         MaterialButton eventLogsButton = findViewById(R.id.event_logs_button);
         eventLogsButton.setOnClickListener(v -> {
+            if (eventId == null || eventId.isEmpty()) {
+                Toast.makeText(this, "Event identifier not available", Toast.LENGTH_SHORT).show();
+                return;
+            }
             Intent eventLogsIntent = new Intent(EventDetailsAdminActivity.this, AdminEventLogsActivity.class);
+            eventLogsIntent.putExtra("eventId", eventId);
             startActivity(eventLogsIntent);
         });
 
