@@ -6,7 +6,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -17,20 +16,21 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.button.MaterialButton;
 
 /**
  * Displays basic organizer details and provides a delete option.
  *
  * Retrieves organizer information from the intent and renders it on screen.
- * Includes a button for deleting or removing the organizer.
+ * Includes a button for deleting or removing the organizer (placeholder behavior).
  */
 public class OrganizerProfileActivity extends AppCompatActivity {
 
     /**
      * Initializes UI and loads organizer information from Intent extras.
-     * 
-     * @param savedInstanceState Bundle containing the activity's previously saved state, or null.
+     *
+     * @param savedInstanceState - Bundle containing the activity's previously saved state, or null
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {

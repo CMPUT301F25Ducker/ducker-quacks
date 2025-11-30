@@ -6,7 +6,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.os.Build;
@@ -31,11 +30,23 @@ import java.util.List;
  */
 public class ImageManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
 
+    /** RecyclerView for displaying the image grid. */
     private RecyclerView rvImages;
+
+    /** Adapter for managing image items in the RecyclerView. */
     private ImageManagerAdapter adapter;
+
+    /** List of all image items loaded from Firestore. */
     private List<ImageManagerAdapter.ImageItem> allImageItems;
+
+    /** Firestore database instance. */
     private FirebaseFirestore db;
 
+    /**
+     * Initializes the activity, sets up the image grid, and loads images.
+     *
+     * @param savedInstanceState - Saved activity state, if any
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
@@ -103,9 +114,10 @@ public class ImageManagerActivity extends AppCompatActivity implements ProfileSh
     }
 
     /**
-     * Unused — profile deletion not applicable in this screen.
+     * Deletes an image from Firestore and removes it from the UI.
      *
-     * @param userId - ID of the user profile to delete
+     * @param item - The image item to delete
+     * @param position - The position of the item in the list
      */
     private void deleteImageFromFirestore(ImageManagerAdapter.ImageItem item, int position) {
         if (item.eventId == null || item.imageUrl == null) return;
@@ -127,11 +139,21 @@ public class ImageManagerActivity extends AppCompatActivity implements ProfileSh
                 );
     }
 
+    /**
+     * Not applicable to Image Manager - profile deletion not used here.
+     *
+     * @param userId - ID of the user profile to delete
+     */
     @Override
     public void onProfileDeleted(String userId) {
         // Not applicable to Image Manager
     }
 
+    /**
+     * Not applicable to Image Manager - events button not used here.
+     *
+     * @param userId - ID of the user whose events button was clicked
+     */
     @Override
     public void onEventsButtonClicked(String userId) {
         // Not applicable to Image Manager

@@ -1,3 +1,12 @@
+/**
+ * Activity for displaying detailed information about a single event.
+ *
+ * Shows event metadata including title, description, dates, cost, spots, and images.
+ * Provides functionality for users to join/leave waitlists, accept/decline invitations,
+ * and for organizers to manage the event.
+ *
+ * @author DuckDuckGoose Development Team
+ */
 package com.example.duckduckgoose;
 
 import android.Manifest;
@@ -45,29 +54,56 @@ import java.util.List;
 /**
  * Detail screen for a single event.
  *
- * <p>Displays event metadata such as title, description, dates, cost, spots, and poster.
- * Provides actions such as joining or leaving the waitlist and organizer controls.</p>
- *
- * <p><b>Author:</b> DuckDuckGoose Development Team</p>
+ * Displays event metadata such as title, description, dates, cost, spots, and poster.
+ * Provides actions such as joining or leaving the waitlist and organizer controls.
  */
 public class EventDetailActivity extends AppCompatActivity {
 
-    /** Possible UI/participation states for the current user relative to the event. */
-    enum State { UNDECIDED, NOT_IN_CIRCLE, LEAVE_CIRCLE, DUCK, GOOSE, WAITING_LIST, LEAVE_WAITING_LIST }
+    /**
+     * Possible UI/participation states for the current user relative to the event.
+     */
+    enum State {
+        /** User has been selected and must accept or decline. */
+        UNDECIDED,
+        /** User is not in the registration circle. */
+        NOT_IN_CIRCLE,
+        /** User is in the circle and can leave. */
+        LEAVE_CIRCLE,
+        /** User declined the invitation (Duck). */
+        DUCK,
+        /** User accepted the invitation (Goose). */
+        GOOSE,
+        /** User can join the waiting list. */
+        WAITING_LIST,
+        /** User is on the waiting list and can leave. */
+        LEAVE_WAITING_LIST
+    }
 
+    /** Current participation state of the user. */
     private State currentState = State.UNDECIDED;
+
+    /** Whether the current user is viewing as an organizer. */
     private boolean isOrganizerMode = false;
+
+    /** Unique identifier for the event being displayed. */
     private String eventId;
+
+    /** Firestore database instance. */
     private FirebaseFirestore db;
 
+    /** The current event object loaded from Firestore. */
     private Event currentEvent;
+
+    /** Client for accessing device location services. */
     private FusedLocationProviderClient fusedLocationClient;
+
+    /** Launcher for requesting location permission. */
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
     /**
-     * Initializes the layout, reads {@link Intent} extras, and wires button actions.
+     * Initializes the layout, reads Intent extras, and wires button actions.
      *
-     * @param savedInstanceState saved activity state bundle
+     * @param savedInstanceState - Saved activity state bundle
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,7 +237,7 @@ public class EventDetailActivity extends AppCompatActivity {
     /**
      * Displays a popup dialog explaining the lottery registration system.
      *
-     * @param spots string describing available spots (used to estimate odds)
+     * @param spots - String describing available spots (used to estimate odds)
      */
     private void showLotteryGuidelines(String spots) {
         try {
@@ -232,7 +268,9 @@ public class EventDetailActivity extends AppCompatActivity {
         } catch (Exception ignored) { }
     }
 
-    /** Loads event details from Firestore and populates the UI. */
+    /**
+     * Loads event details from Firestore and populates the UI.
+     */
     private void loadEventDetails() {
         if (db == null || eventId == null) return;
 
@@ -354,12 +392,12 @@ public class EventDetailActivity extends AppCompatActivity {
     /**
      * Configures organizer-only buttons and their actions.
      *
-     * @param title     event title
-     * @param dateText  event date text
-     * @param open      registration open time (epoch millis)
-     * @param deadline  registration deadline (epoch millis)
-     * @param cost      event cost string
-     * @param spots     spots string
+     * @param title - Event title
+     * @param dateText - Event date text
+     * @param open - Registration open time (epoch millis)
+     * @param deadline - Registration deadline (epoch millis)
+     * @param cost - Event cost string
+     * @param spots - Spots string
      */
     private void setupOrganizerButtons(String title, String dateText, long open, long deadline, String cost, String spots) {
         // Hide entrant buttons
@@ -420,11 +458,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
             if (btnDecline != null) {
                 btnDecline.setOnClickListener(v ->
-                        animateTap(v, this::performDecline)
-//                        animateTap(v, () -> {
-//                            currentState = State.DUCK; // Decline -> DUCK (per your UI metaphor)
-//                            applyState(currentState);
-//                        })
+                                animateTap(v, this::performDecline)
                 );
             }
             if (btnAccept != null) {
@@ -455,6 +489,9 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Initiates the join process, checking for geolocation requirements.
+     */
     private void joinclick() {
         if (currentEvent.isGeolocationEnabled()) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -468,7 +505,9 @@ public class EventDetailActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Joins the waitlist with location data if permission is granted.
+     */
     private void locatejoin() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -487,10 +526,18 @@ public class EventDetailActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Adds the user to the event's waiting list.
+     *
+     * @param uid - User ID
+     * @param eid - Event ID
+     * @param lat - Optional latitude
+     * @param lon - Optional longitude
+     */
     private void performJoin(String uid, String eid, Double lat, Double lon) {
         if (currentEvent == null) return;
         currentEvent.addToWaitingList(uid, lat, lon);
-        Toast.makeText(this, "join waiting list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Joined waiting list", Toast.LENGTH_SHORT).show();
         currentState = State.LEAVE_WAITING_LIST;
         applyState(currentState);
     }
@@ -561,7 +608,7 @@ public class EventDetailActivity extends AppCompatActivity {
             batch.delete(db.collection("waitlist").document(currentUser.getUid() + "_" + eventId));
             batch.commit();
         }
-        Toast.makeText(this, "left waiting list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Left waiting list", Toast.LENGTH_SHORT).show();
         finish();
     }
 
@@ -631,7 +678,7 @@ public class EventDetailActivity extends AppCompatActivity {
     /**
      * Applies the given state to the UI, toggling visibility and button styles.
      *
-     * @param s new state to apply
+     * @param s - New state to apply
      */
     private void applyState(State s) {
         View twoBtns = findViewById(R.id.areaButtons);
@@ -701,8 +748,8 @@ public class EventDetailActivity extends AppCompatActivity {
     /**
      * Small button press animation, then runs the given action.
      *
-     * @param v     view to animate
-     * @param after action to run after the animation completes
+     * @param v - View to animate
+     * @param after - Action to run after the animation completes
      */
     private void animateTap(View v, Runnable after) {
         v.animate()
@@ -715,8 +762,8 @@ public class EventDetailActivity extends AppCompatActivity {
     /**
      * Picks an initial state based on keywords in the event title.
      *
-     * @param title event title (nullable)
-     * @return inferred state or {@link State#UNDECIDED} if unknown
+     * @param title - Event title (nullable)
+     * @return Inferred state or UNDECIDED if unknown
      */
     private State pickStateFromTitle(String title) {
         if (title == null) return State.UNDECIDED;
@@ -728,6 +775,9 @@ public class EventDetailActivity extends AppCompatActivity {
         return State.UNDECIDED;
     }
 
+    /**
+     * Handles the user declining an event invitation.
+     */
     private void performDecline() {
         if (currentEvent == null) return;
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -761,8 +811,9 @@ public class EventDetailActivity extends AppCompatActivity {
                 );
     }
 
-
-
+    /**
+     * Reloads event details when the activity resumes.
+     */
     @Override
     protected void onResume() {
         super.onResume();

@@ -227,10 +227,19 @@ public class AdminEventLogsActivity extends AppCompatActivity {
      * Simple data class for holding event log information.
      */
     public static class EventLogItem {
+        /** The notification message text. */
         private String title;
+
+        /** The organizer information. */
         private String organizer;
+
+        /** List of recipients who received the notification. */
         private List<String> recipients;
+
+        /** User ID of the person who sent the notification. */
         private String sentBy;
+
+        /** Timestamp when the notification was sent. */
         private Date timestamp;
 
         /**
@@ -246,34 +255,74 @@ public class AdminEventLogsActivity extends AppCompatActivity {
             this.recipients = recipients;
         }
 
+        /**
+         * Gets the notification message text.
+         *
+         * @return The notification title
+         */
         public String getTitle() {
             return title;
         }
 
+        /**
+         * Gets the organizer information.
+         *
+         * @return The organizer display text
+         */
         public String getOrganizer() {
             return organizer;
         }
 
+        /**
+         * Gets the list of recipients.
+         *
+         * @return List of recipient user IDs
+         */
         public List<String> getRecipients() {
             return recipients;
         }
 
+        /**
+         * Sets the organizer information.
+         *
+         * @param organizer - The organizer display text
+         */
         public void setOrganizer(String organizer) {
             this.organizer = organizer;
         }
 
+        /**
+         * Gets the user ID of who sent the notification.
+         *
+         * @return The sender's user ID
+         */
         public String getSentBy() {
             return sentBy;
         }
 
+        /**
+         * Sets the user ID of who sent the notification.
+         *
+         * @param sentBy - The sender's user ID
+         */
         public void setSentBy(String sentBy) {
             this.sentBy = sentBy;
         }
 
+        /**
+         * Gets the timestamp when the notification was sent.
+         *
+         * @return The notification timestamp
+         */
         public Date getTimestamp() {
             return timestamp;
         }
 
+        /**
+         * Sets the timestamp when the notification was sent.
+         *
+         * @param timestamp - The notification timestamp
+         */
         public void setTimestamp(Date timestamp) {
             this.timestamp = timestamp;
         }

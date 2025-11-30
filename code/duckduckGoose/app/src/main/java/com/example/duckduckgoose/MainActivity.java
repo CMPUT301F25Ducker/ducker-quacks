@@ -7,7 +7,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -45,14 +44,14 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Hosts the event list and "My Events" screens; routes to detail/edit.
+ * Hosts the event list and "My Events" screens and routes to event detail/edit screens.
  *
  * Uses Firestore listeners to keep listings live. Supports organizer-only
- * creation/edit flows and entrant views of pre/past registrations.
+ * creation/edit flows and entrant views of pre-registration and past registrations.
  */
 public class MainActivity extends AppCompatActivity {
 
-    /** Screen enum used for back-navigation behavior. */
+    /** Screen types used for back-navigation behavior. */
     enum Screen { EVENT_LIST, MY_EVENTS, EVENT_DETAIL, NOTIFICATIONS }
 
     /** Current visible screen. */
@@ -61,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Wires top-bar buttons based on the active screen and login mode.
      *
-     * Shows/hides "My Events" and "New Event" appropriately and connects them
-     * to navigation or creation flows.
+     * Shows or hides "My Events" and "New Event" as appropriate and connects them
+     * to navigation or event-creation flows.
      */
     private void wireTopBarNav() {
         View btnMyEvents = findViewById(R.id.btnMyEvents);
@@ -100,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
      * Handles a requested start screen from Intent extras.
      *
      * Supports "EVENT_LIST" or "MY_EVENTS" via the "startOn" extra.
-     * Removes the extra after handling to avoid re-trigger on rotation.
+     * Removes the extra after handling to avoid re-triggering on rotation.
      */
     private void handleStartOnIntent() {
         String start = getIntent().getStringExtra("startOn");
@@ -114,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Ensures new Intents (singleTop) still trigger startOn handling.
-     * @param intent The new intent delivered to the activity.
+     *
+     * @param intent The new intent delivered to the activity
      */
     @Override
     protected void onNewIntent(Intent intent) {
@@ -124,8 +124,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Entry point: sets up system UI, shows default screen, wires back behavior.
-     * 
+     * Entry point: sets up system UI, shows the default screen, and wires back behavior.
+     *
      * @param savedInstanceState - Saved state bundle
      */
     @Override
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Intercept system back
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-             /**
+            /**
              * Custom back behavior based on active screen and login mode.
              */
             @Override
@@ -195,10 +195,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Parses a cost label (e.g., "$25", "Free") into a numeric value for sorting.
-     * 
+     * Parses a cost label (for example, "$25" or "Free") into a numeric value for sorting.
+     *
      * @param costStr - Cost label
-     * @return Numeric cost (Free->0); unknown/invalid -> {@link Double#MAX_VALUE}
+     * @return Numeric cost (Free -> 0); unknown or invalid values -> Double.MAX_VALUE
      */
     private static double parseCost(String costStr) {
         if (costStr == null) return Double.MAX_VALUE;
@@ -220,8 +220,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Renders the main "Events" list with filter/sort and live updates.
      *
-     * Subscribes to Firestore "events" and applies client-side filtering and sorting;
-     * clicking an item opens {@link EventDetailActivity}.
+     * Subscribes to the Firestore "events" collection and applies client-side filtering
+     * and sorting. Clicking an item opens the event detail screen.
      */
     private void showEventList() {
         setContentView(R.layout.activity_event_list);
@@ -355,8 +355,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Renders the "My Events" view for organizer or entrant modes.
      *
-     * Organizer: sectioned list of past/current events; click -> details organizer view.
-     * Entrant: sectioned list of pre-registration/past registrations from waitlist.
+     * Organizer: sectioned list of past and current events created by the organizer.
+     * Entrant: sectioned list of pre-registration and past registrations from the waitlist.
      */
     private void showMyEvents() {
         setContentView(R.layout.activity_my_events);
@@ -542,8 +542,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-    /** 
-     *  SimpleEventAdapter
+    /**
      * Minimal adapter for placeholder string items on the Events screen.
      */
     static class SimpleEventAdapter extends RecyclerView.Adapter<EventVH> {
@@ -571,20 +570,20 @@ public class MainActivity extends AppCompatActivity {
 
             /** Opens detail screen with a sample state mapping. */
             h.itemView.setOnClickListener(v -> {
-                    android.content.Context c = v.getContext();
-                    android.content.Intent intent =
-                            new android.content.Intent(c, EventDetailActivity.class);
+                android.content.Context c = v.getContext();
+                android.content.Intent intent =
+                        new android.content.Intent(c, EventDetailActivity.class);
 
-                    // Pass a placeholder eventId for these template items
-                    intent.putExtra("eventId", "template_" + h.getAdapterPosition());
-                    // Common extras for display
-                    intent.putExtra("title",    titleStr);
-                    intent.putExtra("dateText", "TBD");
-                    intent.putExtra("open",     0L);
-                    intent.putExtra("deadline", 0L);
-                    intent.putExtra("cost",     "—");
-                    intent.putExtra("spots",    "—");
-                    intent.putExtra("posterRes", R.drawable.poolphoto);
+                // Pass a placeholder eventId for these template items
+                intent.putExtra("eventId", "template_" + h.getAdapterPosition());
+                // Common extras for display
+                intent.putExtra("title",    titleStr);
+                intent.putExtra("dateText", "TBD");
+                intent.putExtra("open",     0L);
+                intent.putExtra("deadline", 0L);
+                intent.putExtra("cost",     "—");
+                intent.putExtra("spots",    "—");
+                intent.putExtra("posterRes", R.drawable.poolphoto);
 
                 // 0: UNDECIDED, 1: NOT_IN_CIRCLE, 2: LEAVE_CIRCLE, 3: DUCK, 4: GOOSE
                 int pos = h.getAdapterPosition();
@@ -605,9 +604,8 @@ public class MainActivity extends AppCompatActivity {
         @Override public int getItemCount(){ return data.size(); }
     }
 
-    /** 
-     *  EventObjectAdapter
-     *  Adapter that binds Event objects into event cards.
+    /**
+     * Adapter that binds Event objects into event cards.
      */
     static class EventObjectAdapter extends RecyclerView.Adapter<EventVH> {
         private final List<Event> data;
@@ -625,7 +623,7 @@ public class MainActivity extends AppCompatActivity {
             Event e = data.get(i);
             h.bind(e);
 
-            /**  Opens event details, passing event id first for fetching. */
+            /** Opens event details, passing event id first for fetching. */
             h.itemView.setOnClickListener(v -> {
                 android.content.Context c = v.getContext();
                 android.content.Intent intent = new android.content.Intent(c, EventDetailActivity.class);
@@ -648,36 +646,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  EventVH
-     *  Shared ViewHolder for an event card item.
+     * Shared ViewHolder for an event card item.
      */
     static class EventVH extends RecyclerView.ViewHolder {
         /** UI labels on the card. */
         TextView title, date, open, deadline, cost, spots;
         EventVH(View v){
             super(v);
-            title   = v.findViewById(R.id.txtTitle);
-            date    = v.findViewById(R.id.txtDate);
-            open    = v.findViewById(R.id.txtOpen);
-            deadline= v.findViewById(R.id.txtDeadline);
-            cost    = v.findViewById(R.id.txtCost);
-            spots   = v.findViewById(R.id.txtSpots);
+            title    = v.findViewById(R.id.txtTitle);
+            date     = v.findViewById(R.id.txtDate);
+            open     = v.findViewById(R.id.txtOpen);
+            deadline = v.findViewById(R.id.txtDeadline);
+            cost     = v.findViewById(R.id.txtCost);
+            spots    = v.findViewById(R.id.txtSpots);
         }
 
-        /**  Binds an Event object to the card views. */
+        /**
+         * Binds an Event object to the card views.
+         *
+         * @param e - Event data to display
+         */
         void bind(Event e) {
             title.setText(e.getName());
             date.setText(e.getEventDate());
             open.setText("Registration Opens: " + e.getRegistrationOpens());
             deadline.setText("Registration Deadline: " + e.getRegistrationCloses());
-            cost.setText("Cost: " + e.getCost());
+            cost.setText("Cost: $" + e.getCost());
             spots.setText("Spots: " + e.getMaxSpots());
         }
     }
 
     /**
-     *  SectionedEventAdapter
-     *  Sectioned list for "My Events" (headers + items).
+     * Sectioned list adapter for "My Events" (headers plus event items).
      */
     static class SectionedEventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private static final int TYPE_HEADER = 0, TYPE_EVENT = 1;
@@ -720,20 +720,20 @@ public class MainActivity extends AppCompatActivity {
                 vh.date.setText(e.getEventDate());
                 vh.open.setText("Registration Opens: " + e.getRegistrationOpens());
                 vh.deadline.setText("Registration Deadline: " + e.getRegistrationCloses());
-                vh.cost.setText("Cost: " + e.getCost());
+                vh.cost.setText("Cost: $" + e.getCost());
                 vh.spots.setText("Spots: " + e.getMaxSpots());
 
-                /**  Opens event details with a deterministic state mapping by position. */
+                /** Opens event details with a deterministic state mapping by position. */
                 vh.itemView.setOnClickListener(v -> {
                     android.content.Context c = v.getContext();
                     android.content.Intent intent =
                             new android.content.Intent(c, EventDetailActivity.class);
 
-                    // include event document id for fetching full details (adding this now to avoid headaches later) PASS THIS FIRST, IF YOU DON'T I WILL
+                    // include event document id for fetching full details
                     intent.putExtra("eventId", e.getEventId());
-                    // Common extras that aren't actual extras but actually matter...
+                    // Common extras for display
                     intent.putExtra("title",    e.getName());
-                    intent.putExtra("dateText", e.getEventDate()); // I'm surprised this getEventDate() hasn't yet blown up
+                    intent.putExtra("dateText", e.getEventDate());
                     intent.putExtra("open",     0L);
                     intent.putExtra("deadline", 0L);
                     intent.putExtra("cost",     e.getCost());
@@ -763,8 +763,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  OrganizerEventAdapter
-     *  Organizer-focused adapter (headers + events) with click-to-edit.
+     * Organizer-focused adapter (headers plus events) with click-to-edit behavior.
      */
     static class OrganizerEventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private static final int TYPE_HEADER = 0, TYPE_EVENT = 1;
@@ -810,10 +809,10 @@ public class MainActivity extends AppCompatActivity {
                 vh.date.setText("Maybe Recurring: " + e.getEventDate());
                 vh.open.setText("Registration Opens: " + e.getRegistrationOpens());
                 vh.deadline.setText("Registration Deadline: " + e.getRegistrationCloses());
-                vh.cost.setText("Cost: " + e.getCost());
+                vh.cost.setText("Cost: $" + e.getCost());
                 vh.spots.setText("Spots: " + e.getMaxSpots());
 
-                /**  Opens organizer details/edit screen for the selected event. */
+                /** Opens organizer details/edit screen for the selected event. */
                 vh.itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(context, EventDetailsOrganizerActivity.class);
                     // Pass the document id — details activity will fetch the rest from Firestore
@@ -828,9 +827,9 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Navigates back based on current screen state.
-     * Called when back button is clicked in My Events view.
+     * Called when the back button is clicked in the My Events view.
      *
-     * @param view The View that triggered the action
+     * @param view - The View that triggered the action
      */
     public void goBack(View view) {
         switch (current) {
@@ -850,4 +849,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 }
-//dhruv
+//dhruv and murtaza were here

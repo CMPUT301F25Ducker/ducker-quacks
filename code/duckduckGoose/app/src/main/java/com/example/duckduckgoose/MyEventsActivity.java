@@ -7,7 +7,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -33,16 +32,39 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Displays all events created by an organizer.
+ *
+ * Fetches organizer-owned events from Firestore, displays them in a list,
+ * and enables navigation to event details or edit screens. Supports creation
+ * of new events and refreshes after modifications or deletions.
+ */
 public class MyEventsActivity extends AppCompatActivity {
 
+    /** Request code used for returning from event detail or creation screens. */
     private static final int EVENT_DETAILS_REQUEST = 1;
 
+    /** List backing the event RecyclerView. */
     private List<Event> events;
+
+    /** Adapter used to render organizer events. */
     private EventManagerAdapter adapter;
+
+    /** Firestore instance. */
     private FirebaseFirestore db;
+
+    /** Firestore reference to the "events" collection. */
     private CollectionReference eventsRef;
+
+    /** Organizer ID passed into the activity. */
     private String organizerId;
 
+    /**
+     * Initializes UI, toolbar, sorting dropdown, RecyclerView, and loads
+     * organizer events from Firestore.
+     *
+     * @param savedInstanceState - Saved activity state bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,14 +125,20 @@ public class MyEventsActivity extends AppCompatActivity {
 
     /**
      * Navigates back to the previous screen.
-     * Finishes the activity in response to a back button tap.
+     * Finishes the activity when the back button is tapped.
      *
-     * @param view The View that triggered the action
+     * @param view The View that triggered this navigation
      */
     public void goBack(View view) {
         finish();
     }
 
+    /**
+     * Loads all events for the organizer from Firestore and updates the RecyclerView.
+     *
+     * Fetches events filtered by organizerId, sets the document ID on each event
+     * if missing, and refreshes the adapter display.
+     */
     private void loadEventsFromFirestore() {
         eventsRef.whereEqualTo("organizerId", organizerId).get()
                 .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
@@ -131,6 +159,15 @@ public class MyEventsActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Receives results from event detail or creation screens.
+     *
+     * If an event was deleted, the list is refreshed from Firestore.
+     *
+     * @param requestCode The request code originally supplied
+     * @param resultCode Result status returned by the child activity
+     * @param data Intent containing returned extras, if any
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

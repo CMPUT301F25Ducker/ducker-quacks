@@ -12,25 +12,49 @@ package com.example.duckduckgoose.user;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Model class for representing a user profile and event associations.
+ *
+ * Encapsulates basic profile information and tracks events that a user has been
+ * waitlisted for or accepted into. Provides safe getters and utility methods
+ * for list management.
+ */
 public class User {
+    /** The user's unique identifier in the system. */
     private String userId;
+
+    /** The user's full name. */
     private String fullName;
+
+    /** The user's age. */
     private Long   age;
+
+    /** The user's email address. */
     private String email;
+
+    /** The user's phone number. */
     private String phone;
+
+    /** The user's account type (e.g., attendee, organizer, admin). */
     private String accountType;
-    private boolean new_notifications = false; // Flag to indicate if user has new notifications
-    private boolean receive_notifications = true; // Opt-in flag for receiving organizer/admin notifications
-    private Long createdAt; // Timestamp when the user was created (in milliseconds)
-    private List<String> waitlistedEventIds; // List of event IDs the user is waitlisted for
-    private List<String> acceptedEventIds; // List of event IDs the user has been accepted into (from waitlist)
+
+    /** Flag to indicate if user has new notifications. */
+    private boolean new_notifications = false;
+
+    /** Opt-in flag for receiving organizer/admin notifications. */
+    private boolean receive_notifications = true;
+
+    /** Timestamp when the user was created (in milliseconds). */
+    private Long createdAt;
+
+    /** List of event IDs the user is waitlisted for. */
+    private List<String> waitlistedEventIds;
+
+    /** List of event IDs the user has been accepted into (from waitlist). */
+    private List<String> acceptedEventIds;
 
     /**
-     * Model class for representing a user profile and event associations.
-     *
-     * Encapsulates basic profile information and tracks events that a user has been
-     * waitlisted for or accepted into. Provides safe getters and utility methods
-     * for list management.
+     * Default constructor initializing empty event lists.
      */
     public User() {
         waitlistedEventIds = new ArrayList<>(); // Initialize empty list in no-arg constructor
@@ -240,6 +264,8 @@ public class User {
     /**
      * Returns whether the user has opted in to receive notifications from organizers/admins.
      * Defaults to true for backwards compatibility for existing users.
+     *
+     * @return true if the user wants to receive notifications, false otherwise
      */
     public boolean getReceive_notifications() {
         return receive_notifications;
@@ -247,6 +273,8 @@ public class User {
 
     /**
      * Sets the user's opt-in preference for administrative/organizer notifications.
+     *
+     * @param receive_notifications true to opt-in to notifications, false to opt-out
      */
     public void setReceive_notifications(boolean receive_notifications) {
         this.receive_notifications = receive_notifications;
@@ -269,6 +297,12 @@ public class User {
     public void setCreatedAt(Long createdAt) {
         this.createdAt = createdAt;
     }
+
+    /**
+     * Sets the user's unique identifier.
+     *
+     * @param userId The unique identifier to assign to the user
+     */
     public void setUserId(String userId) {
         this.userId = userId;
     }

@@ -1,15 +1,14 @@
 /**
  * Bottom sheet for viewing and managing a user's profile in DuckDuckGoose.
  *
- * This fragment renders profile details (name, age, contact info, account type),
- * supports viewing another user's profile (with admin actions like kick/delete),
- * and provides self-service actions for the signed-in user such as editing the
- * profile, logging out, or deleting the account. It can optionally display event
- * metadata and an "Events" button that delegates to a listener.
+ * Renders profile details (name, age, contact info, account type), supports viewing
+ * another user's profile with admin actions (kick/delete), and provides self-service
+ * actions for the signed-in user such as editing the profile, logging out, or
+ * deleting the account. It can optionally display event metadata and an "Events"
+ * button that delegates to a listener.
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.content.Context;
@@ -38,40 +37,48 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FieldValue;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A Material BottomSheet that shows a user's profile and actions.
+ * Material bottom sheet that shows a user's profile and available actions.
  *
  * Usage modes:
- *  - **Self profile**: shows edit, logout, and delete account actions.
- *  - **Viewing other user**: shows delete/kick and optional Events button.
- * Optional arguments enable attendee/event info sections.
+ * - Self profile: shows edit, logout, and delete account actions.
+ * - Viewing another user: shows delete or kick actions and an optional Events button.
+ * Optional arguments enable attendee and event info sections.
  */
 public class ProfileSheet extends BottomSheetDialogFragment {
 
     /**
-     * Listener interface to notify host activities/fragments about
-     * destructive/profile-related actions initiated from the sheet.
+     * Listener interface to notify host activities or fragments about
+     * profile-related actions initiated from the sheet.
      */
     public interface OnProfileInteractionListener {
         /**
-         * Called when the admin deletes/kicks an entrant from the sheet.
-         * @param userId The unique ID of the user being removed.
+         * Called when the admin deletes or kicks a user from the sheet.
+         *
+         * @param userId - The unique ID of the user being removed
          */
         void onProfileDeleted(String userId);
 
         /**
          * Called when the Events button is tapped for a user.
-         * @param userId The unique ID of the user whose events are requested.
+         *
+         * @param userId - The unique ID of the user whose events are requested
          */
         void onEventsButtonClicked(String userId);
     }
 
     /**
-     * Attach single/double tap handlers to the notification bell.
-     * Single tap: open notification logs. Double tap: toggle `receive_notifications` in Firestore.
+     * Attaches single and double tap handlers to the notification bell icon.
+     *
+     * Single tap opens the notification logs screen. Double tap toggles the
+     * receive_notifications flag in Firestore and updates the visual state.
+     *
+     * @param btnNotification - Notification bell ImageButton
+     * @param hasNewNotifications - True if the user currently has unread notifications
      */
     private void attachNotificationHandler(ImageButton btnNotification, boolean hasNewNotifications) {
         if (btnNotification == null) return;
@@ -87,16 +94,16 @@ public class ProfileSheet extends BottomSheetDialogFragment {
         FirebaseUser curUser = FirebaseAuth.getInstance().getCurrentUser();
         if (curUser != null && db != null) {
             db.collection("users").document(curUser.getUid()).get()
-                .addOnSuccessListener(doc -> {
-                    if (doc != null && doc.exists()) {
-                        Boolean opted = doc.getBoolean("receive_notifications");
-                        if (opted != null && !opted) {
-                            btnNotification.setAlpha(0.4f);
-                        } else {
-                            btnNotification.setAlpha(1.0f);
+                    .addOnSuccessListener(doc -> {
+                        if (doc != null && doc.exists()) {
+                            Boolean opted = doc.getBoolean("receive_notifications");
+                            if (opted != null && !opted) {
+                                btnNotification.setAlpha(0.4f);
+                            } else {
+                                btnNotification.setAlpha(1.0f);
+                            }
                         }
-                    }
-                });
+                    });
         }
 
         GestureDetector detector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
@@ -124,46 +131,41 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 if (db == null) db = FirebaseFirestore.getInstance();
 
                 db.collection("users").document(uid).get()
-                    .addOnSuccessListener(doc -> {
-                        boolean current = true; // default
-                        if (doc != null && doc.exists()) {
-                            Boolean b = doc.getBoolean("receive_notifications");
-                            if (b != null) current = b;
-                        }
-                        boolean next = !current;
-                        Map<String, Object> updates = new HashMap<>();
-                        updates.put("receive_notifications", next);
-                        if (!next) {
-                            updates.put("opt_out_updated_at", com.google.firebase.Timestamp.now());
-                        } else {
-                            updates.put("opt_out_updated_at", FieldValue.delete());
-                        }
+                        .addOnSuccessListener(doc -> {
+                            boolean current = true; // default
+                            if (doc != null && doc.exists()) {
+                                Boolean b = doc.getBoolean("receive_notifications");
+                                if (b != null) current = b;
+                            }
+                            boolean next = !current;
+                            Map<String, Object> updates = new HashMap<>();
+                            updates.put("receive_notifications", next);
+                            if (!next) {
+                                updates.put("opt_out_updated_at", com.google.firebase.Timestamp.now());
+                            } else {
+                                updates.put("opt_out_updated_at", FieldValue.delete());
+                            }
 
-                        db.collection("users").document(uid).update(updates)
-                                .addOnSuccessListener(v -> {
-                                    btnNotification.setAlpha(next ? 1.0f : 0.4f);
-                                    Toast.makeText(getContext(), next ? "Notifications unmuted" : "Notifications muted", Toast.LENGTH_SHORT).show();
-                                })
-                                .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to update preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
-                    })
-                    .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to read preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
+                            db.collection("users").document(uid).update(updates)
+                                    .addOnSuccessListener(v -> {
+                                        btnNotification.setAlpha(next ? 1.0f : 0.4f);
+                                        Toast.makeText(getContext(), next ? "Notifications unmuted" : "Notifications muted", Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to update preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
+                        })
+                        .addOnFailureListener(err -> Toast.makeText(getContext(), "Failed to read preference: " + err.getMessage(), Toast.LENGTH_LONG).show());
 
                 return true;
             }
         });
 
-        btnNotification.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return detector.onTouchEvent(event);
-            }
-        });
+        btnNotification.setOnTouchListener((v, event) -> detector.onTouchEvent(event));
     }
 
     /** Callback target implemented by the hosting context. */
     private OnProfileInteractionListener mListener;
 
-    /** Firestore instance for profile document reads/deletes. */
+    /** Firestore instance for profile document reads and deletes. */
     private FirebaseFirestore db;
 
     /** FirebaseAuth instance used for logout and account deletion. */
@@ -172,7 +174,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     /**
      * Factory method for an empty sheet that loads the current user.
      *
-     * @return New instance of ProfileSheet.
+     * @return New instance of ProfileSheet
      */
     public static ProfileSheet newInstance() {
         return new ProfileSheet();
@@ -181,8 +183,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     /**
      * Factory for a sheet bound to a specific user (simple mode).
      *
-     * @param user The user whose profile should be displayed.
-     * @return New instance of ProfileSheet preloaded with user arguments.
+     * @param user - The user whose profile should be displayed
+     * @return New instance of ProfileSheet preloaded with user arguments
      */
     public static ProfileSheet newInstance(User user) {
         return newInstance(user, false, false, null, false);
@@ -191,12 +193,12 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     /**
      * Full-featured factory with display and control flags.
      *
-     * @param user The user to display.
-     * @param isViewingOther True if another user's profile is being viewed.
-     * @param showEventsButton True to show the Events action button.
-     * @param eventCount Optional text to display as event count/status.
-     * @param showAttendeeInfo True to reveal attendee-specific info sections.
-     * @return New instance of ProfileSheet with bundled arguments.
+     * @param user - The user to display
+     * @param isViewingOther - True if another user's profile is being viewed
+     * @param showEventsButton - True to show the Events action button
+     * @param eventCount - Optional text to display as event count or status
+     * @param showAttendeeInfo - True to reveal attendee-specific info sections
+     * @return New instance of ProfileSheet with bundled arguments
      */
     public static ProfileSheet newInstance(User user, boolean isViewingOther, boolean showEventsButton, String eventCount, boolean showAttendeeInfo) {
         ProfileSheet fragment = new ProfileSheet();
@@ -217,9 +219,9 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * Captures the host callback if it implements the listener.
+     * Captures the host callback if it implements the listener interface.
      *
-     * @param context Hosting context.
+     * @param context - Hosting context
      */
     @Override
     public void onAttach(@NonNull Context context) {
@@ -232,12 +234,13 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     /**
      * Inflates the sheet layout.
      *
-     * @param inflater Layout inflater.
-     * @param container Optional parent view.
-     * @param savedInstanceState Previous state or null.
-     * @return The inflated sheet view.
+     * @param inflater - Layout inflater
+     * @param container - Optional parent view
+     * @param savedInstanceState - Previous state or null
+     * @return The inflated sheet view
      */
-    @Nullable @Override
+    @Nullable
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -246,13 +249,15 @@ public class ProfileSheet extends BottomSheetDialogFragment {
 
     /**
      * Binds UI and wires actions after the view is created.
+     *
      * Handles both argument-driven profiles and the current user's profile.
      *
-     * @param v Root view.
-     * @param s Saved instance state.
+     * @param v - Root view
+     * @param s - Saved instance state bundle or null
      */
-    @Override public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
-        super.onViewCreated(v,s);
+    @Override
+    public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
+        super.onViewCreated(v, s);
         TextView txtUserId = v.findViewById(R.id.txtUserId);
         TextView txtFullName = v.findViewById(R.id.txtFullName);
         TextView txtAge = v.findViewById(R.id.txtAge);
@@ -334,19 +339,15 @@ public class ProfileSheet extends BottomSheetDialogFragment {
 
                 // Show notification icon for entrants only
                 if (btnNotification != null) {
-                    // Only show notification button for entrants
                     if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
                         btnNotification.setVisibility(View.VISIBLE);
                         boolean hasNewNotifications = arguments.getBoolean("new_notifications", false);
-                        // attach a handler that supports single-tap (open logs) and double-tap (mute/unmute)
                         attachNotificationHandler(btnNotification, hasNewNotifications);
                     } else {
-                        // Hide notification button for non-entrants
                         btnNotification.setVisibility(View.GONE);
                     }
                 }
             }
-
 
             if (arguments.getBoolean("showEventsButton")) {
                 btnEvents.setVisibility(View.VISIBLE);
@@ -390,14 +391,11 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                                 bindSelfProfile(v, me);
                                 // Update notification icon based on new_notifications field
                                 if (btnNotification != null) {
-                                    // Only show notification button for entrants
                                     String accountType = me.getAccountType();
                                     if (accountType != null && accountType.equalsIgnoreCase("Entrant")) {
                                         btnNotification.setVisibility(View.VISIBLE);
-                                        // set up single/double tap behavior on the bell
                                         attachNotificationHandler(btnNotification, me.getNew_notifications());
                                     } else {
-                                        // Hide notification button for non-entrants
                                         btnNotification.setVisibility(View.GONE);
                                     }
                                 }
@@ -448,10 +446,10 @@ public class ProfileSheet extends BottomSheetDialogFragment {
     }
 
     /**
-     * Binds current user's profile fields to the UI.
+     * Binds the current user's profile fields to the UI.
      *
-     * @param v Root view for lookups.
-     * @param me The current signed-in user object.
+     * @param v - Root view for lookups
+     * @param me - The current signed-in user object
      */
     private void bindSelfProfile(View v, User me) {
         TextView txtUserId = v.findViewById(R.id.txtUserId);
@@ -491,7 +489,8 @@ public class ProfileSheet extends BottomSheetDialogFragment {
 
     /**
      * Shows a confirmation dialog before deleting the current account.
-     * Presents a destructive action with clear, irreversible consequence.
+     *
+     * Presents a destructive action dialog with a clear irreversible consequence.
      */
     private void confirmDeleteSelf() {
         new MaterialAlertDialogBuilder(requireContext())
@@ -502,17 +501,15 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 .show();
     }
 
-
-
     /**
-     *  Deletes the current user's Firestore document and Auth account.
+     * Deletes the current user's Firestore document and authentication account.
      *
      * Order of operations:
      * 1) Delete Firestore /users/{uid} document.
      * 2) Delete FirebaseAuth user.
      * 3) Sign out and navigate to LoginActivity.
      *
-     * Handles the recent-login requirement by notifying the user.
+     * Handles the recent-login requirement by prompting the user if necessary.
      */
     private void deleteSelf() {
         if (auth.getCurrentUser() == null) {
