@@ -352,7 +352,7 @@ public class ProfileSheet extends BottomSheetDialogFragment {
                 btnEvents.setVisibility(View.VISIBLE);
                 btnEvents.setOnClickListener(x -> {
                     if (mListener != null) {
-                        mListener.onEventsButtonClicked(userId);
+                        mListener.onEventsButtonClicked(email);
                     }
                     dismiss();
                 });

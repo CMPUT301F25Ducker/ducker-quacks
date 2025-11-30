@@ -38,8 +38,13 @@ import androidx.cardview.widget.CardView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -400,6 +405,7 @@ public class EventEditActivity extends AppCompatActivity {
     }
 
     /** Saves a new event to Firestore and notifies the caller. */
+    /** Saves a new event to Firestore and notifies the caller. */
     private void storeInDB() {
         String name = edtEventName.getText().toString().trim();
         String description = edtDescription.getText().toString().trim();
@@ -410,29 +416,51 @@ public class EventEditActivity extends AppCompatActivity {
         String regClosesStr = txtRegCloses.getText().toString().trim();
         boolean geolocation = chkGeolocation.isChecked();
 
+        // Generate new event ID
         String newEventId = eventsRef.document().getId();
 
+        // Build Event object
         Event newEvent = new Event(
                 newEventId, name, description, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
         );
 
+        // Attach organizerId to event if user is logged in
+        FirebaseUser fu = null;
         try {
-            com.google.firebase.auth.FirebaseUser fu =
-                    com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
-            if (fu != null) newEvent.setOrganizerId(fu.getUid());
-        } catch (Exception ex) { }
+            fu = FirebaseAuth.getInstance().getCurrentUser();
+            if (fu != null) {
+                newEvent.setOrganizerId(fu.getUid());
+            }
+        } catch (Exception ex) {
+            // swallow – we'll still create the event even if organizerId is missing
+        }
 
-        eventsRef.document(newEventId)
-                .set(newEvent)
+        // Use a batch so event creation + ownedEvents update happen together
+        WriteBatch batch = db.batch();
+
+        DocumentReference eventRef = eventsRef.document(newEventId);
+        batch.set(eventRef, newEvent);
+
+        // If we know who the organizer is, add this eventId under their ownedEvents
+        if (fu != null) {
+            DocumentReference userRef = db.collection("users").document(fu.getUid());
+            batch.update(userRef, "ownedEvents", FieldValue.arrayUnion(newEventId));
+        }
+
+        batch.commit()
                 .addOnSuccessListener(aVoid -> {
                     Intent result = new Intent();
                     result.putExtra("eventId", newEventId);
                     setResult(RESULT_OK, result);
-                    Toast.makeText(this, "Event \"" + name + "\" created successfully!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,
+                            "Event \"" + name + "\" created successfully!",
+                            Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error: Failed to create event. " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,
+                            "Error: Failed to create event. " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
                     Log.e("EventEditActivity", "Error writing document", e);
                 });
     }
