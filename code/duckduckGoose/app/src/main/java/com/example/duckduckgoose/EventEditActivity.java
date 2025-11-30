@@ -87,7 +87,7 @@ public class EventEditActivity extends AppCompatActivity {
     // -----------------------------
 
     /** Text input fields for event information. */
-    private EditText edtEventName, edtSpots, edtCost, txtEventDate, txtRegOpens, txtRegCloses;
+    private EditText edtEventName, edtDescription, edtSpots, edtCost, txtEventDate, txtRegOpens, txtRegCloses;
 
     /** Checkbox to toggle geolocation option. */
     private CheckBox chkGeolocation;
@@ -191,6 +191,7 @@ public class EventEditActivity extends AppCompatActivity {
     /** Initializes all form fields and button references. */
     private void initializeViews() {
         edtEventName = findViewById(R.id.edtEventName);
+        edtDescription = findViewById(R.id.edtDescription);
         edtSpots = findViewById(R.id.edtSpots);
         edtCost = findViewById(R.id.edtCost);
         txtEventDate = findViewById(R.id.txtEventDate);
@@ -347,8 +348,12 @@ public class EventEditActivity extends AppCompatActivity {
                         if (doc != null && doc.exists()) {
                             Event event = doc.toObject(Event.class);
                             if (event != null) {
-                                if (event.getName() != null) edtEventName.setText(event.getName());
-                                if (event.getMaxSpots() != null) edtSpots.setText(event.getMaxSpots());
+                                if (event.getName() != null)
+                                    edtEventName.setText(event.getName());
+                                if (event.getDescription() != null)
+                                    edtDescription.setText(event.getDescription());
+                                if (event.getMaxSpots() != null)
+                                    edtSpots.setText(event.getMaxSpots());
                                 if (event.getCost() != null) {
                                     String cost = event.getCost().replace("$", "").trim();
                                     if (!cost.equals("Free") && !cost.equals("—")) edtCost.setText(cost);
@@ -403,6 +408,7 @@ public class EventEditActivity extends AppCompatActivity {
     /** Saves a new event to Firestore and notifies the caller. */
     private void storeInDB() {
         String name = edtEventName.getText().toString().trim();
+        String description = edtDescription.getText().toString().trim();
         String spots = edtSpots.getText().toString().trim();
         String cost = edtCost.getText().toString().trim();
         String eventDateStr = txtEventDate.getText().toString().trim();
@@ -415,15 +421,7 @@ public class EventEditActivity extends AppCompatActivity {
 
         // Build Event object
         Event newEvent = new Event(
-                newEventId,
-                name,
-                eventDateStr,
-                regOpensStr,
-                regClosesStr,
-                spots,
-                cost,
-                geolocation,
-                imagePaths
+                newEventId, name, description, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
         );
 
         // Attach organizerId to event if user is logged in
@@ -472,6 +470,7 @@ public class EventEditActivity extends AppCompatActivity {
         if (validateForm()) {
             if (eventId != null) {
                 String name = edtEventName.getText().toString().trim();
+                String description = edtDescription.getText().toString().trim();
                 String spots = edtSpots.getText().toString().trim();
                 String cost = edtCost.getText().toString().trim();
                 String eventDateStr = txtEventDate.getText().toString().trim();
@@ -480,7 +479,7 @@ public class EventEditActivity extends AppCompatActivity {
                 boolean geolocation = chkGeolocation.isChecked();
 
                 Event updated = new Event(
-                        eventId, name, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
+                        eventId, name, description, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
                 );
 
                 try {

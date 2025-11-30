@@ -45,7 +45,7 @@ public class OrganizerEventUnitTest {
     // Test event has required fields
     @Test
     public void testEventHasName() {
-        Event e = new Event("event1", "Test Event", "2024-12-01", "2024-11-01", "2024-11-30", "100", "$10", false, null);
+        Event e = new Event("event1", "Test Event", "Come to my Test Event :D", "2024-12-01", "2024-11-01", "2024-11-30", "100", "$10", false, null);
         assertEquals("Test Event", e.getName());
     }
 
@@ -68,14 +68,14 @@ public class OrganizerEventUnitTest {
     // Test event date is stored
     @Test
     public void testEventDateIsStored() {
-        Event e = new Event("1", "Event", "2024-12-01", null, null, null, null, false, null);
+        Event e = new Event("1", "Event", "Come to my Test Event :D", "2024-12-01", null, null, null, null, false, null);
         assertEquals("2024-12-01", e.getEventDate());
     }
 
     // Test registration dates
     @Test
     public void testRegistrationDates() {
-        Event e = new Event("1", "Event", null, "2024-11-01", "2024-11-30", null, null, false, null);
+        Event e = new Event("1", "Event", "Come to my Test Event :D", null, "2024-11-01", "2024-11-30", null, null, false, null);
         assertEquals("2024-11-01", e.getRegistrationOpens());
         assertEquals("2024-11-30", e.getRegistrationCloses()); // quick lil addition
     }
@@ -83,28 +83,28 @@ public class OrganizerEventUnitTest {
     // Test event cost
     @Test
     public void testEventCost() {
-        Event e = new Event("1", "Event", null, null, null, null, "$25", false, null);
+        Event e = new Event("1", "Event", "Come to my Test Event :D", null, null, null, null, "$25", false, null);
         assertEquals("$25", e.getCost());
     }
 
     // Test max spots
     @Test
     public void testMaxSpots() {
-        Event e = new Event("1", "Event", null, null, null, "50", null, false, null);
+        Event e = new Event("1", "Event", "Come to my Test Event :D", null, null, null, "50", null, false, null);
         assertEquals("50", e.getMaxSpots());
     }
 
     // Test geolocation is disabled by default
     @Test
     public void testGeolocationDisabledByDefault() {
-        Event e = new Event("1", "Event", null, null, null, null, null, false, null);
+        Event e = new Event("1", "Event", "Come to my Test Event :D", null, null, null, null, null, false, null);
         assertFalse(e.isGeolocationEnabled());
     }
 
     // Test geolocation can be enabled
     @Test
     public void testGeolocationCanBeEnabled() {
-        Event e = new Event("1", "Event", null, null, null, null, null, true, null);
+        Event e = new Event("1", "Event", "Come to my Test Event :D", null, null, null, null, null, true, null);
         assertTrue(e.isGeolocationEnabled());
     } // this was able to be enabled or disabled but really rough in testing with an instrumented test suite
 
