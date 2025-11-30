@@ -116,15 +116,15 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Read incoming data
         Intent i = getIntent();
-        String title    = i.getStringExtra("title");
+        String title = i.getStringExtra("title");
         String dateText = i.getStringExtra("dateText");
-        long   open     = i.getLongExtra("open", 0L);
-        long   deadline = i.getLongExtra("deadline", 0L);
-        String cost     = i.getStringExtra("cost");
-        String spots    = i.getStringExtra("spots");
-        int    poster   = i.getIntExtra("posterRes", R.drawable.poolphoto);
-        int    stateInt = i.getIntExtra("state", -1);
-        this.eventId    = i.getStringExtra("eventId");
+        long open = i.getLongExtra("open", 0L);
+        long deadline = i.getLongExtra("deadline", 0L);
+        String cost = i.getStringExtra("cost");
+        String spots = i.getStringExtra("spots");
+        int poster = i.getIntExtra("posterRes", R.drawable.poolphoto);
+        int stateInt = i.getIntExtra("state", -1);
+        this.eventId = i.getStringExtra("eventId");
 
         // Firestore
         db = FirebaseFirestore.getInstance();
@@ -133,13 +133,13 @@ public class EventDetailActivity extends AppCompatActivity {
 //        }
 
         // Bind text views
-        TextView tvTitle     = findViewById(R.id.txtEventTitle);
-        TextView tvDesc      = findViewById(R.id.txtDescription);
-        TextView tvDates     = findViewById(R.id.txtDates);
-        TextView tvOpen      = findViewById(R.id.txtOpen);
-        TextView tvDeadline  = findViewById(R.id.txtDeadline);
-        TextView tvCost      = findViewById(R.id.txtCost);
-        TextView tvSpots     = findViewById(R.id.txtSpots);
+        TextView tvTitle = findViewById(R.id.txtEventTitle);
+        TextView tvDesc = findViewById(R.id.txtDescription);
+        TextView tvDates = findViewById(R.id.txtDates);
+        TextView tvOpen = findViewById(R.id.txtOpen);
+        TextView tvDeadline = findViewById(R.id.txtDeadline);
+        TextView tvCost = findViewById(R.id.txtCost);
+        TextView tvSpots = findViewById(R.id.txtSpots);
 
         if (tvTitle != null)
             tvTitle.setText(title != null ? title : "Event");
