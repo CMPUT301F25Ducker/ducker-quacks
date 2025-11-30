@@ -1,14 +1,14 @@
 /**
  * Handles creation and editing of events by organizers.
  *
- * <p>This activity lets organizers create new events or edit existing ones. It
+ * This activity lets organizers create new events or edit existing ones. It
  * provides form fields for event details such as name, cost, registration
  * dates, geolocation, and associated images. It also performs Firestore CRUD
- * operations for storing and updating event data.</p>
+ * operations for storing and updating event data.
  *
- * <p><b>UI includes:</b> Event name, spots, cost, event date, registration
+ * UI includes: Event name, spots, cost, event date, registration
  * open/close dates, image management, geolocation toggle, and action buttons
- * (save, cancel, delete).</p>
+ * (save, cancel, delete).
  *
  * @author DuckDuckGoose Development Team
  */
@@ -53,14 +53,9 @@ import java.util.UUID;
 /**
  * Activity for organizers to create or edit events stored in Firestore.
  *
- * Features include:
- * <ul>
- *   <li>Create new events and save them to Firestore</li>
- *   <li>Edit existing events and update Firestore records</li>
- *   <li>Attach event images using a gallery picker</li>
- *   <li>Manage registration and geolocation settings</li>
- *   <li>Launch related screens such as the attendee manager</li>
- * </ul>
+ * Features include creating new events, editing existing events, attaching
+ * event images using a gallery picker, managing registration and geolocation
+ * settings, and launching related screens such as the attendee manager.
  */
 public class EventEditActivity extends AppCompatActivity {
 
@@ -70,50 +65,88 @@ public class EventEditActivity extends AppCompatActivity {
     /** Mode of operation ("create" or "edit"). */
     private String mode;
 
-    /** Firestore instance and event collection reference. */
+    /** Firestore database instance. */
     private FirebaseFirestore db;
+
+    /** Reference to the Firestore events collection. */
     private CollectionReference eventsRef;
 
     /** Firestore document ID for the event being edited. */
     private String eventId;
 
-    // -----------------------------
-    // UI Elements and Components
-    // -----------------------------
+    /** Text input field for event name. */
+    private EditText edtEventName;
 
-    /** Text input fields for event information. */
-    private EditText edtEventName, edtDescription, edtSpots, edtCost, txtEventDate, txtRegOpens, txtRegCloses;
+    /** Text input field for event description. */
+    private EditText edtDescription;
 
-    /** Checkbox to toggle geolocation option. */
+    /** Text input field for maximum number of spots. */
+    private EditText edtSpots;
+
+    /** Text input field for event cost. */
+    private EditText edtCost;
+
+    /** Text field for displaying/selecting the event date. */
+    private EditText txtEventDate;
+
+    /** Text field for displaying/selecting when registration opens. */
+    private EditText txtRegOpens;
+
+    /** Text field for displaying/selecting when registration closes. */
+    private EditText txtRegCloses;
+
+    /** Checkbox to toggle geolocation requirement for the event. */
     private CheckBox chkGeolocation;
 
-    /** Container for displaying selected images. */
+    /** Container layout for displaying selected images. */
     private LinearLayout imageContainer;
 
-    /** Stores image URIs or file paths associated with the event. */
+    /** List of image URIs or file paths associated with the event. */
     private List<String> imagePaths = new ArrayList<>();
 
-    /** Bottom sheet for selecting images. */
+    /** Bottom sheet card view for selecting images. */
     private CardView sheetImageSelect;
 
-    /** Image picker launcher for selecting event images. */
+    /** Activity result launcher for the image picker. */
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
-    /** Buttons for performing actions in the form. */
-    private MaterialButton btnSaveChanges, btnCreateEvent, btnCancel, btnDeleteEvent, btnAttendeeManager, btnAddImage;
+    /** Button to save changes to an existing event. */
+    private MaterialButton btnSaveChanges;
 
-    /** Calendar objects and formatter for date fields. */
+    /** Button to create a new event. */
+    private MaterialButton btnCreateEvent;
+
+    /** Button to cancel editing and close the activity. */
+    private MaterialButton btnCancel;
+
+    /** Button to delete the current event. */
+    private MaterialButton btnDeleteEvent;
+
+    /** Button to open the attendee manager. */
+    private MaterialButton btnAttendeeManager;
+
+    /** Button to add a new image to the event. */
+    private MaterialButton btnAddImage;
+
+    /** Calendar instance for the event date. */
     private Calendar eventDate = Calendar.getInstance();
+
+    /** Calendar instance for when registration opens. */
     private Calendar regOpensDate = Calendar.getInstance();
+
+    /** Calendar instance for when registration closes. */
     private Calendar regClosesDate = Calendar.getInstance();
+
+    /** Date formatter for displaying dates in MM/dd/yy format. */
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy", Locale.US);
 
+    /** Firebase Storage reference for uploading images. */
     private StorageReference storageRef;
 
     /**
      * Initializes the activity and sets up UI components.
      *
-     * @param savedInstanceState saved activity state, if any
+     * @param savedInstanceState - Saved activity state, if any
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,7 +216,9 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /** Initializes all form fields and button references. */
+    /**
+     * Initializes all form fields and button references.
+     */
     private void initializeViews() {
         edtEventName = findViewById(R.id.edtEventName);
         edtDescription = findViewById(R.id.edtDescription);
@@ -205,7 +240,9 @@ public class EventEditActivity extends AppCompatActivity {
         btnAddImage = findViewById(R.id.btnAddImage);
     }
 
-    /** Wires up button and field click listeners for UI actions. */
+    /**
+     * Wires up button and field click listeners for UI actions.
+     */
     private void setupClickListeners() {
         txtEventDate.setOnClickListener(v -> showDatePicker(eventDate, txtEventDate, "Event Date"));
         txtRegOpens.setOnClickListener(v -> showDatePicker(regOpensDate, txtRegOpens, "Registration Opens"));
@@ -219,7 +256,9 @@ public class EventEditActivity extends AppCompatActivity {
         btnAttendeeManager.setOnClickListener(v -> openAttendeeManager());
     }
 
-    /** Opens an image picker for selecting images from the gallery. */
+    /**
+     * Opens an image picker for selecting images from the gallery.
+     */
     private void openImagePicker() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
@@ -227,11 +266,11 @@ public class EventEditActivity extends AppCompatActivity {
     }
 
     /**
-     * Displays a {@link DatePickerDialog} for selecting event or registration dates.
+     * Displays a DatePickerDialog for selecting event or registration dates.
      *
-     * @param calendar   the calendar instance to update
-     * @param targetView the target text field to display the selected date
-     * @param title      dialog title indicating which date is being selected
+     * @param calendar - The calendar instance to update
+     * @param targetView - The target text field to display the selected date
+     * @param title - Dialog title indicating which date is being selected
      */
     private void showDatePicker(Calendar calendar, EditText targetView, String title) {
         DatePickerDialog picker = new DatePickerDialog(
@@ -248,7 +287,9 @@ public class EventEditActivity extends AppCompatActivity {
         picker.show();
     }
 
-    /** Displays the bottom sheet for selecting images (demo mode). */
+    /**
+     * Displays the bottom sheet for selecting images (demo mode).
+     */
     private void showImageSelectSheet() {
         if (sheetImageSelect != null) {
             sheetImageSelect.setVisibility(View.VISIBLE);
@@ -272,13 +313,18 @@ public class EventEditActivity extends AppCompatActivity {
     /**
      * Adds an image path to the event's image container and updates the display.
      *
-     * @param imagePath the URI or file path of the image to add
+     * @param imagePath - The URI or file path of the image to add
      */
     private void addImageToContainer(String imagePath) {
         imagePaths.add(imagePath);
         updateImageDisplay();
     }
 
+    /**
+     * Uploads an image to Firebase Storage and adds the download URL to the event.
+     *
+     * @param fileUri - The URI of the image file to upload
+     */
     private void uploadImageToStorage(Uri fileUri) {
         Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show();
 
@@ -299,7 +345,9 @@ public class EventEditActivity extends AppCompatActivity {
                 });
     }
 
-    /** Updates the visible list of selected images in the layout. */
+    /**
+     * Updates the visible list of selected images in the layout.
+     */
     private void updateImageDisplay() {
         imageContainer.removeAllViews();
 
@@ -333,7 +381,9 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /** Loads existing event data from Firestore or intent extras for editing. */
+    /**
+     * Loads existing event data from Firestore or intent extras for editing.
+     */
     private void loadEventData() {
         Intent intent = getIntent();
 
@@ -392,14 +442,18 @@ public class EventEditActivity extends AppCompatActivity {
         updateImageDisplay();
     }
 
-    /** Creates a new event after validating the form. */
+    /**
+     * Creates a new event after validating the form.
+     */
     private void createEvent() {
         if (validateForm()) {
             storeInDB();
         }
     }
 
-    /** Saves a new event to Firestore and notifies the caller. */
+    /**
+     * Saves a new event to Firestore and notifies the caller.
+     */
     private void storeInDB() {
         String name = edtEventName.getText().toString().trim();
         String description = edtDescription.getText().toString().trim();
@@ -437,7 +491,9 @@ public class EventEditActivity extends AppCompatActivity {
                 });
     }
 
-    /** Updates an existing Firestore event, if {@code eventId} is available. */
+    /**
+     * Updates an existing Firestore event, if eventId is available.
+     */
     private void saveEvent() {
         if (validateForm()) {
             if (eventId != null) {
@@ -477,7 +533,9 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /** Deletes the current event document from Firestore. */
+    /**
+     * Deletes the current event document from Firestore.
+     */
     private void deleteEvent() {
         if (eventId != null) {
             eventsRef.document(eventId).delete()
@@ -497,7 +555,9 @@ public class EventEditActivity extends AppCompatActivity {
         }
     }
 
-    /** Opens the attendee management screen for this event. */
+    /**
+     * Opens the attendee management screen for this event.
+     */
     private void openAttendeeManager() {
         Intent intent = new Intent(this, AttendeeManagerActivity.class);
         if (eventId != null) intent.putExtra("eventId", eventId);
@@ -508,7 +568,7 @@ public class EventEditActivity extends AppCompatActivity {
     /**
      * Validates user input to ensure required fields are filled.
      *
-     * @return {@code true} if valid; {@code false} otherwise
+     * @return true if valid; false otherwise
      */
     private boolean validateForm() {
         // instantiations for the fields themselves
@@ -561,14 +621,14 @@ public class EventEditActivity extends AppCompatActivity {
             return false;
         }
 
-// verify that registration closes before or on the event date
+        // verify that registration closes before or on the event date
         if (regClosesDate.compareTo(eventDate) > 0) { // means "greater than" (after)
             Toast.makeText(this, "Registration deadline must be before or on the event date", Toast.LENGTH_SHORT).show();
             txtRegCloses.requestFocus();
             return false;
         }
 
-// verify that registration opens before the event date
+        // verify that registration opens before the event date
         if (regOpensDate.compareTo(eventDate) >= 0) { // means "less than" (before)
             Toast.makeText(this, "Registration opens must be before the event date", Toast.LENGTH_SHORT).show();
             txtRegOpens.requestFocus();
@@ -578,9 +638,11 @@ public class EventEditActivity extends AppCompatActivity {
         return true;
     }
 
-    /** Handles back navigation and hides the image sheet if it is open. */
+    /**
+     * Handles back navigation and hides the image sheet if it is open.
+     */
     @Override
-    public void onBackPressed() {
+    public void onBackPressed() { // only Allah knows what this is really doing
         if (sheetImageSelect != null && sheetImageSelect.getVisibility() == View.VISIBLE) {
             sheetImageSelect.setVisibility(View.GONE);
         } else {

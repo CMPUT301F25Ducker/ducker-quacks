@@ -1,14 +1,12 @@
 /**
- * @file EntrantManagerActivity.java
- *  Activity for managing and displaying a list of entrant users in the DuckDuckGoose app.
+ * Activity for managing and displaying a list of entrant users.
  *
- * This activity retrieves all user documents from Firestore, filters them to include only entrants,
- * and displays them in a RecyclerView. It also allows the admin to view entrant profiles
+ * Retrieves all user documents from Firestore, filters them to include only entrants,
+ * and displays them in a RecyclerView. Allows the admin to view entrant profiles
  * and delete entrants through a profile sheet interface.
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.os.Build;
@@ -37,11 +35,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *  EntrantManagerActivity
- *  Manages and displays entrant users retrieved from Firestore.
+ * Manages and displays entrant users retrieved from Firestore.
  *
- * This activity provides administrative functionality to view, count,
- * and delete entrant accounts within the app. It interfaces with Firestore
+ * Provides administrative functionality to view, count,
+ * and delete entrant accounts within the app. Interfaces with Firestore
  * to load user data and updates the UI accordingly.
  */
 public class EntrantManagerActivity extends AppCompatActivity implements ProfileSheet.OnProfileInteractionListener {
@@ -57,7 +54,6 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
 
     /** Reference to the Firestore database instance. */
     private FirebaseFirestore db;
-
 
     /** Reference to the Firestore functions instance. */
     private FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
@@ -75,7 +71,7 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
      * Called when the activity is created.
      * Sets up UI components, initializes Firebase, and loads entrants from Firestore.
      *
-     * @param savedInstanceState Saved instance state for restoring previous configurations.
+     * @param savedInstanceState - Saved instance state for restoring previous configurations
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -177,7 +173,7 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
      * Called when a user profile is deleted through the ProfileSheet interface.
      * Removes the user from both local lists and updates the UI.
      *
-     * @param email The email of the deleted user.
+     * @param email - The email of the deleted user
      */
     @Override
     public void onProfileDeleted(String email) {
@@ -188,13 +184,18 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
     /**
      * Not used for entrants, since they do not have event management options.
      *
-     * @param userId The ID of the user whose event button was clicked.
+     * @param userId - The ID of the user whose event button was clicked
      */
     @Override
     public void onEventsButtonClicked(String userId) {
         // Not applicable to entrants
     }
 
+    /**
+     * Deletes a user by email using Firebase Cloud Functions.
+     *
+     * @param email - The email address of the user to delete
+     */
     private void deleteUserByEmail(String email) {
         if (email == null || email.isEmpty()) {
             Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
@@ -215,6 +216,11 @@ public class EntrantManagerActivity extends AppCompatActivity implements Profile
                 });
     }
 
+    /**
+     * Removes a user from local entrant lists by email address.
+     *
+     * @param email - The email address of the user to remove
+     */
     private void removeFromLocalListsByEmail(String email) {
         // visible list
         for (int i = entrants.size() - 1; i >= 0; i--) {

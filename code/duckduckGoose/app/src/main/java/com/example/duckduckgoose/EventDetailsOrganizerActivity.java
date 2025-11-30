@@ -6,7 +6,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.content.DialogInterface;
@@ -41,21 +40,46 @@ import java.util.List;
  * and wires actions for attendee management, editing, and deletion.
  */
 public class EventDetailsOrganizerActivity extends AppCompatActivity {
-    // --- Private fields (grouped): hold current event ID, UI references, and launchers. ---
+    /** Unique identifier for the event being managed. */
     private String eventId;
+
+    /** Launcher for handling results from the event edit activity. */
     private ActivityResultLauncher<Intent> editLauncher;
 
+    /** TextView displaying the event title. */
     private TextView eventTitle;
+
+    /** TextView displaying the waiting list count. */
     private TextView txtWaitingList;
+
+    /** TextView displaying the invitation summary (invited/accepted/rejected counts). */
     private TextView txtInviteSummary;
+
+    /** TextView displaying the event dates. */
     private TextView txtDates;
+
+    /** TextView displaying when registration opens. */
     private TextView txtOpen;
+
+    /** TextView displaying the registration deadline. */
     private TextView txtDeadline;
+
+    /** TextView displaying the event cost. */
     private TextView txtCost;
+
+    /** TextView displaying the number of available spots. */
     private TextView txtSpots;
+
+    /** TextView displaying the event description. */
     private TextView txtDescription;
+
+    /** Button to launch the attendee manager activity. */
     private MaterialButton attendeeManagerButton;
+
+    /** Button to launch the event edit activity. */
     private MaterialButton editEventButton;
+
+    /** Button to delete the event. */
     private MaterialButton deleteButton;
 
     /**
@@ -184,7 +208,11 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
         if (this.eventId != null && !this.eventId.isEmpty()) loadEvent();
     }
 
-    // --- Private helper: loads event data from Firestore and updates bound views. ---
+    /**
+     * Loads event data from Firestore and updates all UI components.
+     * Fetches the event document, populates text fields, loads images into the gallery,
+     * and queries the waitlist for invitation statistics (invited/accepted/rejected counts).
+     */
     private void loadEvent() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("events").document(this.eventId).get()
@@ -316,7 +344,6 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
      *
      * @param view - The source view that triggered the callback
      */
-    // Optional onClick in XML
     public void goBack(View view) {
         finish();
     }

@@ -6,7 +6,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -43,25 +42,41 @@ import java.util.HashMap;
  * (with notifications to affected users) and linking to the image manager.
  */
 public class EventDetailsAdminActivity extends AppCompatActivity {
-    // --- Private fields (grouped): hold current event ID, UI references, and launchers. ---
+    /** Unique identifier for the event being managed. */
     private String eventId;
+
+    /** TextView displaying the event title. */
     private TextView eventTitle;
+
+    /** TextView displaying the waiting list count. */
     private TextView txtWaitingList;
+
+    /** TextView displaying the event dates. */
     private TextView txtDates;
+
+    /** TextView displaying when registration opens. */
     private TextView txtOpen;
+
+    /** TextView displaying the registration deadline. */
     private TextView txtDeadline;
+
+    /** TextView displaying the event cost. */
     private TextView txtCost;
+
+    /** TextView displaying the number of available spots. */
     private TextView txtSpots;
+
+    /** TextView displaying the event description. */
     private TextView txtDescription;
 
     /**
      * Initializes the activity and wires up admin controls.
-     * 
+     *
      * Sets up edge-to-edge UI, adjusts system bar appearance when available,
      * binds view references, and attaches click handlers for delete, logs,
      * and image poster actions.
      *
-     * @param savedInstanceState Previously saved instance state bundle (may be null)
+     * @param savedInstanceState - Previously saved instance state bundle (may be null)
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,17 +133,17 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
             // Confirm
             new AlertDialog.Builder(this)
-                .setTitle("Delete Event")
-                .setMessage("Are you sure you want to delete this event? This action will notify entrants.")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    if (eventId == null || eventId.isEmpty()) {
-                        Toast.makeText(this, "Event identifier not available; cannot delete", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    performAdminDelete(eventId, title, cur.getUid());
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+                    .setTitle("Delete Event")
+                    .setMessage("Are you sure you want to delete this event? This action will notify entrants.")
+                    .setPositiveButton("Delete", (dialog, which) -> {
+                        if (eventId == null || eventId.isEmpty()) {
+                            Toast.makeText(this, "Event identifier not available; cannot delete", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        performAdminDelete(eventId, title, cur.getUid());
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
         });
 
         MaterialButton eventLogsButton = findViewById(R.id.event_logs_button);
@@ -163,7 +178,10 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
         }
     }
 
-    // --- Private helper: loads event data from Firestore and updates bound views. ---
+    /**
+     * Loads event data from Firestore and updates all UI text fields.
+     * Also populates the image gallery with event photos or a placeholder.
+     */
     private void loadEvent() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("events").document(this.eventId).get()
@@ -250,96 +268,108 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
      * Navigates back to the previous screen.
      * Finishes the activity in response to a back/up button tap.
      *
-     * @param view The View that triggered the action
+     * @param view - The View that triggered the action
      */
     public void goBack(View view) {
         finish();
     }
 
-    // --- Private helpers (grouped) ---
-    // performAdminDelete: orchestrates notification fan-out then deletes event doc.
-    // deleteEventDoc: removes the event document and returns a result to the caller.
-
+    /**
+     * Orchestrates the admin deletion process by notifying all affected entrants
+     * before deleting the event document from Firestore.
+     *
+     * @param eventId - The unique identifier of the event to delete
+     * @param title - The event title for notification messages
+     * @param adminUid - The user ID of the admin performing the deletion
+     */
     private void performAdminDelete(String eventId, String title, String adminUid) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Fetch event to gather entrant lists
         db.collection("events").document(eventId).get()
-            .addOnSuccessListener(doc -> {
-                if (doc == null || !doc.exists()) {
-                    Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                .addOnSuccessListener(doc -> {
+                    if (doc == null || !doc.exists()) {
+                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                List<String> recipients = new ArrayList<>();
-                Object regObj = doc.get("registeredUsers");
-                Object waitObj = doc.get("waitingList");
-                Object accObj = doc.get("acceptedFromWaitlist");
+                    List<String> recipients = new ArrayList<>();
+                    Object regObj = doc.get("registeredUsers");
+                    Object waitObj = doc.get("waitingList");
+                    Object accObj = doc.get("acceptedFromWaitlist");
 
-                if (regObj instanceof List) {
-                    for (Object o : (List) regObj) if (o != null) recipients.add(o.toString());
-                }
-                if (waitObj instanceof List) {
-                    for (Object o : (List) waitObj) if (o != null) recipients.add(o.toString());
-                }
-                if (accObj instanceof List) {
-                    for (Object o : (List) accObj) if (o != null) recipients.add(o.toString());
-                }
+                    if (regObj instanceof List) {
+                        for (Object o : (List) regObj) if (o != null) recipients.add(o.toString());
+                    }
+                    if (waitObj instanceof List) {
+                        for (Object o : (List) waitObj) if (o != null) recipients.add(o.toString());
+                    }
+                    if (accObj instanceof List) {
+                        for (Object o : (List) accObj) if (o != null) recipients.add(o.toString());
+                    }
 
-                // dedupe
-                List<String> unique = new ArrayList<>();
-                for (String u : recipients) if (!unique.contains(u)) unique.add(u);
+                    // dedupe
+                    List<String> unique = new ArrayList<>();
+                    for (String u : recipients) if (!unique.contains(u)) unique.add(u);
 
-                final int total = unique.size();
-                final int[] done = {0};
+                    final int total = unique.size();
+                    final int[] done = {0};
 
-                String message = "The event '" + (title != null ? title : "(untitled)") + "' has been deleted by an administrator.";
+                    String message = "The event '" + (title != null ? title : "(untitled)") + "' has been deleted by an administrator.";
 
-                if (total == 0) {
-                    // No recipients; proceed to delete
-                    deleteEventDoc(db, eventId, title);
-                    return;
-                }
+                    if (total == 0) {
+                        // No recipients; proceed to delete
+                        deleteEventDoc(db, eventId, title);
+                        return;
+                    }
 
-                for (String uid : unique) {
-                    Map<String, Object> notif = new HashMap<>();
-                    notif.put("userId", uid);
-                    notif.put("message", message);
-                    notif.put("eventId", eventId);
-                    notif.put("sentBy", adminUid);
-                    notif.put("timestamp", com.google.firebase.Timestamp.now());
+                    for (String uid : unique) {
+                        Map<String, Object> notif = new HashMap<>();
+                        notif.put("userId", uid);
+                        notif.put("message", message);
+                        notif.put("eventId", eventId);
+                        notif.put("sentBy", adminUid);
+                        notif.put("timestamp", com.google.firebase.Timestamp.now());
 
-                    db.collection("notifications").add(notif)
-                        .addOnSuccessListener(r -> {
-                            done[0]++;
-                            if (done[0] >= total) {
-                                // After notifications created, delete the event
-                                deleteEventDoc(db, eventId, title);
-                            }
-                        })
-                        .addOnFailureListener(e -> {
-                            done[0]++;
-                            // even on failure continue; once all attempted, delete event
-                            if (done[0] >= total) {
-                                deleteEventDoc(db, eventId, title);
-                            }
-                        });
-                }
-            })
-            .addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch event: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        db.collection("notifications").add(notif)
+                                .addOnSuccessListener(r -> {
+                                    done[0]++;
+                                    if (done[0] >= total) {
+                                        // After notifications created, delete the event
+                                        deleteEventDoc(db, eventId, title);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    done[0]++;
+                                    // even on failure continue; once all attempted, delete event
+                                    if (done[0] >= total) {
+                                        deleteEventDoc(db, eventId, title);
+                                    }
+                                });
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to fetch event: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
+    /**
+     * Deletes the event document from Firestore and returns a result to the caller.
+     * Sets the activity result to indicate successful deletion before finishing.
+     *
+     * @param db - Firestore database instance
+     * @param eventId - The unique identifier of the event to delete
+     * @param title - The event title to include in the result
+     */
     private void deleteEventDoc(FirebaseFirestore db, String eventId, String title) {
         db.collection("events").document(eventId).delete()
-            .addOnSuccessListener(aVoid -> {
-                Toast.makeText(this, "Event deleted and entrants notified", Toast.LENGTH_SHORT).show();
-                Intent result = new Intent();
-                result.putExtra("eventId", eventId);
-                result.putExtra("eventTitleToDelete", title);
-                result.putExtra("deleted", true);
-                setResult(RESULT_OK, result);
-                finish();
-            })
-            .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete event: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Event deleted and entrants notified", Toast.LENGTH_SHORT).show();
+                    Intent result = new Intent();
+                    result.putExtra("eventId", eventId);
+                    result.putExtra("eventTitleToDelete", title);
+                    result.putExtra("deleted", true);
+                    setResult(RESULT_OK, result);
+                    finish();
+                })
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete event: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 }
