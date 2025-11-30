@@ -29,6 +29,7 @@ public class Event {
     /** Event identity and basic info. */
     private String eventId;
     private String name;
+    private String description;
     private String eventDate;
     private String registrationOpens;
     private String registrationCloses;
@@ -62,6 +63,7 @@ public class Event {
      * 
      * @param eventId - Event identifier
      * @param name - Display name
+     * @param description - Event description
      * @param eventDate - Human-readable date/period string
      * @param registrationOpens - When registration opens (string form)
      * @param registrationCloses - When registration closes (string form)
@@ -72,6 +74,7 @@ public class Event {
      */
     public Event(String eventId,
                  String name,
+                 String description,
                  String eventDate,
                  String registrationOpens,
                  String registrationCloses,
@@ -82,6 +85,7 @@ public class Event {
 
         this.eventId = eventId;
         this.name = name;
+        this.description = description;
         this.eventDate = eventDate;
         this.registrationOpens = registrationOpens;
         this.registrationCloses = registrationCloses;
@@ -123,6 +127,10 @@ public class Event {
     public String getName() {
         return name;
     }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
 
     public String getEventDate() {
         return eventDate;

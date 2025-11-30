@@ -177,7 +177,7 @@ public class AdministratorUnitTest {
     // Test event name is not empty for browsing
     @Test
     public void testEventNameNotEmpty() {
-        Event e = new Event("1", "Pool Party", null, null, null, null, null, false, null);
+        Event e = new Event("1", "Pool Party", null, null, null, null, null, null, false, null);
         assertNotNull(e.getName());
         assertFalse(e.getName().isEmpty());
     }

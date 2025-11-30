@@ -133,7 +133,12 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
         MaterialButton eventLogsButton = findViewById(R.id.event_logs_button);
         eventLogsButton.setOnClickListener(v -> {
+            if (eventId == null || eventId.isEmpty()) {
+                Toast.makeText(this, "Event identifier not available", Toast.LENGTH_SHORT).show();
+                return;
+            }
             Intent eventLogsIntent = new Intent(EventDetailsAdminActivity.this, AdminEventLogsActivity.class);
+            eventLogsIntent.putExtra("eventId", eventId);
             startActivity(eventLogsIntent);
         });
 
@@ -194,17 +199,17 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
                         if (txtSpots != null)
                             txtSpots.setText("Spots: " + (event.getMaxSpots() == null ? "—" : event.getMaxSpots()));
                         if (txtDescription != null)
-                            txtDescription.setText("Event description loaded from backend.");
+                            txtDescription.setText((event.getDescription() == null || event.getDescription().trim().isEmpty() ? "No description provided by the Organizer." : event.getDescription()));
 
                         LinearLayout gallery = findViewById(R.id.imageGallery);
                         if (gallery != null) {
                             gallery.removeAllViews();
                             List<String> paths = event.getImagePaths();
 
-                            if (paths != null && !paths.isEmpty()) {
-                                int screenW = getResources().getDisplayMetrics().widthPixels;
-                                int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
+                            int screenW = getResources().getDisplayMetrics().widthPixels;
+                            int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
 
+                            if (paths != null && !paths.isEmpty()) {
                                 for (String url : paths) {
                                     ImageView img = new ImageView(this);
                                     LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
@@ -221,16 +226,14 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
                                     gallery.addView(img);
                                 }
                             }
-//                            else {
-//                                int screenW = getResources().getDisplayMetrics().widthPixels;
-//                                int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
-//                                ImageView img = new ImageView(this);
-//                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
-//                                img.setLayoutParams(lp);
-//                                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//                                img.setImageResource(R.drawable.poolphoto);
-//                                gallery.addView(img);
-//                            }
+                            else {
+                                ImageView img = new ImageView(this);
+                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                img.setLayoutParams(lp);
+                                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                img.setImageResource(R.drawable.image_placeholder);
+                                gallery.addView(img);
+                            }
                         }
 
 
