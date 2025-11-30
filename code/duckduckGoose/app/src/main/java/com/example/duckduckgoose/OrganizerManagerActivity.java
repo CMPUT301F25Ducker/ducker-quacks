@@ -26,6 +26,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.duckduckgoose.EventManagerActivity;
 import com.example.duckduckgoose.user.Organizer;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -205,12 +206,13 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
      *  Handles "Events" button from the profile sheet.
      * Navigates to the MyEventsActivity, passing the organizer's ID.
      *
-     * @param userId The organizer's userId.
+     * @param userEmail The organizer's email.
      */
     @Override
-    public void onEventsButtonClicked(String userId) {
-        Intent intent = new Intent(this, MyEventsActivity.class);
-        intent.putExtra("organizerId", userId);
+    public void onEventsButtonClicked(String userEmail) {
+        Intent intent = new Intent(this, EventManagerActivity.class);
+        intent.putExtra("filterOrganizerEmail", userEmail);
+        Toast.makeText(this, "Organizer Email: " + userEmail, Toast.LENGTH_SHORT).show();
         startActivity(intent);
     }
 
@@ -219,18 +221,53 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
             Toast.makeText(this, "Invalid email.", Toast.LENGTH_SHORT).show();
             return;
         }
-        String key = email.trim();
 
-        functions
-                .getHttpsCallable("deleteUserByEmail")
-                .call(Collections.singletonMap("email", email))
-                .addOnSuccessListener((HttpsCallableResult result) -> {
-                    Toast.makeText(this, "Organizer successfully deleted.", Toast.LENGTH_SHORT).show();
-                    removeFromLocalListsByEmail(email);
-                    updateCountDisplay();
+        final String trimmedEmail = email.trim();
+
+        // 1) Look up the user doc by email so we can read ownedEvents
+        usersRef.whereEqualTo("email", trimmedEmail)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (!snapshot.isEmpty()) {
+                        DocumentSnapshot doc = snapshot.getDocuments().get(0);
+
+                        // Read ownedEvents array from user doc
+                        @SuppressWarnings("unchecked")
+                        List<String> ownedEvents = (List<String>) doc.get("ownedEvents");
+
+                        if (ownedEvents != null) {
+                            for (String eventId : ownedEvents) {
+                                if (eventId == null || eventId.trim().isEmpty()) continue;
+
+                                eventsRef.document(eventId)
+                                        .delete()
+                                        .addOnSuccessListener(aVoid ->
+                                                Log.d("OrganizerManager", "Deleted event " + eventId))
+                                        .addOnFailureListener(e ->
+                                                Log.e("OrganizerManager", "Failed to delete event " + eventId, e));
+                            }
+                        }
+                    } else {
+                        Log.w("OrganizerManager", "No user doc found for email " + trimmedEmail);
+                    }
+
+                    // 2) Call Cloud Function to delete organizer
+                    functions
+                            .getHttpsCallable("deleteUserByEmail")
+                            .call(Collections.singletonMap("email", trimmedEmail))
+                            .addOnSuccessListener((HttpsCallableResult result) -> {
+                                Toast.makeText(this, "Organizer successfully deleted.", Toast.LENGTH_SHORT).show();
+                                removeFromLocalListsByEmail(trimmedEmail);
+                                updateCountDisplay();
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("OrganizerManager", "Cloud Function delete failed", e);
+                                Toast.makeText(this, "Failed to delete organizer: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("OrganizerManager", "Cloud Function delete failed", e);
+                    Log.e("OrganizerManager", "Failed to lookup user for deletion", e);
                     Toast.makeText(this, "Failed to delete organizer: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
