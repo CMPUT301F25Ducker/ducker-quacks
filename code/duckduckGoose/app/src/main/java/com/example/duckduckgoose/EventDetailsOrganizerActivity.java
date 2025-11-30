@@ -20,7 +20,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import androidx.activity.EdgeToEdge;
@@ -30,6 +32,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.List;
 
@@ -151,16 +154,6 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                 }
         );
 
-        // Load the event (also refreshed in onResume)
-        if (this.eventId != null && !this.eventId.isEmpty()) {
-            loadEvent();
-        } else {
-            // Legacy fallback
-            String title = intent.getStringExtra("title");
-            if (title != null && eventTitle != null) eventTitle.setText(title);
-        }
-
-        // Delete with confirmation + Firestore delete
         if (deleteButton != null) {
             deleteButton.setOnClickListener(v -> {
                 if (eventId == null || eventId.isEmpty()) {
@@ -171,10 +164,14 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                         .setTitle("Delete event?")
                         .setMessage("This will permanently delete the event and its details. This action cannot be undone.")
                         .setPositiveButton("Delete", (DialogInterface dlg, int which) -> {
-                            FirebaseFirestore.getInstance().collection("events")
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("events")
                                     .document(eventId)
                                     .delete()
                                     .addOnSuccessListener(aVoid -> {
+                                        // 🔥 clean up user arrays (waitlisted, accepted, owned)
+                                        cleanupUsersForDeletedEvent(eventId);
+
                                         Intent data = new Intent();
                                         data.putExtra("eventId", eventId);
                                         data.putExtra("deleted", true);
@@ -337,6 +334,55 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                 );
     }
 
+    private void cleanupUsersForDeletedEvent(String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference usersRef = db.collection("users");
+
+        // 1) Remove from waitlistedEventIds
+        usersRef.whereArrayContains("waitlistedEventIds", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "waitlistedEventIds",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    android.util.Log.e("EventCleanup", "Failed to clean waitlistedEventIds", e));
+                });
+
+        // 2) Remove from acceptedEventIds
+        usersRef.whereArrayContains("acceptedEventIds", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "acceptedEventIds",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    android.util.Log.e("EventCleanup", "Failed to clean acceptedEventIds", e));
+                });
+
+        // 3) Also strip it from ownedEvents everywhere
+        usersRef.whereArrayContains("ownedEvents", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "ownedEvents",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    android.util.Log.e("EventCleanup", "Failed to clean ownedEvents", e));
+                });
+    }
     /**
      * Handles the optional XML onClick to navigate back.
      *

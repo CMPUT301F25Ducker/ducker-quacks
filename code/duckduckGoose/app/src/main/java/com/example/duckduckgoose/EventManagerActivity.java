@@ -37,8 +37,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import android.content.Intent;
-import android.widget.AutoCompleteTextView;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -81,6 +79,12 @@ public class EventManagerActivity extends AppCompatActivity {
     /** Search dropdown for quick navigation to an event by name. */
     private AutoCompleteTextView dropSearch;
 
+    /** Optional organizer filter: if non-null, only show events owned by this organizer. */
+    private String filterOrganizerEmail;
+
+    /** Reference to the "users" collection (for ownedEvents lookup). */
+    private CollectionReference usersRef;
+
     /**
      * Initializes the activity and sets up UI components.
      *
@@ -104,6 +108,9 @@ public class EventManagerActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_manager);
+
+        // Check if we are filtering by a specific organizer (coming from OrganizerManagerActivity)
+        filterOrganizerEmail = getIntent().getStringExtra("filterOrganizerEmail");
 
         TopBarWiring.attachProfileSheet(this);
 
@@ -200,9 +207,13 @@ public class EventManagerActivity extends AppCompatActivity {
                 startActivityForResult(intent, EVENT_DETAILS_REQUEST);
             });
             rv.setAdapter(adapter);
-            // Initialize Firestore and load events from the database
+
+            // Initialize Firestore and collections
             db = FirebaseFirestore.getInstance();
             eventsRef = db.collection("events");
+            usersRef = db.collection("users");
+
+            // Load events (filtered or all)
             loadEventsFromFirestore();
 
             // Wire search selection -> open event details
@@ -247,41 +258,133 @@ public class EventManagerActivity extends AppCompatActivity {
     }
 
     /**
-     * Loads all events from Firestore and updates the UI.
-     * Refreshes both the working list and backup list of events,
-     * updates the RecyclerView, and populates search suggestions.
+     * Loads events from Firestore.
+     * If filterOrganizerUserId is set, only loads events in that user's ownedEvents list.
+     * Otherwise, loads all events.
      */
     private void loadEventsFromFirestore() {
-        eventsRef.get()
-                .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
-                    events.clear();
-                    if (allEvents == null) allEvents = new ArrayList<>();
-                    allEvents.clear();
-                    for (DocumentSnapshot ds : querySnapshot.getDocuments()) {
-                        Event e = ds.toObject(Event.class);
-                        if (e != null) {
-                            // Ensure eventId is populated from the document id
-                            if (e.getEventId() == null) e.setEventId(ds.getId());
-                            events.add(e);
-                            allEvents.add(e);
-                        } else {
-                            Log.w("EventManager", "Document returned null Event: " + ds.getId());
+        // If we have a userId to filter by, load that user's ownedEvents
+        if (filterOrganizerEmail != null && !filterOrganizerEmail.trim().isEmpty()) {
+            usersRef.whereEqualTo("email", filterOrganizerEmail)
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener(userSnap -> {
+                        if (userSnap.isEmpty()) {
+                            // No such user -> just show empty list
+                            events.clear();
+                            if (allEvents == null) allEvents = new ArrayList<>();
+                            allEvents.clear();
+                            adapter.notifyDataSetChanged();
+                            if (dropSearch != null) {
+                                dropSearch.setAdapter(null);
+                                dropSearch.setEnabled(false);
+                            }
+                            return;
                         }
-                    }
-                    adapter.notifyDataSetChanged();
 
-                    // Populate search suggestions (event names)
-                    if (dropSearch != null && allEvents != null) {
-                        List<String> names = new ArrayList<>();
-                        for (Event ev : allEvents) if (ev.getName() != null) names.add(ev.getName());
-                        ArrayAdapter<String> searchAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, names);
-                        dropSearch.setAdapter(searchAdapter);
-                        dropSearch.setEnabled(true);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("EventManager", "Failed to load events", e);
-                });
+                        DocumentSnapshot userDoc = userSnap.getDocuments().get(0);
+
+                        @SuppressWarnings("unchecked")
+                        List<String> ownedEvents = (List<String>) userDoc.get("ownedEvents");
+
+                        if (ownedEvents == null || ownedEvents.isEmpty()) {
+                            // User has no owned events
+                            events.clear();
+                            if (allEvents == null) allEvents = new ArrayList<>();
+                            allEvents.clear();
+                            adapter.notifyDataSetChanged();
+                            if (dropSearch != null) {
+                                dropSearch.setAdapter(null);
+                                dropSearch.setEnabled(false);
+                            }
+                            return;
+                        }
+
+                        // Fetch each event by its document ID in ownedEvents
+                        events.clear();
+                        if (allEvents == null) allEvents = new ArrayList<>();
+                        allEvents.clear();
+
+                        final int total = ownedEvents.size();
+                        final List<Event> temp = new ArrayList<>();
+
+                        for (String eventId : ownedEvents) {
+                            if (eventId == null || eventId.trim().isEmpty()) continue;
+
+                            eventsRef.document(eventId)
+                                    .get()
+                                    .addOnSuccessListener(evDoc -> {
+                                        if (evDoc != null && evDoc.exists()) {
+                                            Event e = evDoc.toObject(Event.class);
+                                            if (e != null) {
+                                                if (e.getEventId() == null) e.setEventId(evDoc.getId());
+                                                temp.add(e);
+                                            }
+                                        }
+                                    })
+                                    .addOnCompleteListener(task -> {
+                                        // When all requests have completed, update UI
+                                        if (temp.size() + (total - ownedEvents.size()) >= total) {
+                                            events.clear();
+                                            allEvents.clear();
+                                            events.addAll(temp);
+                                            allEvents.addAll(temp);
+                                            adapter.notifyDataSetChanged();
+
+                                            if (dropSearch != null) {
+                                                List<String> names = new ArrayList<>();
+                                                for (Event ev : allEvents)
+                                                    if (ev.getName() != null) names.add(ev.getName());
+                                                ArrayAdapter<String> searchAdapter =
+                                                        new ArrayAdapter<>(this,
+                                                                android.R.layout.simple_dropdown_item_1line,
+                                                                names);
+                                                dropSearch.setAdapter(searchAdapter);
+                                                dropSearch.setEnabled(true);
+                                            }
+                                        }
+                                    });
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("EventManager", "Failed to load ownedEvents user", e);
+                        Toast.makeText(this, "Failed to load organizer's events", Toast.LENGTH_SHORT).show();
+                    });
+
+        } else {
+            // Original behavior: load all events
+            eventsRef.get()
+                    .addOnSuccessListener((QuerySnapshot querySnapshot) -> {
+                        events.clear();
+                        if (allEvents == null) allEvents = new ArrayList<>();
+                        allEvents.clear();
+                        for (DocumentSnapshot ds : querySnapshot.getDocuments()) {
+                            Event e = ds.toObject(Event.class);
+                            if (e != null) {
+                                // Ensure eventId is populated from the document id
+                                if (e.getEventId() == null) e.setEventId(ds.getId());
+                                events.add(e);
+                                allEvents.add(e);
+                            } else {
+                                Log.w("EventManager", "Document returned null Event: " + ds.getId());
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
+
+                        // Populate search suggestions (event names)
+                        if (dropSearch != null && allEvents != null) {
+                            List<String> names = new ArrayList<>();
+                            for (Event ev : allEvents) if (ev.getName() != null) names.add(ev.getName());
+                            ArrayAdapter<String> searchAdapter = new ArrayAdapter<>(this,
+                                    android.R.layout.simple_dropdown_item_1line, names);
+                            dropSearch.setAdapter(searchAdapter);
+                            dropSearch.setEnabled(true);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("EventManager", "Failed to load events", e);
+                    });
+        }
     }
 
     /**
