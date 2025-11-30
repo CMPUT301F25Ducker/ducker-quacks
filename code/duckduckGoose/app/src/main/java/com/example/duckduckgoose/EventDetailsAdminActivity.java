@@ -12,6 +12,7 @@ package com.example.duckduckgoose;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
@@ -27,6 +28,7 @@ import com.google.android.material.button.MaterialButton;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.WriteBatch;
@@ -56,7 +58,7 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
     /**
      * Initializes the activity and wires up admin controls.
-     * 
+     *
      * Sets up edge-to-edge UI, adjusts system bar appearance when available,
      * binds view references, and attaches click handlers for delete, logs,
      * and image poster actions.
@@ -328,15 +330,70 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
 
     private void deleteEventDoc(FirebaseFirestore db, String eventId, String title) {
         db.collection("events").document(eventId).delete()
-            .addOnSuccessListener(aVoid -> {
-                Toast.makeText(this, "Event deleted and entrants notified", Toast.LENGTH_SHORT).show();
-                Intent result = new Intent();
-                result.putExtra("eventId", eventId);
-                result.putExtra("eventTitleToDelete", title);
-                result.putExtra("deleted", true);
-                setResult(RESULT_OK, result);
-                finish();
-            })
-            .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete event: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                .addOnSuccessListener(aVoid -> {
+                    // 🔥 remove this event from all users' lists
+                    cleanupUsersForDeletedEvent(eventId);
+
+                    Toast.makeText(this, "Event deleted and entrants notified", Toast.LENGTH_SHORT).show();
+                    Intent result = new Intent();
+                    result.putExtra("eventId", eventId);
+                    result.putExtra("eventTitleToDelete", title);
+                    result.putExtra("deleted", true);
+                    setResult(RESULT_OK, result);
+                    finish();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to delete event: " + e.getMessage(), Toast.LENGTH_LONG).show());
+    }
+
+
+    private void cleanupUsersForDeletedEvent(String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference usersRef = db.collection("users");
+
+        // 1) Remove from waitlistedEventIds
+        usersRef.whereArrayContains("waitlistedEventIds", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "waitlistedEventIds",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    Log.e("EventCleanup", "Failed to clean waitlistedEventIds", e));
+                });
+
+        // 2) Remove from acceptedEventIds
+        usersRef.whereArrayContains("acceptedEventIds", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "acceptedEventIds",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    Log.e("EventCleanup", "Failed to clean acceptedEventIds", e));
+                });
+
+        // OPTIONAL: if you also want to strip it from ownedEvents everywhere
+        usersRef.whereArrayContains("ownedEvents", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "ownedEvents",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    Log.e("EventCleanup", "Failed to clean ownedEvents", e));
+                });
     }
 }

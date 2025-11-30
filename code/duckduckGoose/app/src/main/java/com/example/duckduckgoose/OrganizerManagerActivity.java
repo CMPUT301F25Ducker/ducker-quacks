@@ -30,8 +30,10 @@ import com.example.duckduckgoose.EventManagerActivity;
 import com.example.duckduckgoose.user.Organizer;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.WriteBatch;
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.functions.HttpsCallableResult;
 
@@ -240,6 +242,10 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
                             for (String eventId : ownedEvents) {
                                 if (eventId == null || eventId.trim().isEmpty()) continue;
 
+                                // Clean up all user references to this event
+                                cleanupUsersForDeletedEvent(eventId);
+
+                                // Then delete the event document itself
                                 eventsRef.document(eventId)
                                         .delete()
                                         .addOnSuccessListener(aVoid ->
@@ -269,6 +275,56 @@ public class OrganizerManagerActivity extends AppCompatActivity implements Profi
                 .addOnFailureListener(e -> {
                     Log.e("OrganizerManager", "Failed to lookup user for deletion", e);
                     Toast.makeText(this, "Failed to delete organizer: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void cleanupUsersForDeletedEvent(String eventId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference usersRef = db.collection("users");
+
+        // 1) Remove from waitlistedEventIds
+        usersRef.whereArrayContains("waitlistedEventIds", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "waitlistedEventIds",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    Log.e("EventCleanup", "Failed to clean waitlistedEventIds", e));
+                });
+
+        // 2) Remove from acceptedEventIds
+        usersRef.whereArrayContains("acceptedEventIds", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "acceptedEventIds",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    Log.e("EventCleanup", "Failed to clean acceptedEventIds", e));
+                });
+
+        // 3) Also strip it from ownedEvents everywhere
+        usersRef.whereArrayContains("ownedEvents", eventId)
+                .get()
+                .addOnSuccessListener(snap -> {
+                    WriteBatch batch = db.batch();
+                    for (DocumentSnapshot doc : snap.getDocuments()) {
+                        batch.update(doc.getReference(),
+                                "ownedEvents",
+                                FieldValue.arrayRemove(eventId));
+                    }
+                    batch.commit()
+                            .addOnFailureListener(e ->
+                                    Log.e("EventCleanup", "Failed to clean ownedEvents", e));
                 });
     }
 
