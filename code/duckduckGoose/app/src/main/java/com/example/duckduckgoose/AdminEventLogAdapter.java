@@ -72,7 +72,7 @@ public class AdminEventLogAdapter extends RecyclerView.Adapter<AdminEventLogAdap
         AdminEventLogsActivity.EventLogItem eventLog = eventLogs.get(position);
         holder.txtNotifTitle.setText(eventLog.getTitle());
         holder.txtOrganizer.setText(eventLog.getOrganizer());
-        
+
         // Set up Recipients button click listener
         holder.btnRecipients.setOnClickListener(v -> showRecipientsDialog(eventLog.getRecipients()));
     }
@@ -95,7 +95,7 @@ public class AdminEventLogAdapter extends RecyclerView.Adapter<AdminEventLogAdap
     private void showRecipientsDialog(List<String> recipients) {
         Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.dialog_recipients);
-        
+
         // Set dialog dimensions
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(
@@ -144,12 +144,25 @@ public class AdminEventLogAdapter extends RecyclerView.Adapter<AdminEventLogAdap
      */
     private static class RecipientAdapter extends RecyclerView.Adapter<RecipientAdapter.RecipientViewHolder> {
 
+        /** List of recipient names to display. */
         private final List<String> recipients;
 
+        /**
+         * Constructs the adapter with a list of recipients.
+         *
+         * @param recipients - List of recipient names
+         */
         RecipientAdapter(List<String> recipients) {
             this.recipients = recipients;
         }
 
+        /**
+         * Inflates the recipient item layout.
+         *
+         * @param parent - Parent ViewGroup
+         * @param viewType - View type (unused)
+         * @return New RecipientViewHolder for a recipient row
+         */
         @NonNull
         @Override
         public RecipientViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -158,19 +171,39 @@ public class AdminEventLogAdapter extends RecyclerView.Adapter<AdminEventLogAdap
             return new RecipientViewHolder(view);
         }
 
+        /**
+         * Binds recipient name to a row's TextView.
+         *
+         * @param holder - ViewHolder for the row
+         * @param position - Position in the list
+         */
         @Override
         public void onBindViewHolder(@NonNull RecipientViewHolder holder, int position) {
             holder.txtRecipientName.setText(recipients.get(position));
         }
 
+        /**
+         * Returns the total number of recipients.
+         *
+         * @return Number of recipients in the list
+         */
         @Override
         public int getItemCount() {
             return recipients.size();
         }
 
+        /**
+         * ViewHolder for recipient item views.
+         */
         static class RecipientViewHolder extends RecyclerView.ViewHolder {
+            /** TextView displaying the recipient's name. */
             TextView txtRecipientName;
 
+            /**
+             * Initializes view references.
+             *
+             * @param itemView - Root view of the recipient item
+             */
             RecipientViewHolder(@NonNull View itemView) {
                 super(itemView);
                 txtRecipientName = itemView.findViewById(R.id.txtRecipientName);

@@ -1,10 +1,10 @@
 /**
  * Activity for viewing and managing admin accounts.
  *
- * <p>Displays a list of admin users fetched from Firestore. Allows navigation
- * to add or view individual admin profiles.</p>
+ * Displays a list of admin users fetched from Firestore. Allows navigation
+ * to add or view individual admin profiles.
  *
- * <p><b>Author:</b> DuckDuckGoose Development Team</p>
+ * @author DuckDuckGoose Development Team
  */
 package com.example.duckduckgoose;
 
@@ -38,11 +38,24 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
 
     /** List containing all admin user objects. */
     private List<User> admins;
+
     /** RecyclerView adapter for displaying admin users. */
     private UserManagerAdapter adapter;
 
-    /** Text inputs for creating a new admin. */
-    private TextInputEditText edtFullName, edtAge, edtEmail, edtPhone, edtPassword;
+    /** Text input for admin full name. */
+    private TextInputEditText edtFullName;
+
+    /** Text input for admin age. */
+    private TextInputEditText edtAge;
+
+    /** Text input for admin email address. */
+    private TextInputEditText edtEmail;
+
+    /** Text input for admin phone number. */
+    private TextInputEditText edtPhone;
+
+    /** Text input for admin password. */
+    private TextInputEditText edtPassword;
 
     /**
      * Initializes the admin manager screen and sets up the RecyclerView.
@@ -66,7 +79,7 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         }
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_manager);
+        setContentView(R.layout.activity_admin_console);
 
         TopBarWiring.attachProfileSheet(this);
 
@@ -162,7 +175,9 @@ public class AdminManagerActivity extends AppCompatActivity implements ProfileSh
         // No action needed for admins
     }
 
-    /** Clears all add-admin input fields. */
+    /**
+     * Clears all add-admin input fields.
+     */
     private void clearAdminInputs() {
         edtFullName.setText("");
         edtAge.setText("");
