@@ -272,11 +272,18 @@ public class EventDetailActivity extends AppCompatActivity {
 
                                 List<String> paths = currentEvent.getImagePaths();
 
+                                int screenW = getResources().getDisplayMetrics().widthPixels;
+                                int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
+
                                 if (paths == null || paths.isEmpty()) {
-                                    // placeholder?
-                                } else {
-                                    int screenW = getResources().getDisplayMetrics().widthPixels;
-                                    int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
+                                    ImageView img = new ImageView(this);
+                                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                    img.setLayoutParams(lp);
+                                    img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                    img.setImageResource(R.drawable.image_placeholder);
+                                    gallery.addView(img);
+                                }
+                                else {
 
                                     for (String url : paths) {
                                         ImageView img = new ImageView(this);

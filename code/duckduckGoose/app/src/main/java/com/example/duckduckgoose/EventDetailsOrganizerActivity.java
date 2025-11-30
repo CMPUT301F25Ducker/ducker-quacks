@@ -227,10 +227,10 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                         if (gallery != null) {
                             gallery.removeAllViews();
                             List<String> paths = event.getImagePaths();
-
+                            int screenW = getResources().getDisplayMetrics().widthPixels;
+                            int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
                             if (paths != null && !paths.isEmpty()) {
-                                int screenW = getResources().getDisplayMetrics().widthPixels;
-                                int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
+
 
                                 for (String url : paths) {
                                     ImageView img = new ImageView(this);
@@ -248,16 +248,14 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                                     gallery.addView(img);
                                 }
                             }
-//                            else {
-//                                int screenW = getResources().getDisplayMetrics().widthPixels;
-//                                int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
-//                                ImageView img = new ImageView(this);
-//                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
-//                                img.setLayoutParams(lp);
-//                                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//                                img.setImageResource(R.drawable.poolphoto);
-//                                gallery.addView(img);
-//                            }
+                            else {
+                                ImageView img = new ImageView(this);
+                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                img.setLayoutParams(lp);
+                                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                img.setImageResource(R.drawable.image_placeholder);
+                                gallery.addView(img);
+                            }
                         }
 
 
