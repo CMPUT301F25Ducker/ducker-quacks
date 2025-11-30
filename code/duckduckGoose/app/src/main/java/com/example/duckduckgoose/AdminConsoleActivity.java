@@ -1,10 +1,11 @@
 /**
- * Activity providing admin access to management features.
+ * Admin-only console screen for accessing management features.
  *
- * <p>Displays buttons to navigate to event, attendee, organizer, image, and admin
- * management screens. Allows admins to sign out and return to the login screen.</p>
+ * Displays navigation buttons for event, attendee, organizer, image,
+ * and admin account management. Also provides a logout option for
+ * returning to the login screen.
  *
- * <p><b>Author:</b> DuckDuckGoose Development Team</p>
+ * Author: DuckDuckGoose Development Team
  */
 package com.example.duckduckgoose;
 
@@ -21,17 +22,24 @@ import com.google.firebase.auth.FirebaseAuth;
 /**
  * Main control panel for admin users.
  *
- * <p>Handles navigation to different manager activities and provides a logout option.</p>
+ * Sets up the admin console layout, configures system appearance,
+ * and wires all navigation buttons to their respective manager screens.
+ * Also handles admin logout.
  */
 public class AdminConsoleActivity extends AppCompatActivity {
 
-    /** Firebase authentication instance for managing sign-out. */
+    /** Firebase authentication instance used for managing logout. */
     private FirebaseAuth auth;
 
     /**
-     * Initializes the admin console and sets up button listeners.
+     * Initializes the admin console and sets up navigation buttons.
      *
-     * @param savedInstanceState saved activity state for recreation
+     * Prepares the UI, adjusts status bar appearance when supported,
+     * attaches the top profile sheet, and wires each button to the
+     * appropriate manager activity. Also attaches a listener for the
+     * logout button, which returns the admin to the login screen.
+     *
+     * @param savedInstanceState previously saved state bundle; may be null
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
