@@ -537,7 +537,7 @@ public class EventDetailActivity extends AppCompatActivity {
     private void performJoin(String uid, String eid, Double lat, Double lon) {
         if (currentEvent == null) return;
         currentEvent.addToWaitingList(uid, lat, lon);
-        Toast.makeText(this, "join waiting list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Joined waiting list", Toast.LENGTH_SHORT).show();
         currentState = State.LEAVE_WAITING_LIST;
         applyState(currentState);
     }
@@ -608,7 +608,7 @@ public class EventDetailActivity extends AppCompatActivity {
             batch.delete(db.collection("waitlist").document(currentUser.getUid() + "_" + eventId));
             batch.commit();
         }
-        Toast.makeText(this, "left waiting list", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Left waiting list", Toast.LENGTH_SHORT).show();
         finish();
     }
 
