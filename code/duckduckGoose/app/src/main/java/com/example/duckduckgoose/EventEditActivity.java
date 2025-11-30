@@ -25,6 +25,7 @@ import android.view.WindowInsetsController;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,15 +36,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Activity for organizers to create or edit events stored in Firestore.
@@ -77,7 +82,7 @@ public class EventEditActivity extends AppCompatActivity {
     // -----------------------------
 
     /** Text input fields for event information. */
-    private EditText edtEventName, edtSpots, edtCost, txtEventDate, txtRegOpens, txtRegCloses;
+    private EditText edtEventName, edtDescription, edtSpots, edtCost, txtEventDate, txtRegOpens, txtRegCloses;
 
     /** Checkbox to toggle geolocation option. */
     private CheckBox chkGeolocation;
@@ -103,6 +108,8 @@ public class EventEditActivity extends AppCompatActivity {
     private Calendar regClosesDate = Calendar.getInstance();
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy", Locale.US);
 
+    private StorageReference storageRef;
+
     /**
      * Initializes the activity and sets up UI components.
      *
@@ -127,6 +134,7 @@ public class EventEditActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         eventsRef = db.collection("events");
+        storageRef = FirebaseStorage.getInstance().getReference();
 
         // Initialize image picker launcher for selecting images from the gallery
         imagePickerLauncher = registerForActivityResult(
@@ -135,8 +143,7 @@ public class EventEditActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
-                            addImageToContainer(imageUri.toString());
-                            Toast.makeText(this, "Image added", Toast.LENGTH_SHORT).show();
+                            uploadImageToStorage(imageUri);
                         }
                     }
                 }
@@ -179,6 +186,7 @@ public class EventEditActivity extends AppCompatActivity {
     /** Initializes all form fields and button references. */
     private void initializeViews() {
         edtEventName = findViewById(R.id.edtEventName);
+        edtDescription = findViewById(R.id.edtDescription);
         edtSpots = findViewById(R.id.edtSpots);
         edtCost = findViewById(R.id.edtCost);
         txtEventDate = findViewById(R.id.txtEventDate);
@@ -271,19 +279,53 @@ public class EventEditActivity extends AppCompatActivity {
         updateImageDisplay();
     }
 
+    private void uploadImageToStorage(Uri fileUri) {
+        Toast.makeText(this, "Uploading image...", Toast.LENGTH_SHORT).show();
+
+        String filename = "events/" + UUID.randomUUID().toString() + ".jpg";
+        StorageReference fileRef = storageRef.child(filename);
+
+        fileRef.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
+                        imagePaths.add(downloadUrl);
+                        updateImageDisplay();
+                        Toast.makeText(EventEditActivity.this, "Image uploaded!", Toast.LENGTH_SHORT).show();
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(EventEditActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     /** Updates the visible list of selected images in the layout. */
     private void updateImageDisplay() {
         imageContainer.removeAllViews();
-        for (int i = 0; i < imagePaths.size() && i < 3; i++) {
+
+        for (int i = 0; i < imagePaths.size(); i++) {
             View imageItem = getLayoutInflater().inflate(R.layout.item_image, imageContainer, false);
 
+            ImageView imgPreview = imageItem.findViewById(R.id.imgPreview);
             TextView txtImageLabel = imageItem.findViewById(R.id.txtImageLabel);
             MaterialButton btnDeleteImage = imageItem.findViewById(R.id.btnDeleteImage);
 
-            final int index = i;
+            String imageUrl = imagePaths.get(i);
+
             txtImageLabel.setText("Image " + (i + 1));
+
+            // USE GLIDE TO LOAD IMAGE
+            if (imgPreview != null) {
+                Glide.with(this)
+                        .load(imageUrl)
+                        .centerCrop()
+                        .into(imgPreview);
+            }
+
+            final int index = i;
             btnDeleteImage.setOnClickListener(v -> {
                 imagePaths.remove(index);
+                //  storageRef.child(...).delete()
                 updateImageDisplay();
             });
 
@@ -301,8 +343,12 @@ public class EventEditActivity extends AppCompatActivity {
                         if (doc != null && doc.exists()) {
                             Event event = doc.toObject(Event.class);
                             if (event != null) {
-                                if (event.getName() != null) edtEventName.setText(event.getName());
-                                if (event.getMaxSpots() != null) edtSpots.setText(event.getMaxSpots());
+                                if (event.getName() != null)
+                                    edtEventName.setText(event.getName());
+                                if (event.getDescription() != null)
+                                    edtDescription.setText(event.getDescription());
+                                if (event.getMaxSpots() != null)
+                                    edtSpots.setText(event.getMaxSpots());
                                 if (event.getCost() != null) {
                                     String cost = event.getCost().replace("$", "").trim();
                                     if (!cost.equals("Free") && !cost.equals("—")) edtCost.setText(cost);
@@ -356,6 +402,7 @@ public class EventEditActivity extends AppCompatActivity {
     /** Saves a new event to Firestore and notifies the caller. */
     private void storeInDB() {
         String name = edtEventName.getText().toString().trim();
+        String description = edtDescription.getText().toString().trim();
         String spots = edtSpots.getText().toString().trim();
         String cost = edtCost.getText().toString().trim();
         String eventDateStr = txtEventDate.getText().toString().trim();
@@ -366,7 +413,7 @@ public class EventEditActivity extends AppCompatActivity {
         String newEventId = eventsRef.document().getId();
 
         Event newEvent = new Event(
-                newEventId, name, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
+                newEventId, name, description, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
         );
 
         try {
@@ -395,6 +442,7 @@ public class EventEditActivity extends AppCompatActivity {
         if (validateForm()) {
             if (eventId != null) {
                 String name = edtEventName.getText().toString().trim();
+                String description = edtDescription.getText().toString().trim();
                 String spots = edtSpots.getText().toString().trim();
                 String cost = edtCost.getText().toString().trim();
                 String eventDateStr = txtEventDate.getText().toString().trim();
@@ -403,7 +451,7 @@ public class EventEditActivity extends AppCompatActivity {
                 boolean geolocation = chkGeolocation.isChecked();
 
                 Event updated = new Event(
-                        eventId, name, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
+                        eventId, name, description, eventDateStr, regOpensStr, regClosesStr, spots, cost, geolocation, imagePaths
                 );
 
                 try {
@@ -463,11 +511,70 @@ public class EventEditActivity extends AppCompatActivity {
      * @return {@code true} if valid; {@code false} otherwise
      */
     private boolean validateForm() {
+        // instantiations for the fields themselves
         String eventName = edtEventName.getText().toString().trim();
+        String spots = edtSpots.getText().toString().trim();
+        String cost = edtCost.getText().toString().trim();
+        String eventDateStr = txtEventDate.getText().toString().trim();
+        String regOpensStr = txtRegOpens.getText().toString().trim();
+        String regClosesStr = txtRegCloses.getText().toString().trim();
+
+        // verify that the Event Name field is not empty
         if (eventName.isEmpty()) {
             Toast.makeText(this, "Please enter an event name", Toast.LENGTH_SHORT).show();
+            edtEventName.requestFocus();
             return false;
         }
+
+        // verify that the Spots field is not empty
+        if (spots.isEmpty()) {
+            Toast.makeText(this, "Please enter the maximum number of spots", Toast.LENGTH_SHORT).show();
+            edtSpots.requestFocus();
+            return false;
+        } else if (Integer.parseInt(spots) < 1) {
+            Toast.makeText(this, "Maximum # of spots must be at least 1", Toast.LENGTH_SHORT).show();
+            edtSpots.requestFocus();
+            return false;
+        }
+
+        // verify that the Cost field is not empty
+        if (cost.isEmpty()) {
+            Toast.makeText(this, "Please enter the event cost (or enter 0 for free)", Toast.LENGTH_SHORT).show();
+            edtCost.requestFocus();
+            return false;
+        } else if (Double.parseDouble(cost) < 0) { // casted to avoid CasteException
+            Toast.makeText(this, "Cost cannot be negative", Toast.LENGTH_SHORT).show();
+            edtCost.requestFocus();
+            return false;
+        }
+
+
+        // ====== using compareTo() so here's the quick debug logic ======
+        // returns negative integer if the first date is before the second
+        // returns 0 if dates are equal
+        // returns positive integer if the first date is after the second
+
+        // verify that registration opens before registration closes
+        if (regOpensDate.compareTo(regClosesDate) >= 0) { // >= means "greater than or equal to" (not before)
+            Toast.makeText(this, "Registration opens must be before registration closes", Toast.LENGTH_SHORT).show();
+            txtRegOpens.requestFocus();
+            return false;
+        }
+
+// verify that registration closes before or on the event date
+        if (regClosesDate.compareTo(eventDate) > 0) { // means "greater than" (after)
+            Toast.makeText(this, "Registration deadline must be before or on the event date", Toast.LENGTH_SHORT).show();
+            txtRegCloses.requestFocus();
+            return false;
+        }
+
+// verify that registration opens before the event date
+        if (regOpensDate.compareTo(eventDate) >= 0) { // means "less than" (before)
+            Toast.makeText(this, "Registration opens must be before the event date", Toast.LENGTH_SHORT).show();
+            txtRegOpens.requestFocus();
+            return false;
+        }
+
         return true;
     }
 

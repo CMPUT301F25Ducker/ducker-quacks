@@ -38,6 +38,10 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.BarcodeFormat;
 
+import com.bumptech.glide.Glide;
+
+import java.util.List;
+
 /**
  * Detail screen for a single event.
  *
@@ -112,38 +116,45 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Read incoming data
         Intent i = getIntent();
-        String title    = i.getStringExtra("title");
+        String title = i.getStringExtra("title");
         String dateText = i.getStringExtra("dateText");
-        long   open     = i.getLongExtra("open", 0L);
-        long   deadline = i.getLongExtra("deadline", 0L);
-        String cost     = i.getStringExtra("cost");
-        String spots    = i.getStringExtra("spots");
-        int    poster   = i.getIntExtra("posterRes", R.drawable.poolphoto);
-        int    stateInt = i.getIntExtra("state", -1);
-        this.eventId    = i.getStringExtra("eventId");
+        long open = i.getLongExtra("open", 0L);
+        long deadline = i.getLongExtra("deadline", 0L);
+        String cost = i.getStringExtra("cost");
+        String spots = i.getStringExtra("spots");
+        int poster = i.getIntExtra("posterRes", R.drawable.poolphoto);
+        int stateInt = i.getIntExtra("state", -1);
+        this.eventId = i.getStringExtra("eventId");
 
         // Firestore
         db = FirebaseFirestore.getInstance();
-        if (this.eventId != null) {
-            loadEventDetails();
-        }
+//        if (this.eventId != null) {
+//            loadEventDetails();
+//        }
 
         // Bind text views
-        TextView tvTitle     = findViewById(R.id.txtEventTitle);
-        TextView tvDesc      = findViewById(R.id.txtDescription);
-        TextView tvDates     = findViewById(R.id.txtDates);
-        TextView tvOpen      = findViewById(R.id.txtOpen);
-        TextView tvDeadline  = findViewById(R.id.txtDeadline);
-        TextView tvCost      = findViewById(R.id.txtCost);
-        TextView tvSpots     = findViewById(R.id.txtSpots);
+        TextView tvTitle = findViewById(R.id.txtEventTitle);
+        TextView tvDesc = findViewById(R.id.txtDescription);
+        TextView tvDates = findViewById(R.id.txtDates);
+        TextView tvOpen = findViewById(R.id.txtOpen);
+        TextView tvDeadline = findViewById(R.id.txtDeadline);
+        TextView tvCost = findViewById(R.id.txtCost);
+        TextView tvSpots = findViewById(R.id.txtSpots);
 
-        if (tvTitle != null)    tvTitle.setText(title != null ? title : "Event");
-        if (tvDesc != null)     tvDesc.setText("Event details will be loaded from backend later.");
-        if (tvDates != null)    tvDates.setText(dateText != null ? dateText : "TBD");
-        if (tvOpen != null)     tvOpen.setText("Registration Opens: " + (open == 0 ? "TBD" : new java.util.Date(open)));
-        if (tvDeadline != null) tvDeadline.setText("Registration Deadline: " + (deadline == 0 ? "TBD" : new java.util.Date(deadline)));
-        if (tvCost != null)     tvCost.setText("Cost: " + (cost == null ? "—" : cost));
-        if (tvSpots != null)    tvSpots.setText("Spots: " + (spots == null ? "—" : spots));
+        if (tvTitle != null)
+            tvTitle.setText(title != null ? title : "Event");
+        if (tvDesc != null)
+            tvDesc.setText("Loading description...");
+        if (tvDates != null)
+            tvDates.setText(dateText != null ? dateText : "TBD");
+        if (tvOpen != null)
+            tvOpen.setText("Registration Opens: " + (open == 0 ? "TBD" : new java.util.Date(open)));
+        if (tvDeadline != null)
+            tvDeadline.setText("Registration Deadline: " + (deadline == 0 ? "TBD" : new java.util.Date(deadline)));
+        if (tvCost != null)
+            tvCost.setText("Cost: " + (cost == null ? "—" : cost));
+        if (tvSpots != null)
+            tvSpots.setText("Spots: " + (spots == null ? "—" : spots));
 
         // Image gallery
         LinearLayout gallery = findViewById(R.id.imageGallery);
@@ -231,18 +242,18 @@ public class EventDetailActivity extends AppCompatActivity {
                         this.currentEvent = doc.toObject(Event.class);
                         if (currentEvent != null) {
                             if (currentEvent.getEventId() == null) currentEvent.setEventId(eventId);
-                            TextView tvTitle     = findViewById(R.id.txtEventTitle);
-                            TextView tvDesc      = findViewById(R.id.txtDescription);
-                            TextView tvDates     = findViewById(R.id.txtDates);
-                            TextView tvOpen      = findViewById(R.id.txtOpen);
-                            TextView tvDeadline  = findViewById(R.id.txtDeadline);
-                            TextView tvCost      = findViewById(R.id.txtCost);
-                            TextView tvSpots     = findViewById(R.id.txtSpots);
+                            TextView tvTitle = findViewById(R.id.txtEventTitle);
+                            TextView tvDesc = findViewById(R.id.txtDescription);
+                            TextView tvDates = findViewById(R.id.txtDates);
+                            TextView tvOpen = findViewById(R.id.txtOpen);
+                            TextView tvDeadline = findViewById(R.id.txtDeadline);
+                            TextView tvCost = findViewById(R.id.txtCost);
+                            TextView tvSpots = findViewById(R.id.txtSpots);
 
                             if (tvTitle != null)
                                 tvTitle.setText(currentEvent.getName() != null ? currentEvent.getName() : "Event");
                             if (tvDesc != null)
-                                tvDesc.setText("Event details loaded from backend.");
+                                tvDesc.setText((currentEvent.getDescription() == null || currentEvent.getDescription().trim().isEmpty() ? "No description provided by the Organizer." : currentEvent.getDescription()));
                             if (tvDates != null)
                                 tvDates.setText("\nEvent Date: " + (currentEvent.getEventDate() == null ? "TBD" : currentEvent.getEventDate()));
                             if (tvOpen != null)
@@ -253,6 +264,47 @@ public class EventDetailActivity extends AppCompatActivity {
                                 tvCost.setText("Cost: $" + (currentEvent.getCost() == null ? "—" : currentEvent.getCost()));
                             if (tvSpots != null)
                                 tvSpots.setText("Spots: " + (currentEvent.getMaxSpots() == null ? "—" : currentEvent.getMaxSpots()));
+
+                            // image
+                            LinearLayout gallery = findViewById(R.id.imageGallery);
+                            if (gallery != null) {
+                                gallery.removeAllViews();
+
+                                List<String> paths = currentEvent.getImagePaths();
+
+                                int screenW = getResources().getDisplayMetrics().widthPixels;
+                                int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
+
+                                if (paths == null || paths.isEmpty()) {
+                                    ImageView img = new ImageView(this);
+                                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                    img.setLayoutParams(lp);
+                                    img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                    img.setImageResource(R.drawable.image_placeholder);
+                                    gallery.addView(img);
+                                }
+                                else {
+
+                                    for (String url : paths) {
+                                        ImageView img = new ImageView(this);
+                                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                        lp.setMargins(0, 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
+                                        img.setLayoutParams(lp);
+                                        img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                                        // glide
+                                        Glide.with(this)
+                                                .load(url)
+                                                .placeholder(R.drawable.poolphoto) //  while loading
+                                                .error(R.drawable.poolphoto)      //  if error
+                                                .into(img);
+
+                                        gallery.addView(img);
+                                    }
+                                }
+                            }
+
+
 
                             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
                             if (currentUser != null) {
@@ -707,5 +759,15 @@ public class EventDetailActivity extends AppCompatActivity {
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to decline: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
+    }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (this.eventId != null) {
+            loadEventDetails();
+        }
     }
 }

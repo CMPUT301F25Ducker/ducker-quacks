@@ -15,9 +15,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsetsController;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,6 +31,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
+
+import java.util.List;
 
 /**
  * Activity for organizers to view and manage a single event.
@@ -215,7 +220,45 @@ public class EventDetailsOrganizerActivity extends AppCompatActivity {
                         if (txtSpots != null)
                             txtSpots.setText("Spots: " + (event.getMaxSpots() == null ? "—" : event.getMaxSpots()));
                         if (txtDescription != null)
-                            txtDescription.setText("Event description loaded from backend.");
+                            txtDescription.setText((event.getDescription() == null || event.getDescription().trim().isEmpty() ? "No description provided by the Organizer." : event.getDescription()));
+
+                        // iamges
+                        LinearLayout gallery = findViewById(R.id.imageGallery);
+                        if (gallery != null) {
+                            gallery.removeAllViews();
+                            List<String> paths = event.getImagePaths();
+                            int screenW = getResources().getDisplayMetrics().widthPixels;
+                            int heightPx = (int) (280 * getResources().getDisplayMetrics().density);
+                            if (paths != null && !paths.isEmpty()) {
+
+
+                                for (String url : paths) {
+                                    ImageView img = new ImageView(this);
+                                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                    lp.setMargins(0, 0, (int) (8 * getResources().getDisplayMetrics().density), 0);
+                                    img.setLayoutParams(lp);
+                                    img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                                    Glide.with(this)
+                                            .load(url)
+                                            .placeholder(R.drawable.poolphoto)
+                                            .error(R.drawable.poolphoto)
+                                            .into(img);
+
+                                    gallery.addView(img);
+                                }
+                            }
+                            else {
+                                ImageView img = new ImageView(this);
+                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(screenW, heightPx);
+                                img.setLayoutParams(lp);
+                                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                img.setImageResource(R.drawable.image_placeholder);
+                                gallery.addView(img);
+                            }
+                        }
+
+
 
                         // Buttons -> pass eventId
                         if (attendeeManagerButton != null) {
