@@ -194,7 +194,7 @@ public class EventDetailsAdminActivity extends AppCompatActivity {
                         if (txtSpots != null)
                             txtSpots.setText("Spots: " + (event.getMaxSpots() == null ? "—" : event.getMaxSpots()));
                         if (txtDescription != null)
-                            txtDescription.setText("Event description loaded from backend.");
+                            txtDescription.setText((event.getDescription() == null || event.getDescription().trim().isEmpty() ? "No description provided by the Organizer." : event.getDescription()));
 
                         LinearLayout gallery = findViewById(R.id.imageGallery);
                         if (gallery != null) {

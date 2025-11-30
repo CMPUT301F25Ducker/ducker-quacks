@@ -116,15 +116,15 @@ public class EventDetailActivity extends AppCompatActivity {
 
         // Read incoming data
         Intent i = getIntent();
-        String title    = i.getStringExtra("title");
+        String title = i.getStringExtra("title");
         String dateText = i.getStringExtra("dateText");
-        long   open     = i.getLongExtra("open", 0L);
-        long   deadline = i.getLongExtra("deadline", 0L);
-        String cost     = i.getStringExtra("cost");
-        String spots    = i.getStringExtra("spots");
-        int    poster   = i.getIntExtra("posterRes", R.drawable.poolphoto);
-        int    stateInt = i.getIntExtra("state", -1);
-        this.eventId    = i.getStringExtra("eventId");
+        long open = i.getLongExtra("open", 0L);
+        long deadline = i.getLongExtra("deadline", 0L);
+        String cost = i.getStringExtra("cost");
+        String spots = i.getStringExtra("spots");
+        int poster = i.getIntExtra("posterRes", R.drawable.poolphoto);
+        int stateInt = i.getIntExtra("state", -1);
+        this.eventId = i.getStringExtra("eventId");
 
         // Firestore
         db = FirebaseFirestore.getInstance();
@@ -133,21 +133,28 @@ public class EventDetailActivity extends AppCompatActivity {
 //        }
 
         // Bind text views
-        TextView tvTitle     = findViewById(R.id.txtEventTitle);
-        TextView tvDesc      = findViewById(R.id.txtDescription);
-        TextView tvDates     = findViewById(R.id.txtDates);
-        TextView tvOpen      = findViewById(R.id.txtOpen);
-        TextView tvDeadline  = findViewById(R.id.txtDeadline);
-        TextView tvCost      = findViewById(R.id.txtCost);
-        TextView tvSpots     = findViewById(R.id.txtSpots);
+        TextView tvTitle = findViewById(R.id.txtEventTitle);
+        TextView tvDesc = findViewById(R.id.txtDescription);
+        TextView tvDates = findViewById(R.id.txtDates);
+        TextView tvOpen = findViewById(R.id.txtOpen);
+        TextView tvDeadline = findViewById(R.id.txtDeadline);
+        TextView tvCost = findViewById(R.id.txtCost);
+        TextView tvSpots = findViewById(R.id.txtSpots);
 
-        if (tvTitle != null)    tvTitle.setText(title != null ? title : "Event");
-        if (tvDesc != null)     tvDesc.setText("Event details will be loaded from backend later.");
-        if (tvDates != null)    tvDates.setText(dateText != null ? dateText : "TBD");
-        if (tvOpen != null)     tvOpen.setText("Registration Opens: " + (open == 0 ? "TBD" : new java.util.Date(open)));
-        if (tvDeadline != null) tvDeadline.setText("Registration Deadline: " + (deadline == 0 ? "TBD" : new java.util.Date(deadline)));
-        if (tvCost != null)     tvCost.setText("Cost: " + (cost == null ? "—" : cost));
-        if (tvSpots != null)    tvSpots.setText("Spots: " + (spots == null ? "—" : spots));
+        if (tvTitle != null)
+            tvTitle.setText(title != null ? title : "Event");
+        if (tvDesc != null)
+            tvDesc.setText("Loading description...");
+        if (tvDates != null)
+            tvDates.setText(dateText != null ? dateText : "TBD");
+        if (tvOpen != null)
+            tvOpen.setText("Registration Opens: " + (open == 0 ? "TBD" : new java.util.Date(open)));
+        if (tvDeadline != null)
+            tvDeadline.setText("Registration Deadline: " + (deadline == 0 ? "TBD" : new java.util.Date(deadline)));
+        if (tvCost != null)
+            tvCost.setText("Cost: " + (cost == null ? "—" : cost));
+        if (tvSpots != null)
+            tvSpots.setText("Spots: " + (spots == null ? "—" : spots));
 
         // Image gallery
         LinearLayout gallery = findViewById(R.id.imageGallery);
@@ -235,18 +242,18 @@ public class EventDetailActivity extends AppCompatActivity {
                         this.currentEvent = doc.toObject(Event.class);
                         if (currentEvent != null) {
                             if (currentEvent.getEventId() == null) currentEvent.setEventId(eventId);
-                            TextView tvTitle     = findViewById(R.id.txtEventTitle);
-                            TextView tvDesc      = findViewById(R.id.txtDescription);
-                            TextView tvDates     = findViewById(R.id.txtDates);
-                            TextView tvOpen      = findViewById(R.id.txtOpen);
-                            TextView tvDeadline  = findViewById(R.id.txtDeadline);
-                            TextView tvCost      = findViewById(R.id.txtCost);
-                            TextView tvSpots     = findViewById(R.id.txtSpots);
+                            TextView tvTitle = findViewById(R.id.txtEventTitle);
+                            TextView tvDesc = findViewById(R.id.txtDescription);
+                            TextView tvDates = findViewById(R.id.txtDates);
+                            TextView tvOpen = findViewById(R.id.txtOpen);
+                            TextView tvDeadline = findViewById(R.id.txtDeadline);
+                            TextView tvCost = findViewById(R.id.txtCost);
+                            TextView tvSpots = findViewById(R.id.txtSpots);
 
                             if (tvTitle != null)
                                 tvTitle.setText(currentEvent.getName() != null ? currentEvent.getName() : "Event");
                             if (tvDesc != null)
-                                tvDesc.setText("Event details loaded from backend.");
+                                tvDesc.setText((currentEvent.getDescription() == null || currentEvent.getDescription().trim().isEmpty() ? "No description provided by the Organizer." : currentEvent.getDescription()));
                             if (tvDates != null)
                                 tvDates.setText("\nEvent Date: " + (currentEvent.getEventDate() == null ? "TBD" : currentEvent.getEventDate()));
                             if (tvOpen != null)
