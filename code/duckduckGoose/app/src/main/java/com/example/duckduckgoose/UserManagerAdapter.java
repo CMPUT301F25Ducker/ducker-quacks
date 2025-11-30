@@ -1,10 +1,10 @@
 /**
- * RecyclerView adapter for displaying and interacting with {@link User} items.
+ * RecyclerView adapter for displaying and interacting with user items.
  *
- * <p>Binds a list of users into row views for the user manager screen. Supports
- * optional checkboxes (e.g., for attendee selection) and click callbacks.</p>
+ * Binds a list of users into row views for the user manager screen. Supports
+ * optional checkboxes (for example, for attendee selection) and click callbacks.
  *
- * <p><b>Author:</b> DuckDuckGoose Development Team</p>
+ * @author DuckDuckGoose Development Team
  */
 package com.example.duckduckgoose;
 
@@ -22,10 +22,10 @@ import com.example.duckduckgoose.user.User;
 import java.util.List;
 
 /**
- * Adapter for rendering a list of {@link User} items in a RecyclerView.
+ * Adapter for rendering a list of users in a RecyclerView.
  *
- * <p>Provides a click listener callback and an option to show/hide checkboxes
- * in each row (e.g., for attendee selection flows).</p>
+ * Provides a click listener callback and an option to show or hide checkboxes
+ * in each row (for example, for attendee selection flows).
  */
 public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.ViewHolder> {
 
@@ -41,8 +41,8 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     /**
      * Constructs an adapter with checkboxes visible by default.
      *
-     * @param users non-null list of users to display
-     * @throws IllegalArgumentException if {@code users} is null
+     * @param users - Non-null list of users to display
+     * @throws IllegalArgumentException if users is null
      */
     public UserManagerAdapter(List<? extends User> users) {
         if (users == null) {
@@ -55,9 +55,9 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     /**
      * Constructs an adapter with explicit checkbox visibility.
      *
-     * @param users non-null list of users to display
-     * @param showCheckboxes {@code true} to show the attendee checkbox for each item
-     * @throws IllegalArgumentException if {@code users} is null
+     * @param users - Non-null list of users to display
+     * @param showCheckboxes - true to show the attendee checkbox for each item
+     * @throws IllegalArgumentException if users is null
      */
     public UserManagerAdapter(List<? extends User> users, boolean showCheckboxes) {
         if (users == null) {
@@ -70,18 +70,18 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     /**
      * Registers a row click callback.
      *
-     * @param listener listener invoked with the clicked {@link User}
+     * @param listener - Listener invoked with the clicked user
      */
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
 
     /**
-     * Inflates the item view and wraps it in a {@link ViewHolder}.
+     * Inflates the item view and wraps it in a ViewHolder.
      *
-     * @param parent RecyclerView parent
-     * @param viewType unused view type for this adapter
-     * @return newly created {@link ViewHolder}
+     * @param parent - RecyclerView parent
+     * @param viewType - Unused view type for this adapter
+     * @return Newly created ViewHolder
      */
     @NonNull
     @Override
@@ -92,12 +92,12 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     }
 
     /**
-     * Binds the {@link User} at the given position to the provided holder.
+     * Binds the user at the given position to the provided holder.
      *
-     * <p>Safely handles missing/null user fields and toggles optional views.</p>
+     * Safely handles missing or null user fields and toggles optional views.
      *
-     * @param holder target {@link ViewHolder} for binding
-     * @param position adapter position of the item to bind
+     * @param holder - Target ViewHolder for binding
+     * @param position - Adapter position of the item to bind
      */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -140,7 +140,7 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
     /**
      * Returns the number of items in the adapter.
      *
-     * @return size of the backing user list (0 if list is empty)
+     * @return Size of the backing user list (0 if list is empty)
      */
     @Override
     public int getItemCount() {
@@ -165,7 +165,7 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
         /**
          * Binds layout child views to fields.
          *
-         * @param itemView the inflated row view
+         * @param itemView - The inflated row view
          */
         ViewHolder(View itemView) {
             super(itemView);
@@ -184,7 +184,7 @@ public class UserManagerAdapter extends RecyclerView.Adapter<UserManagerAdapter.
         /**
          * Invoked when a user row is tapped.
          *
-         * @param user the {@link User} represented by the tapped row
+         * @param user - The user represented by the tapped row
          */
         void onItemClick(User user);
     }

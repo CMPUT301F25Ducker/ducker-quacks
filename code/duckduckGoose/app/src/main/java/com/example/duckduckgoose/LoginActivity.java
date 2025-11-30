@@ -7,7 +7,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.content.Intent;
@@ -35,35 +34,37 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Shows sign-in and registration flows; sets AppConfig role and navigates.
+ * Activity that shows sign-in and registration flows, sets the app login role,
+ * and navigates to the appropriate screen.
  */
 public class LoginActivity extends AppCompatActivity {
 
     /** Firebase authentication entry point. */
     private FirebaseAuth auth;
-    /** Firestore instance for user profile storage/retrieval. */
+    /** Firestore instance for user profile storage and retrieval. */
     private FirebaseFirestore db;
 
-    /** Launchers for sheets. */
+    /** Launchers for sign-in and create-account sheets. */
     private View btnSignIn, btnCreateAccount;
-    /** Bottom sheets for sign-in / create-account. */
+    /** Bottom sheets for sign-in and create-account flows. */
     private CardView sheetSignIn, sheetCreate;
     /** Sheet close buttons. */
     private TextView btnSheetCancel1, btnSheetCancel2;
     /** Sheet action buttons. */
     private MaterialButton btnSheetSignIn, btnCreateSubmit;
 
-    // sign in fields
+    /** Email and password fields for the sign-in sheet. */
     private TextInputEditText edtEmail, edtPassword;
 
-    // create account fields
+    /** Input fields for the create-account sheet (registration flow). */
     private TextInputEditText edtRegUserId, edtFullName, edtAge, edtRegEmail, edtPhone, edtRegPassword;
+    /** Dropdown for selecting the account type (for example, Admin, Organizer, Entrant). */
     private MaterialAutoCompleteTextView edtAccountType;
 
     /**
-     * Initializes UI, checks active session, and wires listeners.
-     * 
-     * @param savedInstanceState - Saved state bundle
+     * Initializes the UI, checks for an active session, and wires listeners.
+     *
+     * @param savedInstanceState - Saved state bundle used when re-creating the activity, may be null
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Binds all sheet and input views and configures the account type dropdown.
-     * Initializes sign-in, create account, and all input fields.
+     * Initializes sign-in, create-account, and all related input fields.
      */
     private void initViews() {
         btnSignIn = findViewById(R.id.btnSignIn);
@@ -141,7 +142,7 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Sets up click listeners for all interactive UI elements.
-     * Handles sheet visibility and primary action buttons.
+     * Handles sheet visibility and primary action button behavior.
      */
     private void setupListeners() {
         // Open sign-in sheet, hide other elements
@@ -174,8 +175,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * Sets up back press handling to close open sheets before exiting.
-     * Intercepts system back button to handle sheets properly.
+     * Sets up back-press handling to close open sheets before exiting the activity.
+     * Intercepts the system back button to hide sheets instead of leaving immediately.
      */
     private void setupBackPress() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -198,7 +199,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * Hides all sheets and restores visibility of primary action buttons.
+     * Hides all sheets and restores visibility of the primary action buttons.
      * Call this when canceling or completing a sheet action.
      */
     private void closeSheets() {
@@ -210,8 +211,9 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Attempts to authenticate the user with Firebase Authentication.
-     * Performs basic input validation, then attempts sign in.
-     * On success, loads user profile from Firestore and navigates based on role.
+     *
+     * Performs basic input validation, then attempts sign in. On success, the
+     * user profile is loaded from Firestore and navigation is based on the user's role.
      */
     private void handleSignIn() {
         String email = edtEmail.getText().toString().trim();
@@ -259,9 +261,10 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Creates a new user account with Firebase Authentication.
-     * Performs extensive input validation before attempting account creation.
-     * After successful auth creation, saves the user profile to Firestore,
-     * sets the appropriate login mode, and navigates to the correct activity.
+     *
+     * Performs input validation before attempting account creation. After
+     * successful authentication, saves the user profile to Firestore, sets
+     * the login mode, and navigates to the appropriate activity.
      */
     private void handleCreateAccount() {
         String accountType = edtAccountType.getText().toString().trim();
@@ -317,7 +320,16 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Saves a newly created user's profile information to Firestore.
-     * After successful save, navigates to the appropriate activity based on role.
+     *
+     * After a successful save, navigates to the appropriate activity based on the account type.
+     *
+     * @param uid - Firebase Authentication user ID
+     * @param accountType - Account type string (for example, ADMIN, ORGANIZER, ENTRANT)
+     * @param userId - Application-specific user ID
+     * @param fullName - User's full name
+     * @param age - User's age in years
+     * @param email - User's email address
+     * @param phone - User's phone number
      */
     private void saveUserToFirestore(String uid, String accountType, String userId,
                                      String fullName, int age, String email, String phone) {
@@ -345,9 +357,13 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * Retrieves the user's profile from Firestore to determine their role.
-     * Navigates to the appropriate activity based on account type.
-     * Falls back to Entrant role if profile lookup fails
+     * Retrieves the user's profile from Firestore to determine their role
+     * and navigates to the appropriate activity based on account type.
+     *
+     * If the profile lookup fails or account type is missing, it falls back
+     * to the Entrant role.
+     *
+     * @param uid - Firebase Authentication user ID whose profile should be loaded
      */
     private void loadNavigate(String uid) {
         db.collection("users").document(uid)
@@ -376,7 +392,10 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Sets the application's login mode and navigates to the appropriate activity.
-     * Updates {@link AppConfig#LOGIN_MODE} and launches the correct screen based on role.
+     *
+     * Updates the global login mode and launches the correct screen based on the role.
+     *
+     * @param accountType - Account type used to determine the destination screen
      */
     private void loginNavigate(String accountType) {
         AppConfig.setLoginMode(accountType);

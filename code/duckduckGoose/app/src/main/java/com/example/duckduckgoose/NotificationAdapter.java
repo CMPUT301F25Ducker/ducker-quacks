@@ -7,7 +7,6 @@
  *
  * @author DuckDuckGoose Development Team
  */
-
 package com.example.duckduckgoose;
 
 import android.view.LayoutInflater;
@@ -92,7 +91,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
      * ViewHolder for notification item views.
      */
     static class ViewHolder extends RecyclerView.ViewHolder {
+        /** Notification title label. */
         TextView txtNotifTitle;
+        /** Organizer name and timestamp label. */
         TextView txtOrganizer;
 
         /**
