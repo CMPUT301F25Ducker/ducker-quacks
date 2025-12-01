@@ -30,3 +30,9 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# build
+code/duckduckGoose/app/build
+!code/duckduckGoose/app/build/test-results/
+!code/duckduckGoose/app/build/reports/
+!code/duckduckGoose/app/build/outputs/
