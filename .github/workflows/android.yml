@@ -2,9 +2,10 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, master, "**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,7 +23,9 @@ jobs:
 
     - name: Grant execute permission for gradlew
       run: chmod +x ./code/duckduckGoose/gradlew
+      
     - name: Build with Gradle
       run: ./code/duckduckGoose/gradlew build
+      
     - name: Build and run unit tests
       run: ./code/duckduckGoose/gradlew clean testDebugUnitTest
