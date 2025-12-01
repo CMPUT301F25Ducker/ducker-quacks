@@ -65,7 +65,9 @@ dependencies {
     // for debugs
     //implementation(files("C:\\Users\\Murtaza\\AppData\\Local\\Android\\Sdk\\platforms\\android-36\\android.jar"))
 
-     testImplementation("junit:junit:4.13.2")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.10.3")
+    testImplementation("org.mockito:mockito-core:4.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
