@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.duckduckgoose.EntrantUnitTest" tests="23" skipped="0" failures="0" errors="0" timestamp="2025-12-01T04:25:49.016Z" hostname="fedora" time="0.015">
+  <properties/>
+  <testcase name="testUserCanHaveMultipleWaitlistedEvents" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserCanJoinWaitlist" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testValidFullName" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testEmptyEmail" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testUserAgeCanBeSet" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserAccountType" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testEventWaitingListStartsEmpty" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testEventHasWaitingList" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserCanBeAcceptedFromWaitlist" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testValidEmail" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testAppConfigAdminMode" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserCanLeaveWaitlist" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testDuplicateWaitlistEntriesPrevented" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testEmptyFullName" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserCanRemoveFromAcceptedEvents" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testAppConfigEntrantMode" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testAdminAccountType" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserFullNameCanBeSet" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testUserPhoneCanBeSet" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testAcceptedEventsListExists" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserEmailCanBeSet" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.001"/>
+  <testcase name="testUserHasWaitlistedEventsList" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <testcase name="testUserWaitlistStartsEmpty" classname="com.example.duckduckgoose.EntrantUnitTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

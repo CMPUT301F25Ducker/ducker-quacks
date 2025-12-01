@@ -33,7 +33,7 @@ This organization emphasizes separation of concerns: Activities orchestrate UI f
 
 ## Notes & Testing
 - The app relies on Firestore structure described above; some features assume specific fields exist (ex. `attendees`, `waitingList`).
-- Unit and instrumentation tests live under `app/src/test` and `app/src/androidTest` if added; run via Android Studio or Gradle.
+- Unit and instrumentation tests live under `app/src/test` and `app/src/androidTest` if added; run via Android Studio or Gradle and automatically upon pushes via GitHub Actions.
 
 ### Interactive Prototype
 You can explore our full interactive prototype and detailed design on Figma:
@@ -41,7 +41,8 @@ You can explore our full interactive prototype and detailed design on Figma:
 
 ### UML Diagram
 You can explore our complete UML diagram here:
-**[View Complete UML Diagram]()**
+**[View Complete UML Diagram](https://www.mermaidchart.com/d/e1e1fb36-3c87-428f-9380-e6080b62e593)**
+![UML Diagram](./doc/UML/Ducker_UML.svg)
 
 ## Contributors
 - Dhruv Bhatia — `DhruvBhatia14`

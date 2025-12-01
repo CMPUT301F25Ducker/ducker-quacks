@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.duckduckgoose.LoginActivityUnitTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2025-12-01T04:25:49.038Z" hostname="fedora" time="0.007">
+  <properties/>
+  <testcase name="testEmptyEmail" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.0"/>
+  <testcase name="testEmptyPhone" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.0"/>
+  <testcase name="testPasswordTooShort" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.001"/>
+  <testcase name="testValidAge" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.0"/>
+  <testcase name="testInvalidAgeFormat" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.0"/>
+  <testcase name="testNegativeAge" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.001"/>
+  <testcase name="testEmptyPassword" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.0"/>
+  <testcase name="testEmptyFullName" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.0"/>
+  <testcase name="testValidPasswordLength" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.001"/>
+  <testcase name="testEmptyUserId" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.0"/>
+  <testcase name="testEmptyAge" classname="com.example.duckduckgoose.LoginActivityUnitTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

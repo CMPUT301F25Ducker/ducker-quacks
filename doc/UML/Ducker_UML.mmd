@@ -1,0 +1,828 @@
+---
+config:
+  layout: elk
+  theme: forest
+  look: handDrawn
+---
+classDiagram
+direction TB
+    class TopBarWiring {
+	    +attachProfileSheet(Activity) void$
+    }
+
+    class ProfileSheet {
+	    -OnProfileInteractionListener mListener
+	    -FirebaseFirestore db
+	    -FirebaseAuth auth
+	    -attachNotificationHandler(ImageButton, boolean) void
+	    +newInstance() ProfileSheet$
+	    +newInstance(User) ProfileSheet$
+	    +newInstance(User, boolean, boolean, String, boolean) ProfileSheet$
+	    +onAttach(Context) void
+	    +onCreateView(LayoutInflater, ViewGroup, Bundle) View
+	    +onViewCreated(View, Bundle) void
+	    -bindSelfProfile(View, User) void
+	    -confirmDeleteSelf() void
+	    -deleteSelf() void
+    }
+
+    class OnProfileInteractionListener {
+	    +onProfileDeleted(String) void
+	    +onEventsButtonClicked(String) void
+    }
+
+    class EventEditActivity {
+	    -PICK_IMAGE_REQUEST$ int
+	    -mode String
+	    -db FirebaseFirestore
+	    -eventsRef CollectionReference
+	    -eventId String
+	    -edtEventName EditText
+	    -edtDescription EditText
+	    -edtSpots EditText
+	    -edtCost EditText
+	    -txtEventDate EditText
+	    -txtRegOpens EditText
+	    -txtRegCloses EditText
+	    -chkGeolocation CheckBox
+	    -imageContainer LinearLayout
+	    -imagePaths List~String~
+	    -sheetImageSelect CardView
+	    -imagePickerLauncher ActivityResultLauncher~Intent~
+	    -btnSaveChanges MaterialButton
+	    -btnCreateEvent MaterialButton
+	    -btnCancel MaterialButton
+	    -btnDeleteEvent MaterialButton
+	    -btnAttendeeManager MaterialButton
+	    -btnAddImage MaterialButton
+	    -eventDate Calendar
+	    -regOpensDate Calendar
+	    -regClosesDate Calendar
+	    -dateFormat SimpleDateFormat
+	    -storageRef StorageReference
+	    #onCreate(Bundle) void
+	    -initializeViews() void
+	    -setupClickListeners() void
+	    -openImagePicker() void
+	    -showDatePicker(Calendar, EditText, String) void
+	    -showImageSelectSheet() void
+	    -addImageToContainer(String) void
+	    -uploadImageToStorage(Uri) void
+	    -updateImageDisplay() void
+	    -loadEventData() void
+	    -createEvent() void
+	    -storeInDB() void
+	    -saveEvent() void
+	    -deleteEvent() void
+	    -openAttendeeManager() void
+	    -validateForm() boolean
+	    +onBackPressed() void
+    }
+
+    class OrganizerManagerActivity {
+	    -organizers List~Organizer~
+	    -allOrganizers List~Organizer~
+	    -adapter UserManagerAdapter
+	    -db FirebaseFirestore
+	    -functions FirebaseFunctions
+	    -usersRef CollectionReference
+	    -eventsRef CollectionReference
+	    -rvOrganizers RecyclerView
+	    -txtCount TextView
+	    #onCreate(Bundle) void
+	    -initializeViews() void
+	    -setupRecyclerView() void
+	    -updateCountDisplay() void
+	    -loadOrganizersFromFirestore() void
+	    +onProfileDeleted(String) void
+	    +onEventsButtonClicked(String) void
+	    -deleteUserByEmail(String) void
+	    -cleanupUsersForDeletedEvent(String) void
+	    -removeFromLocalListsByEmail(String) void
+    }
+
+    class UserManagerAdapter {
+	    -users List~User~
+	    -onItemClickListener OnItemClickListener
+	    -showCheckboxes boolean
+	    +setOnItemClickListener(OnItemClickListener) void
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class UserManagerAdapter_ViewHolder {
+	    ~txtFullName TextView
+	    ~txtUserId TextView
+	    ~txtAccountType TextView
+	    ~btnDelete ImageButton
+	    ~checkboxAttendee CheckBox
+    }
+
+    class UserManagerAdapter_OnItemClickListener {
+	    +onItemClick(User) void
+    }
+
+    class Event {
+	    -eventId String
+	    -name String
+	    -description String
+	    -eventDate String
+	    -registrationOpens String
+	    -registrationCloses String
+	    -maxSpots String
+	    -cost String
+	    -geolocationEnabled boolean
+	    -imagePaths List~String~
+	    -organizerId String
+	    -waitingList List~String~
+	    -acceptedFromWaitlist List~String~
+	    -registeredUsers List~String~
+	    -signupCount int
+	    -redrawCount int
+	    +getEventId() String
+	    +setEventId(String) void
+	    +getOrganizerId() String
+	    +setOrganizerId(String) void
+	    +getName() String
+	    +getDescription() String
+	    +setDescription(String) void
+	    +getEventDate() String
+	    +getRegistrationOpens() String
+	    +getRegistrationCloses() String
+	    +getMaxSpots() String
+	    +getCost() String
+	    +isGeolocationEnabled() boolean
+	    +getImagePaths() List~String~
+	    +getWaitingList() List~String~
+	    +getRegisteredUsers() List~String~
+	    +addToWaitingList(String) void
+	    +addToWaitingList(String, Double, Double) void
+	    +removeFromWaitingList(String) void
+	    +isOnWaitingList(String) boolean
+	    +getAcceptedFromWaitlist() List~String~
+	    +acceptFromWaitlist(String) void
+	    +removeFromAcceptedList(String) void
+	    +hasAcceptedFromWaitlist(String) boolean
+	    +getSignupCount() int
+	    +getRedrawCount() int
+	    +setRedrawCount(int) void
+	    +addRegisteredUser(String) void
+	    +removeRegisteredUser(String) void
+	    +isRegistered(String) boolean
+    }
+
+    class User {
+	    -userId String
+	    -fullName String
+	    -age Long
+	    -email String
+	    -phone String
+	    -accountType String
+	    -new_notifications boolean
+	    -receive_notifications boolean
+	    -createdAt Long
+	    -waitlistedEventIds List~String~
+	    -acceptedEventIds List~String~
+	    +getWaitlistedEventIds() List~String~
+	    +getAcceptedEventIds() List~String~
+	    +addToWaitlist(String) void
+	    +removeFromWaitlist(String) void
+	    +addToAcceptedEvents(String) void
+	    +removeFromAcceptedEvents(String) void
+	    +getUserId() String
+	    +getFullName() String
+	    +getAge() Long
+	    +getEmail() String
+	    +getPhone() String
+	    +getAccountType() String
+	    +setFullName(String) void
+	    +setAge(Long) void
+	    +setEmail(String) void
+	    +setPhone(String) void
+	    +setAccountType(String) void
+	    +getNew_notifications() boolean
+	    +setNew_notifications(boolean) void
+	    +getReceive_notifications() boolean
+	    +setReceive_notifications(boolean) void
+	    +getCreatedAt() Long
+	    +setCreatedAt(Long) void
+	    +setUserId(String) void
+    }
+
+    class LoginActivity {
+	    -auth FirebaseAuth
+	    -db FirebaseFirestore
+	    -btnSignIn View
+	    -sheetSignIn CardView
+	    -btnSheetCancel1 TextView
+	    -btnSheetSignIn MaterialButton
+	    -edtEmail TextInputEditText
+	    -edtRegUserId TextInputEditText
+	    -edtAccountType MaterialAutoCompleteTextView
+	    #onCreate(Bundle) void
+	    -initViews() void
+	    -setupListeners() void
+	    -setupBackPress() void
+	    -closeSheets() void
+	    -handleSignIn() void
+	    -handleCreateAccount() void
+	    -saveUserToFirestore(String, String, String, String, int, String, String) void
+	    -loadNavigate(String) void
+	    -loginNavigate(String) void
+    }
+
+    class MyEventsActivity {
+	    -EVENT_DETAILS_REQUEST$ int
+	    -events List~Event~
+	    -adapter EventManagerAdapter
+	    -db FirebaseFirestore
+	    -eventsRef CollectionReference
+	    -organizerId String
+	    #onCreate(Bundle) void
+	    +goBack(View) void
+	    -loadEventsFromFirestore() void
+	    #onActivityResult(int, int, Intent) void
+    }
+
+    class AdminEventLogsActivity {
+	    -recyclerEventLogs RecyclerView
+	    -adapter AdminEventLogAdapter
+	    -eventLogs List~EventLogItem~
+	    -db FirebaseFirestore
+	    -eventId String
+	    -txtEmptyPlaceholder TextView
+	    #onCreate(Bundle) void
+	    +goBack(View) void
+	    -loadEventNotifications() void
+	    -updateEmptyState() void
+    }
+
+    class EventLogItem {
+	    -title String
+	    -organizer String
+	    -recipients List~String~
+	    -sentBy String
+	    -timestamp Date
+	    +getTitle() String
+	    +getOrganizer() String
+	    +getRecipients() List~String~
+	    +setOrganizer(String) void
+	    +getSentBy() String
+	    +setSentBy(String) void
+	    +getTimestamp() Date
+	    +setTimestamp(Date) void
+    }
+
+    class NotificationAdapter {
+	    -notifications List~NotificationItem~
+	    -sdf SimpleDateFormat
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class NotificationAdapter_ViewHolder {
+	    ~txtNotifTitle TextView
+	    ~txtOrganizer TextView
+    }
+
+    class EventDetailsAdminActivity {
+	    -eventId String
+	    -eventTitle TextView
+	    -txtWaitingList TextView
+	    -txtDates TextView
+	    -txtOpen TextView
+	    -txtDeadline TextView
+	    -txtCost TextView
+	    -txtSpots TextView
+	    -txtDescription TextView
+	    #onCreate(Bundle) void
+	    #onResume() void
+	    -loadEvent() void
+	    +goBack(View) void
+	    -performAdminDelete(String, String, String) void
+	    -deleteEventDoc(FirebaseFirestore, String, String) void
+	    -cleanupUsersForDeletedEvent(String) void
+    }
+
+    class OrganizerProfileActivity {
+	    #onCreate(Bundle) void
+    }
+
+    class EventManagerAdapter {
+	    -events List~Event~
+	    -onItemClickListener OnItemClickListener
+	    +setOnItemClickListener(OnItemClickListener) void
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class EventManagerAdapter_ViewHolder {
+	    ~txtTitle TextView
+	    ~txtDetails TextView
+    }
+
+    class EventManagerAdapter_OnItemClickListener {
+	    +onItemClick(Event) void
+    }
+
+    class EventDetailsOrganizerActivity {
+	    -eventId String
+	    -editLauncher ActivityResultLauncher~Intent~
+	    -eventTitle TextView
+	    -txtWaitingList TextView
+	    -txtInviteSummary TextView
+	    -txtDates TextView
+	    -txtOpen TextView
+	    -txtDeadline TextView
+	    -txtCost TextView
+	    -txtSpots TextView
+	    -txtDescription TextView
+	    -attendeeManagerButton MaterialButton
+	    -editEventButton MaterialButton
+	    -deleteButton MaterialButton
+	    #onCreate(Bundle) void
+	    #onResume() void
+	    -loadEvent() void
+	    -cleanupUsersForDeletedEvent(String) void
+	    +goBack(View) void
+    }
+
+    class NotificationLogsActivity {
+	    -recyclerNotifications RecyclerView
+	    -adapter NotificationLogsAdapter
+	    -notifications List~NotificationItem~
+	    -db FirebaseFirestore
+	    -dropSort MaterialAutoCompleteTextView
+	    #onCreate(Bundle) void
+	    +goBack(View) void
+	    -loadNotifications() void
+	    -markNotificationsAsRead() void
+	    -sortList(String) void
+    }
+
+    class NotificationItem {
+	    -title String
+	    -organizerName String
+	    -date Date
+	    -eventId String
+	    -sentBy String
+	    +getTitle() String
+	    +getOrganizerName() String
+	    +setOrganizerName(String) void
+	    +getDate() Date
+	    +getEventId() String
+	    +getSentBy() String
+    }
+
+    class NotificationLogsAdapter {
+	    -data List~NotificationItem~
+	    -sdf SimpleDateFormat
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class NotificationLogsAdapter_ViewHolder {
+	    ~txtTitle TextView
+    }
+
+    class Organizer {
+	    -events List~Event~
+	    +getEvents() List~Event~
+	    +getEventCount() int
+    }
+
+    class EditProfileSheet {
+	    +RESULT_KEY$ String
+	    +RESULT_SAVED$ String
+	    -auth FirebaseAuth
+	    -db FirebaseFirestore
+	    -inpName TextInputEditText
+	    -inpAge TextInputEditText
+	    -inpEmail TextInputEditText
+	    -inpPhone TextInputEditText
+	    +newInstance() EditProfileSheet$
+	    +onCreateView(LayoutInflater, ViewGroup, Bundle) View
+	    +onViewCreated(View, Bundle) void
+	    -saveChanges() void
+	    -textOf(TextInputEditText) String
+    }
+
+    class AppConfig {
+	    +LOGIN_MODE$ String
+	    +setLoginMode(String) void$
+    }
+
+    class ImageManagerActivity {
+	    -rvImages RecyclerView
+	    -adapter ImageManagerAdapter
+	    -allImageItems List~ImageItem~
+	    -db FirebaseFirestore
+	    #onCreate(Bundle) void
+	    -fetchAllImages() void
+	    -deleteImageFromFirestore(ImageItem, int) void
+	    +onProfileDeleted(String) void
+	    +onEventsButtonClicked(String) void
+    }
+
+    class WaitlistEntry {
+	    -userId String
+	    -eventId String
+	    -joinedAt Timestamp
+	    -status String
+	    -eventName String
+	    -userName String
+	    -acceptedAt Timestamp
+	    -notes String
+	    -latitude Double
+	    -longitude Double
+	    +getUserId() String
+	    +getEventId() String
+	    +getJoinedAt() Timestamp
+	    +getStatus() String
+	    +getLatitude() Double
+	    +getLongitude() Double
+	    +setUserId(String) void
+	    +setEventId(String) void
+	    +setJoinedAt(Timestamp) void
+	    +setStatus(String) void
+	    +setUserName(String) void
+	    +setEventName(String) void
+	    +setLatitude(Double) void
+	    +setLongitude(Double) void
+    }
+
+    class AdminManagerActivity {
+	    -addAdminSheetContainer FrameLayout
+	    -admins List~User~
+	    -adapter UserManagerAdapter
+	    -edtFullName TextInputEditText
+	    -edtAge TextInputEditText
+	    -edtEmail TextInputEditText
+	    -edtPhone TextInputEditText
+	    -edtPassword TextInputEditText
+	    #onCreate(Bundle) void
+	    +onProfileDeleted(String) void
+	    +onEventsButtonClicked(String) void
+	    -clearAdminInputs() void
+    }
+
+    class AdminEventLogAdapter {
+	    -context Context
+	    -eventLogs List~EventLogItem~
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+	    -showRecipientsDialog(List~String~) void
+    }
+
+    class AdminEventLogAdapter_ViewHolder {
+	    ~txtNotifTitle TextView
+	    ~txtOrganizer TextView
+	    ~btnRecipients Button
+    }
+
+    class RecipientAdapter {
+	    -recipients List~String~
+	    +onCreateViewHolder(ViewGroup, int) RecipientViewHolder
+	    +onBindViewHolder(RecipientViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class RecipientViewHolder {
+	    ~txtRecipientName TextView
+    }
+
+    class AttendeeManagerActivity {
+	    -eventId String
+	    -attendees List~User~
+	    -allAttendees List~User~
+	    -adapter UserManagerAdapter
+	    -rvAttendees RecyclerView
+	    -mapPopup CardView
+	    -mapPopupBackground View
+	    -txtCount TextView
+	    -txtInCircle TextView
+	    -btnExportCSV MaterialButton
+	    -btnRevokeTicket MaterialButton
+	    -btnSendMessage MaterialButton
+	    -btnWorldMap MaterialButton
+	    -btnSelectRandom MaterialButton
+	    -btnRedrawDucks MaterialButton
+	    -dropFilterAttendees AutoCompleteTextView
+	    -map MapView
+	    -mapController IMapController
+	    -db FirebaseFirestore
+	    -isOrganizer boolean
+	    -entrantDocIds Map~String, String~
+	    -entrantStatusMap Map~String, String~
+	    #onCreate(Bundle) void
+	    -setupMap() void
+	    +onResume() void
+	    +onPause() void
+	    -initializeViews() void
+	    -setupDropdownFilter() void
+	    -setupButtonListeners() void
+	    -sendBatchMessage(String, String) void
+	    -setupRecyclerView() void
+	    -loadWaitlistEntrants() void
+	    -shouldShowUser(User, String) boolean
+	    -containsUser(List~User~, String) boolean
+	    -applyFilter(String) void
+	    -updateCountDisplay() void
+	    -selectRandomAttendees() void
+	    -redrawDucks() void
+	    -performRedraw(List~User~, int) void
+	    -lotterydraw(List~User~, int) void
+	    -notifyCancelledEntrants() void
+	    -showMapPopup() void
+	    -hideMapPopup() void
+	    -loadMapMarkers() void
+	    +onProfileDeleted(String) void
+	    -performKickByUserId(String, String) void
+	    -removeFromLocalList(String) void
+	    +onEventsButtonClicked(String) void
+    }
+
+    class EventDetailActivity {
+	    -currentState State
+	    -isOrganizerMode boolean
+	    -eventId String
+	    -db FirebaseFirestore
+	    -currentEvent Event
+	    -fusedLocationClient FusedLocationProviderClient
+	    -requestPermissionLauncher ActivityResultLauncher~String~
+	    #onCreate(Bundle) void
+	    -showLotteryGuidelines(String) void
+	    -loadEventDetails() void
+	    -setupOrganizerButtons(String, String, long, long, String, String) void
+	    -setupEntrantButtons() void
+	    -joinclick() void
+	    -locatejoin() void
+	    -performJoin(String, String, Double, Double) void
+	    -showEventQrDialog() void
+	    -leaveWaitingList() void
+	    -performAcceptFromWaitlist() void
+	    -applyState(State) void
+	    -animateTap(View, Runnable) void
+	    -pickStateFromTitle(String) State
+	    -performDecline() void
+	    #onResume() void
+    }
+
+    class State {
+	    UNDECIDED
+	    NOT_IN_CIRCLE
+	    LEAVE_CIRCLE
+	    DUCK
+	    GOOSE
+	    WAITING_LIST
+	    LEAVE_WAITING_LIST
+    }
+
+    class ImageManagerAdapter {
+	    -imageItems List~ImageItem~
+	    -deleteListener OnImageDeleteListener
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class ImageItem {
+	    +eventId String
+	    +imageUrl String
+    }
+
+    class OnImageDeleteListener {
+	    +onDelete(ImageItem, int) void
+    }
+
+    class ImageManagerAdapter_ViewHolder {
+	    ~imgPreview ImageView
+	    ~txtImageLabel TextView
+	    ~btnDelete View
+    }
+
+    class MainActivity {
+	    -current Screen
+	    -wireTopBarNav() void
+	    -handleStartOnIntent() void
+	    #onNewIntent(Intent) void
+	    #onCreate(Bundle) void
+	    -goToLogin() void
+	    -parseCost(String) double$
+	    -showEventList() void
+	    -showMyEvents() void
+	    +goBack(View) void
+    }
+
+    class Screen {
+	    EVENT_LIST
+	    MY_EVENTS
+	    EVENT_DETAIL
+	    NOTIFICATIONS
+    }
+
+    class SimpleEventAdapter {
+	    -data List~String~
+	    +onCreateViewHolder(ViewGroup, int) EventVH
+	    +onBindViewHolder(EventVH, int) void
+	    +getItemCount() int
+    }
+
+    class EventObjectAdapter {
+	    -data List~Event~
+	    +onCreateViewHolder(ViewGroup, int) EventVH
+	    +onBindViewHolder(EventVH, int) void
+	    +getItemCount() int
+    }
+
+    class EventVH {
+	    ~title TextView
+	    +bind(Event) void
+    }
+
+    class SectionedEventAdapter {
+	    -TYPE_HEADER$ int
+	    -rows List~Object~
+	    +getItemViewType(int) int
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class OrganizerEventAdapter {
+	    -TYPE_HEADER$ int
+	    -rows List~Object~
+	    -context MainActivity
+	    +getItemViewType(int) int
+	    +onCreateViewHolder(ViewGroup, int) ViewHolder
+	    +onBindViewHolder(ViewHolder, int) void
+	    +getItemCount() int
+    }
+
+    class EntrantManagerActivity {
+	    -entrants List~User~
+	    -allEntrants List~User~
+	    -adapter UserManagerAdapter
+	    -db FirebaseFirestore
+	    -functions FirebaseFunctions
+	    -usersRef CollectionReference
+	    -rvEntrants RecyclerView
+	    -txtCount TextView
+	    #onCreate(Bundle) void
+	    -initializeViews() void
+	    -setupRecyclerView() void
+	    -updateCountDisplay() void
+	    -loadEntrantsFromFirestore() void
+	    +onProfileDeleted(String) void
+	    +onEventsButtonClicked(String) void
+	    -deleteUserByEmail(String) void
+	    -removeFromLocalListsByEmail(String) void
+    }
+
+    class EventManagerActivity {
+	    -EVENT_DETAILS_REQUEST$ int
+	    -events List~Event~
+	    -allEvents List~Event~
+	    -adapter EventManagerAdapter
+	    -db FirebaseFirestore
+	    -eventsRef CollectionReference
+	    -dropSearch AutoCompleteTextView
+	    -filterOrganizerEmail String
+	    -usersRef CollectionReference
+	    #onCreate(Bundle) void
+	    -loadEventsFromFirestore() void
+	    -parseDate(String) Date
+	    -parseCost(String) double
+	    -sortByEventDate(boolean) void
+	    -sortByRegistrationOpens() void
+	    -sortByRegistrationCloses() void
+	    -sortByCost() void
+	    #onActivityResult(int, int, Intent) void
+    }
+
+    class AdminConsoleActivity {
+	    -auth FirebaseAuth
+	    #onCreate(Bundle) void
+    }
+
+    class BottomSheetDialogFragment {
+    }
+
+    class AppCompatActivity {
+    }
+
+    class Adapter {
+    }
+
+    class ViewHolder {
+    }
+
+	<<interface>> OnProfileInteractionListener
+	<<interface>> UserManagerAdapter_OnItemClickListener
+	<<interface>> EventManagerAdapter_OnItemClickListener
+	<<enumeration>> State
+	<<interface>> OnImageDeleteListener
+	<<enumeration>> Screen
+
+	note for TopBarWiring "Utility class for attaching top-bar interactions."
+	note for ProfileSheet "Material bottom sheet that shows a user's profile and available actions."
+	note for EventEditActivity "Activity for organizers to create or edit events stored in Firestore."
+	note for OrganizerManagerActivity "Manages and displays organizer users retrieved from Firestore."
+	note for UserManagerAdapter "Adapter for rendering a list of users in a RecyclerView."
+	note for Event "Event model with Firestore-backed waitlist/registration operations."
+	note for User "Model class for representing a user profile and event associations."
+	note for LoginActivity "Activity that shows sign-in and registration flows, sets the app login role, and navigates to the appropriate screen."
+	note for MyEventsActivity "Displays all events created by an organizer."
+	note for AdminEventLogsActivity "Displays event logs in a scrollable list with sorting capability."
+	note for NotificationAdapter "Adapter for binding NotificationItem objects to RecyclerView rows."
+	note for EventDetailsAdminActivity "Activity for administrative actions on a specific event."
+	note for OrganizerProfileActivity "Displays basic organizer details and provides a delete option."
+	note for EventManagerAdapter "Adapter class that binds Event objects into a scrollable list for management."
+	note for EventDetailsOrganizerActivity "Activity for organizers to view and manage a single event."
+	note for NotificationLogsActivity "Displays notification logs in a scrollable list with sorting capability."
+	note for Organizer "A specialized user who manages one or more events."
+	note for EditProfileSheet "BottomSheetDialogFragment to edit user profile fields."
+	note for AppConfig "Central configuration class for global app settings."
+	note for ImageManagerActivity "Displays an editable image grid and attaches top bar profile actions."
+	note for WaitlistEntry "Represents an entry in the waitlist collection, tracking the relationship between users and events."
+	note for AdminManagerActivity "Activity to display and manage the list of admin users."
+	note for AdminEventLogAdapter "Adapter for binding EventLogItem objects to RecyclerView rows."
+	note for AttendeeManagerActivity "Main activity for attendee and waitlist management."
+	note for EventDetailActivity "Detail screen for a single event."
+	note for State "Possible UI/participation states for the current user relative to the event."
+	note for ImageManagerAdapter "Adapter that shows image previews and supports per-item deletion."
+	note for MainActivity "Hosts the event list and 'My Events' screens and routes to event detail/edit screens."
+	note for EntrantManagerActivity "Manages and displays entrant users retrieved from Firestore."
+	note for EventManagerActivity "Activity for administrators to manage and inspect events."
+	note for AdminConsoleActivity "Main control panel for admin users."
+
+    BottomSheetDialogFragment <|-- ProfileSheet
+    ProfileSheet ..> OnProfileInteractionListener
+    AppCompatActivity <|-- EventEditActivity
+    OnProfileInteractionListener <|.. OrganizerManagerActivity
+    AppCompatActivity <|-- OrganizerManagerActivity
+    Adapter <|-- UserManagerAdapter
+    UserManagerAdapter ..> UserManagerAdapter_ViewHolder
+    ViewHolder <|-- UserManagerAdapter_ViewHolder
+    UserManagerAdapter ..> UserManagerAdapter_OnItemClickListener
+    AppCompatActivity <|-- LoginActivity
+    AppCompatActivity <|-- MyEventsActivity
+    AppCompatActivity <|-- AdminEventLogsActivity
+    AdminEventLogsActivity ..> EventLogItem
+    Adapter <|-- NotificationAdapter
+    NotificationAdapter ..> NotificationAdapter_ViewHolder
+    ViewHolder <|-- NotificationAdapter_ViewHolder
+    AppCompatActivity <|-- EventDetailsAdminActivity
+    AppCompatActivity <|-- OrganizerProfileActivity
+    Adapter <|-- EventManagerAdapter
+    EventManagerAdapter ..> EventManagerAdapter_ViewHolder
+    ViewHolder <|-- EventManagerAdapter_ViewHolder
+    EventManagerAdapter ..> EventManagerAdapter_OnItemClickListener
+    AppCompatActivity <|-- EventDetailsOrganizerActivity
+    AppCompatActivity <|-- NotificationLogsActivity
+    NotificationLogsActivity ..> NotificationItem
+    NotificationLogsActivity ..> NotificationLogsAdapter
+    Adapter <|-- NotificationLogsAdapter
+    NotificationLogsAdapter ..> NotificationLogsAdapter_ViewHolder
+    ViewHolder <|-- NotificationLogsAdapter_ViewHolder
+    User <|-- Organizer
+    BottomSheetDialogFragment <|-- EditProfileSheet
+    OnProfileInteractionListener <|.. ImageManagerActivity
+    AppCompatActivity <|-- ImageManagerActivity
+    OnProfileInteractionListener <|.. AdminManagerActivity
+    AppCompatActivity <|-- AdminManagerActivity
+    Adapter <|-- AdminEventLogAdapter
+    AdminEventLogAdapter ..> AdminEventLogAdapter_ViewHolder
+    ViewHolder <|-- AdminEventLogAdapter_ViewHolder
+    AdminEventLogAdapter ..> RecipientAdapter
+    Adapter <|-- RecipientAdapter
+    RecipientAdapter ..> RecipientViewHolder
+    ViewHolder <|-- RecipientViewHolder
+    OnProfileInteractionListener <|.. AttendeeManagerActivity
+    AppCompatActivity <|-- AttendeeManagerActivity
+    AppCompatActivity <|-- EventDetailActivity
+    Adapter <|-- ImageManagerAdapter
+    ImageManagerAdapter ..> ImageItem
+    ImageManagerAdapter ..> OnImageDeleteListener
+    ImageManagerAdapter ..> ImageManagerAdapter_ViewHolder
+    ViewHolder <|-- ImageManagerAdapter_ViewHolder
+    AppCompatActivity <|-- MainActivity
+    MainActivity ..> SimpleEventAdapter
+    Adapter <|-- SimpleEventAdapter
+    MainActivity ..> EventObjectAdapter
+    Adapter <|-- EventObjectAdapter
+    MainActivity ..> EventVH
+    ViewHolder <|-- EventVH
+    MainActivity ..> SectionedEventAdapter
+    Adapter <|-- SectionedEventAdapter
+    MainActivity ..> OrganizerEventAdapter
+    Adapter <|-- OrganizerEventAdapter
+    OnProfileInteractionListener <|.. EntrantManagerActivity
+    AppCompatActivity <|-- EntrantManagerActivity
+    AppCompatActivity <|-- EventManagerActivity
+    AppCompatActivity <|-- AdminConsoleActivity
