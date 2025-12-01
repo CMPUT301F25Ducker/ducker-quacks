@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.duckduckgoose.OrganizerEventUnitTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2025-12-01T04:25:49.133Z" hostname="fedora" time="0.026">
+  <properties/>
+  <testcase name="testEventHasName" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.002"/>
+  <testcase name="testEventIdIsSet" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.0"/>
+  <testcase name="testAppConfigOrganizerMode" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testAppConfigAdminMode" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testGeolocationDisabledByDefault" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.0"/>
+  <testcase name="testGeolocationCanBeEnabled" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.0"/>
+  <testcase name="testSignupCountStartsAtZero" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testOrganizerIdIsSet" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testEmptyEventName" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testRegistrationDates" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testEventCost" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.002"/>
+  <testcase name="testWaitingListEmptyInitially" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testAdminAccountType" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <testcase name="testMaxSpots" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.0"/>
+  <testcase name="testEventHasImagePaths" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.0"/>
+  <testcase name="testEventDateIsStored" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.002"/>
+  <testcase name="testEventNameNotEmpty" classname="com.example.duckduckgoose.OrganizerEventUnitTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

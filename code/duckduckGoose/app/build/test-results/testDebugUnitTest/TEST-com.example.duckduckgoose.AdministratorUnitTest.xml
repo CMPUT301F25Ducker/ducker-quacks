@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.duckduckgoose.AdministratorUnitTest" tests="19" skipped="0" failures="0" errors="0" timestamp="2025-12-01T04:25:48.987Z" hostname="fedora" time="0.022">
+  <properties/>
+  <testcase name="testOrganizerProfileCanBeIdentified" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.007"/>
+  <testcase name="testFindingSpecificEventById" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testEmptyUserList" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <testcase name="testEventWaitingListSizeForReview" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testUserListCanBeBrowsed" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testUserProfileHasAccountType" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <testcase name="testAppConfigAdminMode" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <testcase name="testUserFullNameForBrowsing" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testEventHasId" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <testcase name="testEventCanBeRemovedFromList" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testEmptyEventList" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <testcase name="testAdminAccountType" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testAdminCanIdentifyAccountTypes" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testEventListCanBeBrowsed" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testEventHasOrganizerId" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <testcase name="testUserCanBeRemovedFromList" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <testcase name="testFilteringOrganizers" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testMultipleEventsCanBeBrowsed" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.0"/>
+  <testcase name="testEventNameNotEmpty" classname="com.example.duckduckgoose.AdministratorUnitTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.duckduckgoose.MainActivityUnitTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-12-01T04:25:49.047Z" hostname="fedora" time="0.08">
+  <properties/>
+  <testcase name="testParseCostVariousInputs" classname="com.example.duckduckgoose.MainActivityUnitTest" time="0.08"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
