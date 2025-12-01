@@ -79,7 +79,7 @@ public class AdminConsoleActivity extends AppCompatActivity {
         MaterialButton btnManageAttendees = findViewById(R.id.btnManageAttendees);
         MaterialButton btnManageImages = findViewById(R.id.btnManageImages);
         MaterialButton btnManageOrganizers = findViewById(R.id.btnManageOrganizers);
-        MaterialButton btnManageAdminAccounts = findViewById(R.id.btnManageAdminAccounts);
+
 
         // Opens the event management activity
         btnManageEvents.setOnClickListener(v ->
@@ -96,9 +96,5 @@ public class AdminConsoleActivity extends AppCompatActivity {
         // Opens the organizer management activity
         btnManageOrganizers.setOnClickListener(v ->
                 startActivity(new Intent(this, OrganizerManagerActivity.class)));
-
-        // Opens the admin account management activity
-        btnManageAdminAccounts.setOnClickListener(v ->
-                startActivity(new Intent(this, AdminManagerActivity.class)));
     }
 }

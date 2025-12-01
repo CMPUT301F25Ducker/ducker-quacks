@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/txtRecipientName"
+        style="@style/Text.Fresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recipient 1"
+        android:textSize="16sp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/fg_charcoal"
+        android:alpha="0.2"/>
+</LinearLayout>

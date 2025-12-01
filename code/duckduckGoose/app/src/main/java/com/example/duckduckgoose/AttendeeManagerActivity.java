@@ -125,6 +125,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
     /** Map of user IDs to their current waitlist status. */
     private Map<String, String> entrantStatusMap = new HashMap<>();
 
+    private FirebaseUser currentUser;
     /**
      * Initializes the attendee manager screen and sets up all components.
      *
@@ -159,6 +160,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
 
         initializeViews();
         setupMap();
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
 
         setupDropdownFilter();
@@ -647,6 +649,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 notif.put("eventId", eventId);
                 String title = getIntent().getStringExtra("eventTitle");
                 notif.put("message", "Congratulations! You have been selected in a redraw for " + (title != null ? title : "an event"));
+                notif.put("sentBy", currentUser.getUid());
                 notif.put("timestamp", com.google.firebase.Timestamp.now());
                 notif.put("type", "selected");
                 batch.set(db.collection("notifications").document(), notif);
@@ -699,6 +702,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                 notif.put("eventId", eventId);
                 String title = getIntent().getStringExtra("eventTitle");
                 notif.put("message", "congratulation! you are selected for " + (title != null ? title : "an event"));
+                notif.put("sentBy", currentUser.getUid());
                 notif.put("timestamp", com.google.firebase.Timestamp.now());
                 notif.put("type", "selected");
                 batch.set(db.collection("notifications").document(), notif);
@@ -712,6 +716,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
             notif.put("eventId", eventId);
             String title = getIntent().getStringExtra("eventTitle");
             notif.put("message",(title != null ? title : "event") + ": L you were not selected");
+            notif.put("sentBy", currentUser.getUid());
             notif.put("timestamp", com.google.firebase.Timestamp.now());
             batch.set(db.collection("notifications").document(), notif);
             hasUpdates = true;
@@ -752,6 +757,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                         notif.put("eventId", eventId);
                         String title = getIntent().getStringExtra("eventTitle");
                         notif.put("message", (title != null ? title : "Event") + ": your spot has been cancelled or declined");
+                        notif.put("sentBy", currentUser.getUid());
                         notif.put("timestamp", com.google.firebase.Timestamp.now());
                         batch.set(db.collection("notifications").document(), notif);
                     }
@@ -909,6 +915,7 @@ public class AttendeeManagerActivity extends AppCompatActivity implements Profil
                     notif.put("eventId", eventId);
                     String title = getIntent().getStringExtra("eventTitle");
                     notif.put("message", "You have been removed from " + (title != null ? title : "the event") + " by the organizer.");
+                    notif.put("sentBy", currentUser.getUid());
                     notif.put("timestamp", com.google.firebase.Timestamp.now());
 
                     batch.set(db.collection("notifications").document(), notif);
