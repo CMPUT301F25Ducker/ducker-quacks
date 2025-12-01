@@ -27,5 +27,23 @@ jobs:
     - name: Build with Gradle
       run: ./code/duckduckGoose/gradlew build
       
+
+      
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./code/duckduckGoose/gradlew
+      
     - name: Build and run unit tests
       run: ./code/duckduckGoose/gradlew clean testDebugUnitTest
