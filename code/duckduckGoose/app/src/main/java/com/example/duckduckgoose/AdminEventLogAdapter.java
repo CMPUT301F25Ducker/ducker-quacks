@@ -90,9 +90,9 @@ public class AdminEventLogAdapter extends RecyclerView.Adapter<AdminEventLogAdap
     /**
      * Shows a dialog displaying the list of recipients.
      *
-     * @param recipients - List of recipient names
+     * @param recipientIds - List of recipient user IDs
      */
-    private void showRecipientsDialog(List<String> recipients) {
+    private void showRecipientsDialog(List<String> recipientIds) {
         Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.dialog_recipients);
 
@@ -108,8 +108,34 @@ public class AdminEventLogAdapter extends RecyclerView.Adapter<AdminEventLogAdap
         // Set up RecyclerView in dialog
         RecyclerView recyclerRecipients = dialog.findViewById(R.id.recyclerRecipients);
         recyclerRecipients.setLayoutManager(new LinearLayoutManager(context));
-        RecipientAdapter recipientAdapter = new RecipientAdapter(recipients);
+        
+        // Fetch recipient names from Firestore
+        List<String> recipientNames = new java.util.ArrayList<>();
+        RecipientAdapter recipientAdapter = new RecipientAdapter(recipientNames);
         recyclerRecipients.setAdapter(recipientAdapter);
+        
+        // Load user IDs for each recipient
+        com.google.firebase.firestore.FirebaseFirestore db = com.google.firebase.firestore.FirebaseFirestore.getInstance();
+        for (String userId : recipientIds) {
+            android.util.Log.d("AdminEventLogs", "Loading recipient: " + userId);
+            db.collection("users").document(userId).get()
+                    .addOnSuccessListener(userDoc -> {
+                        if (userDoc.exists()) {
+                            String userIdField = userDoc.getString("userId");
+                            android.util.Log.d("AdminEventLogs", "Recipient found: " + userIdField);
+                            recipientNames.add(userIdField != null && !userIdField.isEmpty() ? userIdField : userId);
+                        } else {
+                            android.util.Log.d("AdminEventLogs", "Recipient user not found");
+                            recipientNames.add(userId);
+                        }
+                        recipientAdapter.notifyDataSetChanged();
+                    })
+                    .addOnFailureListener(e -> {
+                        android.util.Log.e("AdminEventLogs", "Error loading recipient", e);
+                        recipientNames.add(userId);
+                        recipientAdapter.notifyDataSetChanged();
+                    });
+        }
 
         // Set up close button
         ImageButton btnClose = dialog.findViewById(R.id.btnCloseDialog);

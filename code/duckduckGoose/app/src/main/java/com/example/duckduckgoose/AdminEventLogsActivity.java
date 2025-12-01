@@ -155,6 +155,7 @@ public class AdminEventLogsActivity extends AppCompatActivity {
                     eventLogs.clear();
 
                     if (value != null && !value.isEmpty()) {
+                        android.util.Log.d("AdminEventLogs", "Found " + value.size() + " notifications");
                         // Group notifications by message and sentBy to show batches
                         Map<String, EventLogItem> groupedNotifs = new HashMap<>();
 
@@ -163,6 +164,8 @@ public class AdminEventLogsActivity extends AppCompatActivity {
                             String sentBy = doc.getString("sentBy");
                             String userId = doc.getString("userId");
                             Timestamp ts = doc.getTimestamp("timestamp");
+                            
+                            android.util.Log.d("AdminEventLogs", "Notification: message=" + message + ", sentBy=" + sentBy + ", userId=" + userId);
 
                             if (message == null) message = "(no message)";
 
@@ -170,28 +173,60 @@ public class AdminEventLogsActivity extends AppCompatActivity {
                             String key = message + "_" + (sentBy != null ? sentBy : "unknown");
 
                             if (!groupedNotifs.containsKey(key)) {
-                                EventLogItem item = new EventLogItem(message, "Loading organizer...", new ArrayList<>());
+                                EventLogItem item = new EventLogItem(message, "From: Loading...", new ArrayList<>());
                                 item.setSentBy(sentBy);
                                 item.setTimestamp(ts != null ? ts.toDate() : new Date());
                                 groupedNotifs.put(key, item);
 
-                                // Fetch organizer name
-                                if (sentBy != null && !sentBy.isEmpty()) {
-                                    final EventLogItem finalItem = item;
-                                    db.collection("users").document(sentBy).get()
-                                            .addOnSuccessListener(userDoc -> {
-                                                if (userDoc.exists()) {
-                                                    String organizerName = userDoc.getString("fullName");
-                                                    if (organizerName != null && !organizerName.isEmpty()) {
-                                                        finalItem.setOrganizer("From: " + organizerName);
-                                                        adapter.notifyDataSetChanged();
-                                                    }
+                                // Fetch organizer userId via event -> organizerId -> user
+                                final EventLogItem finalItem = item;
+                                android.util.Log.d("AdminEventLogs", "Fetching event: " + eventId);
+                                db.collection("events").document(eventId).get()
+                                        .addOnSuccessListener(eventDoc -> {
+                                            if (eventDoc.exists()) {
+                                                String organizerId = eventDoc.getString("organizerId");
+                                                android.util.Log.d("AdminEventLogs", "Event organizerId: " + organizerId);
+                                                
+                                                if (organizerId != null && !organizerId.isEmpty()) {
+                                                    db.collection("users").document(organizerId).get()
+                                                            .addOnSuccessListener(userDoc -> {
+                                                                if (userDoc.exists()) {
+                                                                    String userIdField = userDoc.getString("userId");
+                                                                    android.util.Log.d("AdminEventLogs", "Organizer userId: " + userIdField);
+                                                                    if (userIdField != null && !userIdField.isEmpty()) {
+                                                                        finalItem.setOrganizer("From: " + userIdField);
+                                                                    } else {
+                                                                        finalItem.setOrganizer("From: " + organizerId);
+                                                                    }
+                                                                } else {
+                                                                    android.util.Log.d("AdminEventLogs", "Organizer user not found");
+                                                                    finalItem.setOrganizer("From: (organizer not found)");
+                                                                }
+                                                                adapter.notifyDataSetChanged();
+                                                            })
+                                                            .addOnFailureListener(e -> {
+                                                                android.util.Log.e("AdminEventLogs", "Error fetching organizer", e);
+                                                                finalItem.setOrganizer("From: (error loading organizer)");
+                                                                adapter.notifyDataSetChanged();
+                                                            });
+                                                } else {
+                                                    finalItem.setOrganizer("From: (no organizer)");
+                                                    adapter.notifyDataSetChanged();
                                                 }
-                                            });
-                                }
+                                            } else {
+                                                android.util.Log.d("AdminEventLogs", "Event not found");
+                                                finalItem.setOrganizer("From: (event not found)");
+                                                adapter.notifyDataSetChanged();
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            android.util.Log.e("AdminEventLogs", "Error fetching event", e);
+                                            finalItem.setOrganizer("From: (error loading event)");
+                                            adapter.notifyDataSetChanged();
+                                        });
                             }
 
-                            // Add recipient to the list
+                            // Add recipient user ID to the list (will fetch names later)
                             if (userId != null) {
                                 EventLogItem item = groupedNotifs.get(key);
                                 if (item != null && !item.getRecipients().contains(userId)) {

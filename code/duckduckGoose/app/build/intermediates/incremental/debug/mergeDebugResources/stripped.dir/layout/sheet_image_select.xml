@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="24dp"
+    android:background="@drawable/sheet_background"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/fg_white"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Close Button -->
+        <TextView
+            android:id="@+id/btnCloseImageSheet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:text="✕"
+            android:textColor="@color/fg_charcoal"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Title -->
+        <TextView
+            style="@style/Text.Fresh.Display"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="Images/Posters"
+            android:textAlignment="center"
+            android:textSize="24sp" />
+
+        <!-- Hint Text -->
+        <TextView
+            style="@style/Text.Fresh.Body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="Top images will be used as first event poster"
+            android:textAlignment="center"
+            android:textColor="@color/fg_silver"
+            android:textSize="14sp" />
+
+        <!-- Select Image/Poster Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSelectImagePoster"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/fg_charcoal"
+            android:text="Select Image/Poster"
+            android:textColor="@color/fg_white" />
+
+        <!-- Geolocation Checkbox (shown in some screenshots) -->
+        <CheckBox
+            android:id="@+id/chkGeolocationSheet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginTop="16dp"
+            android:text="Geolocation"
+            android:textColor="@color/fg_charcoal"
+            android:textSize="16sp"
+            android:visibility="gone" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

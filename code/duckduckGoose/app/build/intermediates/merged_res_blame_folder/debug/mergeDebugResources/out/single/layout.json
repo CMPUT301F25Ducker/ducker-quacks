@@ -1,0 +1,138 @@
+[
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_my_events.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_my_events.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_login.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/sheet_add_admin.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/sheet_add_admin.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_organizer_profile.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_organizer_profile.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_image_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_image_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_organizer_event_details.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_organizer_event_details.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_organizer_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_organizer_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_organizer.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_organizer.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_image.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_image.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_event_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_event_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_entrant_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_entrant_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_notification.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_notification.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/sheet_profile_edit.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/sheet_profile_edit.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/include_top_bar_admin.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/include_top_bar_admin.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_image_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_image_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_event_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_event_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_user_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_user_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_admin_event_log.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_admin_event_log.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_event_card.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_event_card.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_event_details_organizer.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_event_details_organizer.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/include_top_bar.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/include_top_bar.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_notification_logs.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_notification_logs.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_admin_console.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_admin_console.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_admin_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_admin_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/item_recipient.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/item_recipient.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_event_details_admin.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_event_details_admin.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/sheet_profile.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/sheet_profile.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_event_edit.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_event_edit.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_attendee_manager.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_attendee_manager.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_admin_event_logs.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_admin_event_logs.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_event_list.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_event_list.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/activity_event_detail.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/activity_event_detail.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/dialog_recipients.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/dialog_recipients.xml"
+    },
+    {
+        "merged": "com.example.duckduckgoose.app-mergeDebugResources-58:/layout/sheet_image_select.xml",
+        "source": "com.example.duckduckgoose.app-main-61:/layout/sheet_image_select.xml"
+    }
+]
